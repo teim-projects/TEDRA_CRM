@@ -1,0 +1,1142 @@
+import { useEffect, useState, useMemo, useCallback } from "react";
+import Swal from "sweetalert2";
+import Select from "react-select";
+import { RxCross2 } from "react-icons/rx";
+
+
+// Initial form state definition
+const INITIAL_FORM_DATA = {
+  followup_date: "",
+  followup_time: "",
+  followup_mode: "",
+  current_stage: "",
+  move_to_stage: "",
+  client_response: "",
+  discussion_summary: "",
+  commitment_client: "",
+  commitment_us: "",
+  decision_maker_contacted: "",
+  timeline_urgency: "",
+  pain_point_urgency: "",
+  budget_status: "",
+  competition: "",
+  number_of_users: "",
+  competitors_list: "",
+  next_followup_date: "",
+  next_followup_mode: "",
+  additional_remarks: "",
+  ready_to_send_quotation: false,
+  status: "open",
+  amount: "",
+};
+
+export default function AddLeadFollowUpForm({
+  open,
+  onClose,
+  onSuccess,
+  baseApi,
+  leadId,
+  followup = null,
+  onViewHistory,
+}) {
+  const DEFAULT_API = "http://127.0.0.1:8000";
+  const BASE_API = baseApi ?? DEFAULT_API;
+
+  const [formData, setFormData] = useState({ ...INITIAL_FORM_DATA });
+  const [faqList, setFaqList] = useState([]);
+  const [faqAnswers, setFaqAnswers] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [faqLoading, setFaqLoading] = useState(false);
+  const [leadData, setLeadData] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [amountTouched, setAmountTouched] = useState(false);
+
+  // Product related state - same as AddLeadForm
+  const [productInterested, setProductInterested] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+
+  const token = useMemo(
+    () =>
+      localStorage.getItem("access") ||
+      localStorage.getItem("access_token") ||
+      localStorage.getItem("token") ||
+      localStorage.getItem("authToken") ||
+      "",
+    []
+  );
+
+  const PRODUCT_API_URL = `${BASE_API.replace(/\/$/, "")}/product/products/`;
+
+  const followupModeOptions = [
+    { value: "call", label: "Call" },
+    { value: "whatsapp", label: "WhatsApp" },
+    { value: "email", label: "Email" },
+    { value: "video_call", label: "Video Call" },
+    { value: "in_person", label: "In-Person" },
+    { value: "demo", label: "Demo" },
+    { value: "site_visit", label: "Site Visit" },
+  ];
+
+  const pipelineStageOptions = [
+    { value: "new_lead", label: "New Lead" },
+    { value: "contacted", label: "Contacted" },
+    { value: "requirement_gathering", label: "Requirement Gathering" },
+    { value: "demo_scheduled", label: "Demo Scheduled" },
+    { value: "demo_completed", label: "Demo Completed" },
+    { value: "proposal_sent", label: "Proposal Sent" },
+    { value: "negotiation", label: "Negotiation" },
+  ];
+
+  const clientResponseOptions = [
+    { value: "very_positive", label: "Very Positive" },
+    { value: "positive", label: "Positive" },
+    { value: "neutral", label: "Neutral" },
+    { value: "negative", label: "Negative" },
+    { value: "no_response", label: "No Response" },
+    { value: "call_back_later", label: "Call Back Later" },
+  ];
+
+  const decisionMakerOptions = [
+    { value: "yes_final", label: "Yes — Final Decision Maker" },
+    { value: "yes_influencer", label: "Yes — Influencer / Recommender" },
+    { value: "no_need_higher", label: "No — Need to Reach Higher" },
+  ];
+
+  const timelineOptions = [
+    { value: "immediate", label: "Immediate (within 1 month)" },
+    { value: "short_term", label: "Short-term (1–3 months)" },
+    { value: "mid_term", label: "Mid-term (3–6 months)" },
+    { value: "long_term", label: "Long-term (6+ months)" },
+    { value: "no_clear", label: "No Clear Timeline" },
+  ];
+
+  const painPointOptions = [
+    { value: "critical", label: "Critical — Impacting Business" },
+    { value: "moderate", label: "Moderate — Manageable but needs fix" },
+    { value: "low", label: "Low — Nice to have" },
+  ];
+
+  const budgetStatusOptions = [
+    { value: "approved", label: "Budget Approved" },
+    { value: "allocated", label: "Budget Allocated (not approved)" },
+    { value: "under_discussion", label: "Budget Under Discussion" },
+    { value: "no_budget", label: "No Budget Yet" },
+    { value: "not_disclosed", label: "Not Disclosed" },
+  ];
+
+  const statusOptions = [
+    { value: "open", label: "Open" },
+    { value: "close_win", label: "Close Win" },
+    { value: "close_loss", label: "Close Loss" },
+  ];
+
+  const resetForm = () => {
+    setFormData({ ...INITIAL_FORM_DATA });
+    setFaqAnswers({});
+    setLeadData(null);
+    setIsEditMode(false);
+    setProductInterested([]);
+    setAmountTouched(false);
+  };
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    if (name === "amount") {
+      setAmountTouched(true);
+    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  // Handle product multi-select & calculate total price sum
+  const handleMultiSelectChange = (selected) => {
+    const values = selected ? selected.map((opt) => opt.value) : [];
+    setProductInterested(values);
+    let total = 0;
+    values.forEach((val) => {
+      const prod = products.find(
+        (p) => p.id === val || p.id === Number(val) || p.name === val
+      );
+      if (prod && prod.unit_price) {
+        total += parseFloat(prod.unit_price) || 0;
+      }
+    });
+    setFormData((prev) => ({
+      ...prev,
+      amount: total > 0 ? total.toFixed(2) : "",
+    }));
+  };
+
+  // Detailed selected products breakdown with prices
+  const selectedProductsInfo = useMemo(() => {
+    return productInterested.map((val) => {
+      const prod = products.find(
+        (p) => String(p.id) === String(val) || p.name === val
+      );
+      const name = prod ? prod.name : (/^\d+$/.test(String(val)) ? "" : String(val));
+      return {
+        id: prod ? prod.id : val,
+        name: name,
+        code: prod?.product_code || "",
+        unit_price: prod ? parseFloat(prod.unit_price) || 0 : 0,
+      };
+    }).filter((p) => p.name);
+  }, [productInterested, products]);
+
+  const calculatedTotalPrice = useMemo(() => {
+    return selectedProductsInfo.reduce((sum, item) => sum + item.unit_price, 0);
+  }, [selectedProductsInfo]);
+
+  // Get product options for react-select - same as AddLeadForm
+  const productSelectOptions = useMemo(() => {
+    return products.map((p) => ({
+      value: p.name || String(p.id),
+      label: p.name,
+      id: p.id,
+    }));
+  }, [products]);
+
+  // Get selected product options for react-select - matching both ID and Name
+  const selectedProductOptions = useMemo(() => {
+    return productSelectOptions.filter(option =>
+      productInterested.some(val =>
+        val === option.value ||
+        val === option.label ||
+        String(val) === String(option.id) ||
+        products.some(p => (String(p.id) === String(val) || p.name === val) && (p.name === option.label || String(p.id) === String(option.id)))
+      )
+    );
+  }, [productSelectOptions, productInterested, products]);
+
+  // Fetch products when form opens - same as AddLeadForm
+  useEffect(() => {
+    if (!open) return;
+
+    const controller = new AbortController();
+    setLoadingProducts(true);
+
+    fetch(PRODUCT_API_URL, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      signal: controller.signal,
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const txt = await res.text().catch(() => "");
+          throw new Error(`${res.status} ${res.statusText} ${txt}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        const items = Array.isArray(data) ? data : data.results ?? [];
+        setProducts(items);
+      })
+      .catch((err) => {
+        if (err?.name !== "AbortError") {
+          console.error("Failed to fetch products:", err);
+          setProducts([]);
+        }
+      })
+      .finally(() => setLoadingProducts(false));
+
+    return () => controller.abort();
+  }, [open, PRODUCT_API_URL, token]);
+
+  // Fetch lead data
+  const fetchLead = useCallback(async () => {
+    if (!open || !leadId) return;
+    try {
+      const res = await fetch(`${BASE_API}/lead/lead/${leadId}/`, {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to load lead");
+
+      const data = await res.json();
+      setLeadData(data);
+
+      // Load products from lead - storing product names
+      if (data.product_interested && Array.isArray(data.product_interested)) {
+        const names = data.product_interested
+          .map((item) => {
+            if (typeof item === 'object' && item !== null) {
+              return item.name || item.product || item.product_name || "";
+            }
+            const str = String(item || "").trim();
+            return /^\d+$/.test(str) ? "" : str;
+          })
+          .filter(Boolean);
+        setProductInterested(names);
+      }
+
+      if (!followup) {
+        setFormData((prev) => ({
+          ...prev,
+          current_stage: data.pipeline_stage || prev.current_stage,
+        }));
+      }
+    } catch (err) {
+      console.error("Lead fetch error:", err);
+      setLeadData(null);
+    }
+  }, [open, leadId, BASE_API, token, followup]);
+
+  useEffect(() => {
+    fetchLead();
+  }, [fetchLead]);
+
+  // Auto-populate follow-up amount if empty/0 and calculated total product price or lead amount exists
+  useEffect(() => {
+    if (!open || followup || amountTouched) return;
+
+    let targetAmount = "";
+    if (calculatedTotalPrice > 0) {
+      targetAmount = calculatedTotalPrice.toFixed(2);
+    } else if (leadData?.amount && parseFloat(leadData.amount) > 0) {
+      targetAmount = parseFloat(leadData.amount).toFixed(2);
+    }
+
+    if (targetAmount && (!formData.amount || parseFloat(formData.amount) === 0)) {
+      setFormData((prev) => ({
+        ...prev,
+        amount: targetAmount,
+      }));
+    }
+  }, [open, followup, leadData, calculatedTotalPrice, amountTouched]);
+
+  // Load followup data for editing
+  useEffect(() => {
+    if (followup) {
+      setIsEditMode(true);
+      setFormData({
+        followup_date: followup.followup_date || "",
+        followup_time: followup.followup_time || "",
+        followup_mode: followup.followup_mode || "",
+        current_stage: followup.current_stage || "",
+        move_to_stage: followup.move_to_stage || "",
+        client_response: followup.client_response || "",
+        discussion_summary: followup.discussion_summary || "",
+        commitment_client: followup.commitment_client || "",
+        commitment_us: followup.commitment_us || "",
+        decision_maker_contacted: followup.decision_maker_contacted || "",
+        timeline_urgency: followup.timeline_urgency || "",
+        pain_point_urgency: followup.pain_point_urgency || "",
+        budget_status: followup.budget_status || "",
+        competition: followup.competition || "",
+        number_of_users: followup.number_of_users || "",
+        competitors_list: followup.competitors_list || "",
+        next_followup_date: followup.next_followup_date || "",
+        next_followup_mode: followup.next_followup_mode || "",
+        additional_remarks: followup.additional_remarks || "",
+        ready_to_send_quotation: followup.ready_to_send_quotation || false,
+        status: followup.status || "open",
+        amount: followup.amount !== undefined && followup.amount !== null ? String(followup.amount) : "",
+      });
+
+      // Load products from followup
+      if (followup.products_interested && Array.isArray(followup.products_interested)) {
+        const names = followup.products_interested
+          .map((item) => {
+            if (typeof item === 'object' && item !== null) {
+              return item.name || item.product || item.product_name || "";
+            }
+            const str = String(item || "").trim();
+            return /^\d+$/.test(str) ? "" : str;
+          })
+          .filter(Boolean);
+        setProductInterested(names);
+      }
+
+      if (followup.faq_answers?.length) {
+        const initial = {};
+        followup.faq_answers.forEach((item) => {
+          initial[item.faq] = item.answer || "";
+        });
+        setFaqAnswers(initial);
+      }
+    } else {
+      setIsEditMode(false);
+    }
+  }, [followup]);
+
+  useEffect(() => {
+    if (!open) {
+      const timer = setTimeout(() => {
+        resetForm();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const fetchFaqs = async () => {
+      setFaqLoading(true);
+      try {
+        const res = await fetch(`${BASE_API}/lead/lead-faqs/`, {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+
+        if (!res.ok) {
+          console.error("Failed to load FAQs", await res.text());
+          return;
+        }
+
+        const data = await res.json();
+        const items = Array.isArray(data?.results) ? data.results : data;
+        setFaqList(items || []);
+
+        if (!followup) {
+          const initial = {};
+          (items || []).forEach((faq) => {
+            initial[faq.id] = "";
+          });
+          setFaqAnswers(initial);
+        }
+      } catch (err) {
+        console.error("FAQ fetch error", err);
+      } finally {
+        setFaqLoading(false);
+      }
+    };
+
+    fetchFaqs();
+  }, [open, BASE_API, token, followup]);
+
+  if (!open) return null;
+
+  const validate = () => {
+    if (!leadId && !followup) {
+      Swal.fire({ icon: "error", title: "Validation", text: "Lead is required to create follow-up." });
+      return false;
+    }
+
+    if (!formData.followup_date) {
+      Swal.fire({ icon: "error", title: "Validation", text: "Follow-up date is required" });
+      return false;
+    }
+
+    if (!formData.followup_mode) {
+      Swal.fire({ icon: "error", title: "Validation", text: "Follow-up mode is required" });
+      return false;
+    }
+
+    if (!formData.client_response) {
+      Swal.fire({ icon: "error", title: "Validation", text: "Client response is required" });
+      return false;
+    }
+
+    if (!formData.discussion_summary.trim()) {
+      Swal.fire({ icon: "error", title: "Validation", text: "Discussion summary is required" });
+      return false;
+    }
+
+    if (!formData.next_followup_date) {
+      Swal.fire({ icon: "error", title: "Validation", text: "Next follow-up date is required" });
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e && e.preventDefault();
+    if (!validate()) return;
+
+    setLoading(true);
+    try {
+      const faqPayload = Object.entries(faqAnswers)
+        .filter(([, ans]) => ans && ans.toString().trim() !== "")
+        .map(([faqId, ans]) => ({
+          faq: Number(faqId),
+          answer: ans.toString().trim(),
+        }));
+
+      const payload = {
+        lead: leadId,
+        ...formData,
+        followup_time: formData.followup_time || null,
+        move_to_stage: formData.move_to_stage || null,
+        decision_maker_contacted: formData.decision_maker_contacted || null,
+        timeline_urgency: formData.timeline_urgency || null,
+        pain_point_urgency: formData.pain_point_urgency || null,
+        budget_status: formData.budget_status || null,
+        next_followup_date: formData.next_followup_date || null,
+        next_followup_mode: formData.next_followup_mode || null,
+        discussion_summary: formData.discussion_summary.trim(),
+        commitment_client: formData.commitment_client.trim(),
+        commitment_us: formData.commitment_us.trim(),
+        additional_remarks: formData.additional_remarks.trim(),
+        // ✅ Send product IDs or names - backend expects product names
+        products_interested: productInterested,
+        amount: formData.amount !== "" && formData.amount !== null ? parseFloat(formData.amount) : 0.00,
+      };
+
+      if (faqPayload.length) {
+        payload.faq_answers = faqPayload;
+      }
+
+      const url = followup
+        ? `${BASE_API}/lead/lead-followups/${followup.id}/`
+        : `${BASE_API}/lead/lead-followups/`;
+      const method = followup ? "PATCH" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        data = {};
+      }
+
+      if (!res.ok) {
+        const msg = data?.detail || JSON.stringify(data) || `${res.status} ${res.statusText}`;
+        throw new Error(msg);
+      }
+
+      Swal.fire({
+        icon: "success",
+        text: followup ? "Follow-up updated successfully" : "Follow-up added successfully",
+        timer: 1200,
+        showConfirmButton: false,
+      });
+
+      try {
+        window.dispatchEvent(new CustomEvent("followup_saved", { detail: data }));
+      } catch (e) {
+        console.error("Failed to dispatch followup_saved event", e);
+      }
+
+      resetForm();
+      onSuccess && onSuccess(data);
+      onClose && onClose();
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err.message || "Failed to save follow-up",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    try {
+      resetForm();
+    } catch (err) {
+      console.warn("resetForm error:", err);
+    }
+    if (onClose) onClose();
+  };
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-start sm:items-center justify-center z-50 p-4 animate-fade-in"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) handleClose();
+        }}
+      >
+        <div
+          className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col relative overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="sticky top-0 bg-white z-10 border-b border-slate-100 px-6 py-5 flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">
+                {followup ? "Edit Follow-up" : "Add Follow-up"}
+              </h2>
+              {leadData && (
+                <p className="text-xs font-semibold text-slate-400 mt-1">
+                  {leadData.company_name} · {leadData.contact_person} · Stage: {leadData.pipeline_stage || "New Lead"}
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  if (onViewHistory) {
+                    onViewHistory(leadData || { id: leadId });
+                  } else {
+                    const id = leadData?.id || leadId;
+                    if (id) {
+                      window.location.href = `/follow-up?history=${id}`;
+                    }
+                  }
+                }}
+                className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-150 rounded-lg hover:bg-slate-200 transition-colors shadow-xs cursor-pointer"
+              >
+                Followup History
+              </button>
+              <button
+                type="button"
+                onClick={handleClose}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                aria-label="Close"
+              >
+                <RxCross2 size={20} />
+              </button>
+            </div>
+          </div>
+
+          {/* Form Body */}
+          <div className="px-6 py-5 overflow-y-auto flex-1 bg-white text-slate-800 scrollbar-thin">
+            <form noValidate className="space-y-6" onSubmit={handleSubmit}>
+
+              {/* FOLLOW-UP DETAILS */}
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 pb-1 border-b border-slate-200">
+                  FOLLOW-UP DETAILS
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                      Follow-up Date <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      name="followup_date"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-sm"
+                      value={formData.followup_date}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                      Follow-up Time
+                    </label>
+                    <input
+                      type="time"
+                      name="followup_time"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-sm"
+                      value={formData.followup_time}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                    Follow-up Mode <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {followupModeOptions.map((mode) => (
+                      <button
+                        key={mode.value}
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, followup_mode: mode.value }))}
+                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${formData.followup_mode === mode.value
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          }`}
+                      >
+                        {mode.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* STAGE & RESPONSE */}
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 pb-1 border-b border-slate-200">
+                  STAGE & RESPONSE
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                      Current Stage <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="current_stage"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-sm h-[38px]"
+                      value={formData.current_stage}
+                      onChange={handleChange}
+                    >
+                      <option value="">Select Stage</option>
+                      {pipelineStageOptions.map((stage) => (
+                        <option key={stage.value} value={stage.value}>
+                          {stage.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                      Move to Next Stage
+                    </label>
+                    <select
+                      name="move_to_stage"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-sm h-[38px]"
+                      value={formData.move_to_stage}
+                      onChange={handleChange}
+                    >
+                      <option value="">— No Change —</option>
+                      {pipelineStageOptions.map((stage) => (
+                        <option key={stage.value} value={stage.value}>
+                          {stage.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                    Client Response <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {clientResponseOptions.map((response) => (
+                      <button
+                        key={response.value}
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, client_response: response.value }))}
+                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${formData.client_response === response.value
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          }`}
+                      >
+                        {response.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* PRODUCTS SECTION - Same as AddLeadForm */}
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 pb-1 border-b border-slate-200">
+                  PRODUCTS INTERESTED <span className="font-normal text-slate-400">(Optional)</span>
+                </h3>
+
+                <div className="space-y-2">
+                  <Select
+                    isMulti
+                    options={productSelectOptions}
+                    value={selectedProductOptions}
+                    onChange={handleMultiSelectChange}
+                    placeholder={loadingProducts ? "Loading products..." : "Select products..."}
+                    className="text-sm mt-0.5"
+                    isLoading={loadingProducts}
+                    noOptionsMessage={() => loadingProducts ? "Loading products..." : "No products found"}
+                    styles={{
+                      control: (base) => ({
+                        ...base,
+                        minHeight: '38px',
+                        borderColor: '#e2e8f0',
+                        borderRadius: '0.5rem',
+                        '&:hover': { borderColor: '#e2e8f0' },
+                      }),
+                      multiValue: (base) => ({
+                        ...base,
+                        backgroundColor: '#eff6ff',
+                        borderRadius: '0.375rem',
+                      }),
+                      multiValueLabel: (base) => ({
+                        ...base,
+                        color: '#1e40af',
+                        fontWeight: '500',
+                        fontSize: '0.75rem',
+                      }),
+                      multiValueRemove: (base) => ({
+                        ...base,
+                        color: '#3b82f6',
+                        '&:hover': {
+                          backgroundColor: '#dbeafe',
+                          color: '#1e40af',
+                        },
+                      }),
+                    }}
+                  />
+                  {productInterested.length > 0 && (
+                    <p className="text-[10px] text-slate-400 font-medium">
+                      {productInterested.length} product{productInterested.length > 1 ? 's' : ''} selected
+                    </p>
+                  )}
+
+                  {/* Small Box of Products Selling Client with Price */}
+                  {selectedProductsInfo.length > 0 && (
+                    <div className="mt-3 p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl shadow-2xs">
+                      <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-200/60">
+                        <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+                          Selected Products & Unit Prices
+                        </span>
+                        <span className="text-[11px] font-semibold text-slate-500">
+                          {selectedProductsInfo.length} product{selectedProductsInfo.length > 1 ? 's' : ''}
+                        </span>
+                      </div>
+                      <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                        {selectedProductsInfo.map((prod, idx) => (
+                          <div key={idx} className="flex items-center justify-between text-xs py-1.5 px-3 bg-white rounded-lg border border-slate-150 shadow-2xs">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-slate-800">{prod.name}</span>
+                              {prod.code && (
+                                <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-mono">
+                                  {prod.code}
+                                </span>
+                              )}
+                            </div>
+                            <span className="font-bold text-slate-700">
+                              ₹{prod.unit_price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-2.5 pt-2 border-t border-slate-200 flex justify-between items-center text-xs font-bold text-slate-900">
+                        <span>Total Product Price:</span>
+                        <span className="text-blue-700 text-sm">
+                          ₹{calculatedTotalPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Followup Amount Input Field */}
+                  <div className="mt-4">
+                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                      Follow-up Amount (₹)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="amount"
+                      value={formData.amount}
+                      onChange={handleChange}
+                      placeholder="0.00"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-sm"
+                    />
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Auto-calculated sum of selected product prices. You can enter a custom value if needed.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* DISCUSSION NOTES */}
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 pb-1 border-b border-slate-200">
+                  DISCUSSION NOTES
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                      Follow-up Summary / Key Discussion Points <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      name="discussion_summary"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-sm"
+                      rows={3}
+                      value={formData.discussion_summary}
+                      onChange={handleChange}
+                      placeholder="What was discussed? Key pain points shared, objections raised, decisions taken..."
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                      Commitment by Client
+                    </label>
+                    <textarea
+                      name="commitment_client"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-sm"
+                      rows={2}
+                      value={formData.commitment_client}
+                      onChange={handleChange}
+                      placeholder="e.g. Will share PO by Friday, Arranging technical team..."
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                      Commitment by Us
+                    </label>
+                    <textarea
+                      name="commitment_us"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-sm"
+                      rows={2}
+                      value={formData.commitment_us}
+                      onChange={handleChange}
+                      placeholder="e.g. Sending revised proposal, Escalating discount request..."
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* QUALIFYING QUESTIONS */}
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 pb-1 border-b border-slate-200">
+                  QUALIFYING QUESTIONS
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                      Decision Maker Contacted?
+                    </label>
+                    <select
+                      name="decision_maker_contacted"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-sm h-[38px]"
+                      value={formData.decision_maker_contacted}
+                      onChange={handleChange}
+                    >
+                      <option value="">— Select —</option>
+                      {decisionMakerOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                      Timeline / Urgency
+                    </label>
+                    <select
+                      name="timeline_urgency"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-sm h-[38px]"
+                      value={formData.timeline_urgency}
+                      onChange={handleChange}
+                    >
+                      <option value="">— Select —</option>
+                      {timelineOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                      Pain Point / Problem Urgency
+                    </label>
+                    <select
+                      name="pain_point_urgency"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-sm h-[38px]"
+                      value={formData.pain_point_urgency}
+                      onChange={handleChange}
+                    >
+                      <option value="">Select</option>
+                      {painPointOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                      Budget Status
+                    </label>
+                    <select
+                      name="budget_status"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-sm h-[38px]"
+                      value={formData.budget_status}
+                      onChange={handleChange}
+                    >
+                      <option value="">— Select —</option>
+                      {budgetStatusOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                      Competition (Other Vendors Evaluated)
+                    </label>
+                    <input
+                      type="text"
+                      name="competition"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-sm"
+                      value={formData.competition}
+                      onChange={handleChange}
+                      placeholder="e.g. SAP, Zoho, Tally, None"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                      Number of Users (Confirmed)
+                    </label>
+                    <input
+                      type="text"
+                      name="number_of_users"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-sm"
+                      value={formData.number_of_users}
+                      onChange={handleChange}
+                      placeholder="Number of users..."
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* NEXT FOLLOW-UP PLANNING */}
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 pb-1 border-b border-slate-200">
+                  NEXT FOLLOW-UP PLANNING
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                      Next Follow-up Date <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      name="next_followup_date"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-sm"
+                      value={formData.next_followup_date}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                      Next Follow-up Mode
+                    </label>
+                    <select
+                      name="next_followup_mode"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-sm h-[38px]"
+                      value={formData.next_followup_mode}
+                      onChange={handleChange}
+                    >
+                      <option value="">Select Mode</option>
+                      {followupModeOptions.map((mode) => (
+                        <option key={mode.value} value={mode.value}>
+                          {mode.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                    Additional Remarks
+                  </label>
+                  <textarea
+                    name="additional_remarks"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-sm"
+                    rows={2}
+                    value={formData.additional_remarks}
+                    onChange={handleChange}
+                    placeholder="Any other notes for next executive or management..."
+                  />
+                </div>
+              </div>
+
+              {/* Quotation & Status */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                <div className="flex items-center gap-2 pt-2">
+                  <input
+                    type="checkbox"
+                    name="ready_to_send_quotation"
+                    checked={formData.ready_to_send_quotation}
+                    onChange={handleChange}
+                    className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
+                  />
+                  <label className="text-xs font-semibold text-slate-600 cursor-pointer select-none">
+                    Ready to send a quotation?
+                  </label>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                    Status
+                  </label>
+                  <select
+                    name="status"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-sm h-[38px]"
+                    value={formData.status}
+                    onChange={handleChange}
+                  >
+                    {statusOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* FAQ Section */}
+              {faqList.length > 0 && (
+                <div className="border-t border-slate-100 pt-5 mt-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-base font-bold text-slate-900">Standard Questions</h3>
+                    {faqLoading && <span className="text-xs text-slate-400 font-semibold">Loading…</span>}
+                  </div>
+                  <div className="space-y-4">
+                    {faqList.map((faq) => (
+                      <div key={faq.id}>
+                        <label className="text-xs font-semibold text-slate-600 mb-1.5 block">
+                          {faq.question}
+                        </label>
+                        <textarea
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-sm"
+                          rows={2}
+                          value={faqAnswers[faq.id] ?? ""}
+                          onChange={(e) =>
+                            setFaqAnswers((prev) => ({
+                              ...prev,
+                              [faq.id]: e.target.value,
+                            }))
+                          }
+                          placeholder="Enter your answer..."
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Buttons */}
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 mt-4">
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm"
+                  disabled={loading}
+                >
+                  {loading ? (followup ? "Updating..." : "Saving...") : (followup ? "Update" : "Save Follow-up")}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+
+    </>
+  );
+}

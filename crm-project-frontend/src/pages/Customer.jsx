@@ -1,0 +1,934 @@
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+import { useSearchParams } from "react-router-dom";
+import Base from "../components/Base";
+import TableView from "../components/TableView";
+import { MdEdit, MdDelete, MdOutlineRemoveRedEye, MdFilterList, MdZoomIn, MdMail, MdDownload, MdAddLocationAlt } from "react-icons/md";
+import Swal from "sweetalert2";
+import AddCustomerForm from "../components/customers/AddCustomerForm";
+import AddSiteModal from "../components/customers/AddSiteModal";
+import CustomerDetailView from "../components/customers/CustomerDetailView";
+import AdvancedTableFilter from "../components/AdvancedTableFilter";
+import RecordViewer from "../components/RecordViewer";
+import SendMessageModal from "../components/templates/SendMessageModal";
+import { useUserRole } from '../hooks/useAuth';
+import { exportToExcel, formatExcelDate } from "../utils/excelExport";
+
+export default function Customer() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const BASE_API = import.meta.env.VITE_BASE_API_URL ?? "http://127.0.0.1:8000";
+  const API_URL = `${BASE_API}/lead/customer/`;
+
+  const { hasPermission } = useUserRole(BASE_API);
+  const canCreateCustomer = hasPermission("customers", "create");
+  const canEditCustomer = hasPermission("customers", "edit");
+  const canDeleteCustomer = hasPermission("customers", "delete");
+
+  const [rows, setRows] = useState([]);
+  const [allRows, setAllRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const [showCustomerForm, setShowCustomerForm] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState(null);
+  const [viewingCustomer, setViewingCustomer] = useState(null);
+  const [showCustomerDetails, setShowCustomerDetails] = useState(false);
+
+  // Add Site Modal state
+  const [showAddSiteModal, setShowAddSiteModal] = useState(false);
+  const [siteTargetCustomer, setSiteTargetCustomer] = useState(null);
+
+  // Record Viewer state
+  const [viewOpen, setViewOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+
+  // Send Message Modal state
+  const [sendMessageModalOpen, setSendMessageModalOpen] = useState(false);
+  const [selectedMessageRecord, setSelectedMessageRecord] = useState(null);
+
+  // Filter state
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filteredData, setFilteredData] = useState([]);
+  const [productList, setProductList] = useState([]);
+
+  const [highlightedCustomerId, setHighlightedCustomerId] = useState(null);
+  // Restore viewing customer from URL query param if present, then immediately clear URL bar
+  useEffect(() => {
+    const viewId = searchParams.get("viewId") || searchParams.get("view");
+    if (viewId && allRows.length > 0) {
+      const match = allRows.find((r) => String(r.id) === String(viewId));
+      if (match) {
+        setViewingCustomer(match);
+      }
+      if (window.location.search) {
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    }
+  }, [searchParams, allRows]);
+
+  const handleCloseCustomer = () => {
+    setViewingCustomer(null);
+    setShowCustomerDetails(false);
+    if (window.location.search) {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  };
+
+
+  // Highlight target customer row and paginate when redirected from notification (without auto-opening record viewer)
+  useEffect(() => {
+    const targetCustomerId = searchParams.get("customerId") || searchParams.get("id");
+    if (targetCustomerId) {
+      setHighlightedCustomerId(targetCustomerId);
+      if (allRows.length > 0) {
+        const itemIdx = allRows.findIndex((r) => String(r.id) === String(targetCustomerId));
+        if (itemIdx !== -1) {
+          const pageNum = Math.floor(itemIdx / itemsPerPage) + 1;
+          setCurrentPage(pageNum);
+        }
+      }
+      if (window.location.search) {
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    }
+  }, [searchParams, allRows, itemsPerPage]);
+
+  // Clear highlight and remove query parameters when user clicks anywhere on screen
+  useEffect(() => {
+    if (!highlightedCustomerId) return;
+
+    const handleScreenClick = () => {
+      if (window._lastNotificationClickTime && Date.now() - window._lastNotificationClickTime < 600) {
+        return;
+      }
+      setHighlightedCustomerId(null);
+      if (window.location.search) {
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      window.addEventListener("click", handleScreenClick, { capture: true });
+      window.addEventListener("pointerdown", handleScreenClick, { capture: true });
+    }, 400);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("click", handleScreenClick, { capture: true });
+      window.removeEventListener("pointerdown", handleScreenClick, { capture: true });
+    };
+  }, [highlightedCustomerId]);
+
+  const token = useMemo(() => (
+    localStorage.getItem("access") ||
+    localStorage.getItem("access_token") ||
+    localStorage.getItem("token") ||
+    localStorage.getItem("authToken") ||
+    ""
+  ), []);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const url = `${API_URL}?limit=1000`;
+      const res = await fetch(url, {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (!res.ok) {
+        const body = await res.text().catch(() => "");
+        throw new Error(`${res.status} ${res.statusText}${body ? " — " + body : ""}`);
+      }
+
+      const data = await res.json();
+      const results = Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : [];
+
+      const normalized = results.map((r) => ({
+        ...r,
+        sales_executive_name:
+          r.sales_executive_details?.full_name ||
+          r.sales_executive_details?.first_name ||
+          (r.sales_executive ? String(r.sales_executive) : ""),
+      }));
+
+      setAllRows(normalized);
+      setFilteredData(normalized);
+      setRows(normalized);
+      setTotalCount(normalized.length);
+      setTotalPages(Math.max(1, Math.ceil(normalized.length / itemsPerPage)));
+    } catch (err) {
+      setError(err.message || String(err));
+      setRows([]);
+      setAllRows([]);
+      setFilteredData([]);
+      setTotalCount(0);
+      setTotalPages(1);
+    } finally {
+      setLoading(false);
+    }
+  }, [API_URL, token, itemsPerPage]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Update pagination when filtered data changes
+  useEffect(() => {
+    setRows(filteredData);
+    setTotalCount(filteredData.length);
+    setTotalPages(Math.max(1, Math.ceil(filteredData.length / itemsPerPage)));
+    if (!window.location.search.includes("customerId") && !window.location.search.includes("id=") && !window.location.search.includes("highlight")) {
+      setCurrentPage(1);
+    }
+  }, [filteredData, itemsPerPage]);
+
+  // Get current page data
+  const getCurrentPageData = useCallback(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return rows.slice(startIndex, startIndex + itemsPerPage);
+  }, [rows, currentPage, itemsPerPage]);
+
+  const handleDelete = async (id) => {
+    const res = await Swal.fire({
+      title: "Delete customer?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Delete",
+      confirmButtonColor: "#e11d48",
+      cancelButtonColor: "#64748b"
+    });
+    if (!res.isConfirmed) return;
+
+    try {
+      const resp = await fetch(`${API_URL}${id}/`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!resp.ok) {
+        const text = await resp.text().catch(() => "");
+        throw new Error(`${resp.status} ${resp.statusText} — ${text}`);
+      }
+      Swal.fire({ icon: "success", text: "Customer deleted", timer: 1000, showConfirmButton: false });
+      fetchData();
+    } catch (err) {
+      Swal.fire({ icon: "error", title: "Delete failed", text: err.message || String(err) });
+    }
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  useEffect(() => {
+    const headers = {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+    fetch(`${BASE_API}/product/products/?limit=1000`, { headers })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        const list = Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : [];
+        setProductList(list);
+      })
+      .catch(() => setProductList([]));
+  }, [BASE_API, token]);
+
+  const getProductNames = (productItems) => {
+    if (!productItems || productItems.length === 0) return "-";
+    const rawList = Array.isArray(productItems) ? productItems : [productItems];
+    const names = rawList
+      .map((item) => {
+        let val = typeof item === "object" && item !== null ? (item.product || item.name || "") : String(item || "");
+        val = val.trim();
+        if (/^\d+$/.test(val) && productList.length > 0) {
+          const found = productList.find((p) => String(p.id) === val);
+          if (found) val = found.name;
+          else val = "";
+        } else if (/^\d+$/.test(val)) {
+          val = "";
+        }
+        return val;
+      })
+      .filter(Boolean);
+    return names.length > 0 ? names.join(", ") : "-";
+  };
+
+  const getServiceNames = (serviceIds) => {
+    if (!serviceIds || serviceIds.length === 0) return "-";
+    return `${serviceIds.length} service(s)`;
+  };
+
+  // Get status color
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'active': return 'bg-emerald-100 text-emerald-700';
+      case 'prospect': return 'bg-blue-100 text-blue-700';
+      case 'inactive': return 'bg-red-100 text-red-700';
+      case 'on_hold': return 'bg-yellow-100 text-yellow-700';
+      default: return 'bg-slate-100 text-slate-600';
+    }
+  };
+
+  const handleConvertToProject = async (customer) => {
+    if (!customer || !customer.id) return;
+
+    const result = await Swal.fire({
+      title: "Add to Project?",
+      text: `This will create a project entry for "${customer.name || customer.company_name || 'Customer'}" with matching details.`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Add to Project",
+      cancelButtonText: "Cancel"
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const response = await fetch(`${API_URL}${customer.id}/convert-to-project/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to convert customer to project");
+      }
+
+      Swal.fire({
+        icon: "success",
+        title: "Success!",
+        text: data.message || "Customer added to Project successfully",
+        timer: 2000,
+        showConfirmButton: false
+      });
+
+      fetchData();
+      setProjectCustomer(customer);
+      setShowProjectForm(true);
+    } catch (err) {
+      console.error("Convert to project error:", err);
+      setProjectCustomer(customer);
+      setShowProjectForm(true);
+    }
+  };
+
+  // Updated columns matching new Customer model
+  const columns = [
+    {
+      key: "sr",
+      label: "#",
+      render: (_, idx) => <span className="text-slate-400 font-medium text-[10px] py-0 block">{(currentPage - 1) * itemsPerPage + (idx + 1)}</span>,
+      className: "w-8 text-center"
+    },
+    {
+      key: "customer_code",
+      label: "Code",
+      render: (r) => (
+        <div className="py-0" title={r.customer_code || ""}>
+          <span className="font-mono text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded tracking-wider whitespace-nowrap">
+            {r.customer_code || "-"}
+          </span>
+        </div>
+      ),
+      className: "w-16 whitespace-nowrap"
+    },
+    {
+      key: "name",
+      label: "Company Name",
+      render: (r) => (
+        <span
+          className="text-slate-800 font-medium text-xs tracking-tight py-0 block max-w-[150px] truncate mx-auto cursor-default"
+          title={r.name || ""}
+        >
+          {r.name || "-"}
+        </span>
+      ),
+      className: "min-w-[120px] max-w-[160px]"
+    },
+    {
+      key: "contact_person",
+      label: "Contact Person",
+      render: (r) => (
+        <span
+          className="text-slate-600 text-xs py-0 block max-w-[130px] truncate mx-auto cursor-default"
+          title={r.contact_person || ""}
+        >
+          {r.contact_person || "-"}
+        </span>
+      ),
+      className: "w-32 max-w-[140px]"
+    },
+    {
+      key: "sales_executive",
+      label: "Sales Executive",
+      render: (r) => (
+        <span
+          className="text-slate-600 text-xs py-0 block max-w-[120px] truncate mx-auto cursor-default"
+          title={r.sales_executive_details?.full_name || ""}
+        >
+          {r.sales_executive_details?.full_name || "-"}
+        </span>
+      ),
+      className: "w-28 max-w-[130px]"
+    },
+    {
+      key: "contact_number",
+      label: "Mobile",
+      render: (r) => <span className="text-slate-700 text-xs font-medium whitespace-nowrap py-0 block">{r.contact_number || "-"}</span>,
+      className: "w-28 whitespace-nowrap"
+    },
+    {
+      key: "email",
+      label: "Email",
+      render: (r) => r.email ? (
+        <a href={`mailto:${r.email}`} className="text-blue-600 hover:underline text-xs py-0 inline-block truncate max-w-[120px]" title={r.email}>
+          {r.email}
+        </a>
+      ) : <span className="text-slate-400 text-xs py-0 block">-</span>,
+      className: "min-w-[100px]"
+    },
+    {
+      key: "city",
+      label: "City",
+      render: (r) => (
+        <span
+          className="text-slate-600 text-xs py-0 block max-w-[100px] truncate mx-auto cursor-default"
+          title={r.city || ""}
+        >
+          {r.city || "-"}
+        </span>
+      ),
+      className: "w-24 max-w-[110px]"
+    },
+    {
+      key: "state",
+      label: "State",
+      render: (r) => (
+        <span
+          className="text-slate-600 text-xs py-0 block max-w-[100px] truncate mx-auto cursor-default"
+          title={r.state || ""}
+        >
+          {r.state || "-"}
+        </span>
+      ),
+      className: "w-24 max-w-[110px]"
+    },
+    {
+      key: "customer_status",
+      label: "Status",
+      render: (r) => (
+        <div className="py-0">
+          <span
+            className={`text-[10px] font-medium px-2.5 py-0.5 rounded-full uppercase tracking-wider whitespace-nowrap inline-block ${getStatusColor(r.customer_status)}`}
+            title={r.customer_status || "Prospect"}
+          >
+            {r.customer_status || "Prospect"}
+          </span>
+        </div>
+      ),
+      className: "w-24 whitespace-nowrap"
+    },
+    {
+      key: "created_at",
+      label: "Created",
+      render: (r) => <span className="text-slate-400 text-[10px] whitespace-nowrap py-0 block" title={formatDate(r.created_at)}>{formatDate(r.created_at)}</span>,
+      className: "w-24 whitespace-nowrap"
+    },
+  ];
+
+  const actionsRenderer = useCallback((row) => (
+    <div className="flex items-center justify-center gap-1.5 py-0 whitespace-nowrap">
+      {/* Record Viewer Button */}
+      <button
+        onClick={() => {
+          setSelectedCustomer(row);
+          setViewOpen(true);
+        }}
+        className="p-1 bg-slate-100 hover:bg-purple-100 text-slate-600 hover:text-purple-700 rounded transition-all duration-150 text-sm shadow-sm"
+        title="View Full Record"
+      >
+        <MdZoomIn />
+      </button>
+
+      {/* View Details Button */}
+      <button
+        onClick={() => {
+          setViewingCustomer(row);
+        }}
+        className="p-1 bg-slate-100 hover:bg-sky-100 text-slate-600 hover:text-sky-700 rounded transition-all duration-150 text-sm shadow-sm cursor-pointer"
+        title="View Details"
+      >
+        <MdOutlineRemoveRedEye />
+      </button>
+
+      {/* Add Site Button */}
+      <button
+        onClick={() => {
+          setSiteTargetCustomer(row);
+          setShowAddSiteModal(true);
+        }}
+        className="p-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 hover:text-emerald-700 rounded transition-all duration-150 text-sm shadow-sm cursor-pointer"
+        title="Add Site for this Customer"
+      >
+        <MdAddLocationAlt />
+      </button>
+
+      <button
+        onClick={() => {
+          setSelectedMessageRecord(row);
+          setSendMessageModalOpen(true);
+        }}
+        className="p-1 bg-slate-100 hover:bg-sky-100 text-slate-600 hover:text-sky-700 rounded transition-all duration-150 text-sm shadow-sm cursor-pointer"
+        title="Send Email / WhatsApp"
+      >
+        <MdMail />
+      </button>
+
+      {canEditCustomer && (
+        <button
+          onClick={() => {
+            setEditingCustomer(row);
+            setShowCustomerForm(true);
+          }}
+          className="p-1 bg-amber-50 hover:bg-amber-100 text-amber-600 hover:text-amber-700 rounded transition-all duration-150 text-sm shadow-sm cursor-pointer"
+          title="Edit"
+        >
+          <MdEdit />
+        </button>
+      )}
+
+      {canDeleteCustomer && (
+        <button
+          onClick={() => handleDelete(row.id)}
+          className="p-1 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 rounded transition-all duration-150 text-sm shadow-sm cursor-pointer"
+          title="Delete"
+        >
+          <MdDelete />
+        </button>
+      )}
+    </div>
+  ), [handleDelete, canEditCustomer, canDeleteCustomer]);
+
+  // Customer Details Modal - Updated with new fields
+  const CustomerDetailsModal = ({ customer, open, onClose }) => {
+    if (!open || !customer) return null;
+
+    return (
+      <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 overflow-y-auto p-4">
+        <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 relative">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-50 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          <h2 className="text-xl font-bold text-slate-900 mb-4">Customer Details</h2>
+
+          {/* Customer Code Badge */}
+          <div className="mb-4">
+            <span className="text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+              {customer.customer_code || "C001"}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left Column - Company Info */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 pb-2">
+                COMPANY INFORMATION
+              </h3>
+              <div>
+                <span className="text-xs font-medium text-slate-500">Company Name</span>
+                <p className="text-sm text-slate-800 font-medium">{customer.name || "-"}</p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500">Contact Person</span>
+                <p className="text-sm text-slate-700">{customer.contact_person || "-"}</p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500">Designation</span>
+                <p className="text-sm text-slate-700">{customer.designation || "-"}</p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500">Mobile</span>
+                <p className="text-sm text-slate-700">{customer.contact_number || "-"}</p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500">Email</span>
+                <p className="text-sm text-slate-700">
+                  {customer.email ? (
+                    <a href={`mailto:${customer.email}`} className="text-blue-600 hover:underline">
+                      {customer.email}
+                    </a>
+                  ) : "-"}
+                </p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500">Website</span>
+                <p className="text-sm text-slate-700">
+                  {customer.website ? (
+                    <a href={customer.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                      {customer.website}
+                    </a>
+                  ) : "-"}
+                </p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500">Industry Category</span>
+                <p className="text-sm text-slate-700">{customer.industry_category_display || customer.industry_category || "-"}</p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500">Lead Source</span>
+                <p className="text-sm text-slate-700">{customer.lead_source_display || customer.lead_source || "-"}</p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500">GST Number</span>
+                <p className="text-sm text-slate-700 font-mono">{customer.gst_number || "-"}</p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500">PAN Number</span>
+                <p className="text-sm text-slate-700 font-mono">{customer.pan_number || customer.pan || "-"}</p>
+              </div>
+            </div>
+
+            {/* Right Column - Commercial & Address */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 pb-2">
+                COMMERCIAL DETAILS
+              </h3>
+              <div>
+                <span className="text-xs font-medium text-slate-500">Product Purchased</span>
+                <p className="text-sm text-slate-700">{getProductNames(customer.product_purchased)}</p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500">Service Package</span>
+                <p className="text-sm text-slate-700">{getServiceNames(customer.service_package)}</p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500">Payment Terms</span>
+                <p className="text-sm text-slate-700">{customer.payment_terms_display || customer.payment_terms || "-"}</p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500">Project Value</span>
+                <p className="text-sm text-slate-700">{customer.project_value ? `₹${customer.project_value}` : "-"}</p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500">Sales Executive</span>
+                <p className="text-sm text-slate-700">{customer.sales_executive_details?.full_name || "-"}</p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500">Customer Status</span>
+                <p className="text-sm">
+                  <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full uppercase tracking-wider ${getStatusColor(customer.customer_status)}`}>
+                    {customer.customer_status_display || customer.customer_status || "Prospect"}
+                  </span>
+                </p>
+              </div>
+
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 pb-2 mt-2">
+                AMC DETAILS
+              </h3>
+              <div>
+                <span className="text-xs font-medium text-slate-500">AMC Start Date</span>
+                <p className="text-sm text-slate-700">{customer.amc_start_date || "-"}</p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500">AMC End Date</span>
+                <p className="text-sm text-slate-700">{customer.amc_end_date || "-"}</p>
+              </div>
+
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 pb-2 mt-2">
+                ADDRESS
+              </h3>
+              <div>
+                <span className="text-xs font-medium text-slate-500">Billing Address</span>
+                <p className="text-sm text-slate-700">{customer.billing_address || customer.address || "-"}</p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500">City</span>
+                <p className="text-sm text-slate-700">{customer.city || "-"}</p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500">State</span>
+                <p className="text-sm text-slate-700">{customer.state || "-"}</p>
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-500">Pin Code</span>
+                <p className="text-sm text-slate-700">{customer.pin_code || "-"}</p>
+              </div>
+
+              <div>
+                <span className="text-xs font-medium text-slate-500">Created At</span>
+                <p className="text-sm text-slate-700">{formatDate(customer.created_at)}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-slate-100 flex justify-end gap-2">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-200 transition-colors cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const currentPageData = getCurrentPageData();
+
+  const handleExportExcel = () => {
+    const dataToExport = rows && rows.length > 0 ? rows : allRows;
+    const formatted = dataToExport.map((r, idx) => ({
+      "Sr No": idx + 1,
+      "Customer Code": r.customer_code || `C${String(r.id).padStart(3, "0")}`,
+      "Company Name": r.name || "-",
+      "Contact Person": r.contact_person || "-",
+      "Contact Number": r.contact_number || "-",
+      "Email Address": r.email || "-",
+      "Industry Category": r.industry_category_display || r.industry_category || "-",
+      "Lead Source": r.lead_source_display || r.lead_source || "-",
+      "GST Number": r.gst_number || "-",
+      "PAN Number": r.pan_number || "-",
+      "MSME Number": r.msme_number || "-",
+      "Billing Address": r.billing_address || "-",
+      "City": r.city || "-",
+      "State": r.state || "-",
+      "Pin Code": r.pin_code || "-",
+      "Products Purchased": Array.isArray(r.product_purchased)
+        ? r.product_purchased.map((p) => (typeof p === "object" ? p.name || p.product || "" : p)).filter(Boolean).join(", ")
+        : (r.product_purchased || "-"),
+      "Project Value (₹)": r.project_value ? parseFloat(r.project_value) : 0,
+      "Payment Terms": r.payment_terms_display || r.payment_terms || "-",
+      "AMC Start Date": formatExcelDate(r.amc_start_date),
+      "AMC End Date": formatExcelDate(r.amc_end_date),
+      "Customer Status": r.customer_status_display || r.customer_status || "-",
+      "Created At": formatExcelDate(r.created_at),
+    }));
+
+    exportToExcel({
+      data: formatted,
+      fileName: "Customers",
+      sheetName: "Customers",
+    });
+  };
+
+  return (
+    <Base title="">
+      <div className="w-full space-y-4 font-sans antialiased text-slate-800 pt-1 sm:pt-2 px-1">
+        {viewingCustomer ? (
+          <CustomerDetailView
+            customer={viewingCustomer}
+            onBack={handleCloseCustomer}
+            onEdit={(cust) => {
+              setEditingCustomer(cust);
+              setShowCustomerForm(true);
+            }}
+            onRefresh={() => {
+              fetchData();
+            }}
+            baseApi={BASE_API}
+            token={token}
+            formatDate={formatDate}
+            canEdit={canEditCustomer}
+            canDelete={canDeleteCustomer}
+            productList={productList}
+          />
+        ) : (
+          <>
+        {/* HEADER BLOCK WITH BLUE ACCENT */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-1 pt-1">
+          <div className="flex items-center gap-3">
+            <span className="w-1.5 h-10 bg-sky-600 rounded-full block"></span>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-tight">Customers</h1>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {loading ? "Synchronizing core accounts..." : `Total ${totalCount} records identified across channels`}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            <button
+              onClick={() => setIsFilterOpen(true)}
+              className="px-2.5 sm:px-3.5 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-xs whitespace-nowrap cursor-pointer"
+            >
+              <MdFilterList className="text-slate-400" />
+              Filter
+            </button>
+            <button
+              onClick={handleExportExcel}
+              className="px-2.5 sm:px-3.5 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors flex items-center gap-1.5 shadow-xs whitespace-nowrap cursor-pointer"
+              title="Export Customers to Excel"
+            >
+              <MdDownload className="text-emerald-600 text-sm" />
+              Export
+            </button>
+            {canCreateCustomer && (
+              <button
+                onClick={() => {
+                  setEditingCustomer(null);
+                  setShowCustomerForm(true);
+                }}
+                className="px-3 sm:px-4 py-1.5 bg-sky-600 text-white text-xs font-semibold rounded-lg hover:bg-sky-700 transition-colors shadow-2xs shadow-sky-500/10 flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                </svg>
+                Add Customer
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* CONTAINER FOR TABLE WRAPPER WITH BORDER/SHADOW */}
+        <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <TableView
+            columns={columns}
+            rows={currentPageData}
+            loading={loading}
+            error={error}
+            page={currentPage}
+            totalPages={totalPages}
+            onPageChange={(p) => {
+              if (p < 1 || p > totalPages) return;
+              setCurrentPage(p);
+            }}
+            pageSize={itemsPerPage}
+            actions={actionsRenderer}
+            emptyMessage="No customer records matches the active criteria filters"
+            rowClassName={(row) => highlightedCustomerId && String(row.id) === String(highlightedCustomerId) ? "!bg-blue-100/90 font-bold border-l-4 border-l-blue-600 ring-2 ring-blue-400/60 shadow-md animate-pulse" : "hover:bg-slate-50/80 transition-colors duration-150"}
+          />
+        </div>
+          </>
+        )}
+      </div>
+
+      {/* FILTER DRAWER - PORTAL TO BODY PREVENTS LAYOUT PUSH AND WHITE BOTTOM STRIP */}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <>
+            {isFilterOpen && (
+              <div
+                className="fixed inset-0 w-screen h-screen bg-black/40 z-[9999]"
+                onClick={() => setIsFilterOpen(false)}
+              />
+            )}
+
+            <div
+              className={`fixed top-0 right-0 h-screen w-full max-w-[380px] sm:w-[380px] bg-white shadow-2xl z-[10000] flex flex-col transition-transform duration-300 ease-in-out ${
+                isFilterOpen ? "translate-x-0" : "translate-x-full"
+              }`}
+            >
+              <div className="flex items-center justify-between p-5 border-b border-slate-200 flex-shrink-0">
+                <h3 className="text-lg font-bold text-slate-900">Filters</h3>
+                <button
+                  onClick={() => setIsFilterOpen(false)}
+                  className="text-slate-400 hover:text-slate-600 text-2xl font-bold p-1 cursor-pointer"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="p-5 overflow-y-auto flex-1">
+                <AdvancedTableFilter
+                  data={allRows}
+                  onFilter={setFilteredData}
+                  setItemsPerPage={setItemsPerPage}
+                  columns={columns}
+                />
+              </div>
+            </div>
+          </>,
+          document.body
+        )}
+
+      {/* RECORD VIEWER - Slides in from right */}
+      <RecordViewer
+        isOpen={viewOpen}
+        onClose={() => {
+          setViewOpen(false);
+          setSelectedCustomer(null);
+        }}
+        record={selectedCustomer}
+        title="Customer Details"
+      />
+
+      {/* Add/Edit Customer Form */}
+      {showCustomerForm && (
+        <AddCustomerForm
+          open={showCustomerForm}
+          onClose={() => {
+            setShowCustomerForm(false);
+            setEditingCustomer(null);
+          }}
+          baseApi={BASE_API}
+          customer={editingCustomer}
+          onSuccess={() => {
+            fetchData();
+            setEditingCustomer(null);
+            setShowCustomerForm(false);
+          }}
+        />
+      )}
+
+
+
+      {/* Send Message Modal */}
+      <SendMessageModal
+        isOpen={sendMessageModalOpen}
+        onClose={() => {
+          setSendMessageModalOpen(false);
+          setSelectedMessageRecord(null);
+        }}
+        category="customer"
+        recordData={selectedMessageRecord}
+        onSuccess={() => {}}
+      />
+
+      {/* Add Site Modal */}
+      {showAddSiteModal && (
+        <AddSiteModal
+          open={showAddSiteModal}
+          onClose={() => {
+            setShowAddSiteModal(false);
+            setSiteTargetCustomer(null);
+          }}
+          customer={siteTargetCustomer}
+          baseApi={BASE_API}
+          productList={productList}
+          onSuccess={() => {
+            fetchData();
+          }}
+        />
+      )}
+    </Base>
+  );
+}

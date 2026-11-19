@@ -1,0 +1,962 @@
+{% load static %}
+{% load humanize %}
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Quotation {{ quotation_no }} ({{ version_no }})</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin-top: 48px;
+            margin-bottom: 2.6cm;
+            margin-left: 0;
+            margin-right: 0;
+
+            @top-center {
+                content: element(pageHeader);
+                width: 100%;
+                vertical-align: top;
+                padding: 0;
+                margin: 0;
+            }
+
+            @bottom-center {
+                content: element(pageFooter);
+                width: 100%;
+                vertical-align: bottom;
+                padding: 0;
+                margin: 0;
+            }
+        }
+
+        tr {
+            page-break-inside: avoid;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            font-size: 10.5px;
+            margin: 0;
+            padding: 0;
+            line-height: 1.45;
+            color: #0f172a;
+            background-color: #ffffff;
+            width: 100%;
+        }
+
+        /* REPEATING TOP HEADER FOR EVERY PAGE USING RUNNING ELEMENT */
+        #pageHeader {
+            position: running(pageHeader);
+            width: 100%;
+            display: block;
+        }
+
+        /* REPEATING BOTTOM FOOTER FOR EVERY PAGE USING RUNNING ELEMENT */
+        #pageFooter {
+            position: running(pageFooter);
+            width: 100%;
+            display: block;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page-number::after {
+            content: counter(page);
+        }
+
+        .footer-contact a {
+            color: #3b7b99;
+            text-decoration: none;
+        }
+
+        .footer-timing {
+            font-size: 9px;
+            font-weight: bold;
+            color: #3b7b99;
+            letter-spacing: 0.2px;
+            margin-top: 2px;
+            line-height: 1.35;
+        }
+
+        /* MAIN CONTENT AREA */
+        .pdf-container {
+            width: 100%;
+        }
+
+        .main-content {
+            padding: 10px 32px 0 32px;
+        }
+
+        /* HEADER BILLING / METADATA TWO-COLUMN SECTION */
+        .header-meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 6px;
+        }
+
+        .header-meta-table td {
+            vertical-align: top;
+        }
+
+        /* CLIENT / BILL TO SECTION (UNBOXED CLEAN TEXT) */
+        .client-section {
+            margin-bottom: 0;
+        }
+
+        .client-company {
+            font-size: 13px;
+            font-weight: bold;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .client-details {
+            font-size: 10.5px;
+            color: #1e293b;
+            font-weight: 500;
+            line-height: 1.45;
+        }
+
+        /* TITLE & METADATA SECTION */
+        .quotation-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #3b7b99;
+            margin-bottom: 6px;
+            text-align: right;
+            letter-spacing: -0.2px;
+        }
+
+        .meta-details-list {
+            text-align: right;
+            font-size: 10.5px;
+            line-height: 1.5;
+        }
+
+        .meta-line {
+            margin-bottom: 3px;
+        }
+
+        .meta-label-inline {
+            font-size: 10.5px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .meta-value-inline {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* SUBJECT / REQUIREMENT SECTION */
+        .subject-section {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            margin-top: 10px;
+            margin-bottom: 14px;
+        }
+
+        .subject-header {
+            background-color: #e8eff4;
+            border-bottom: 1px solid #cbd5e1;
+            padding: 6px 10px;
+            font-size: 9.5px;
+            font-weight: 700;
+            color: #0f172a;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .subject-text {
+            padding: 8px 10px;
+            font-size: 10.5px;
+            font-weight: 600;
+            color: #0f172a;
+            line-height: 1.35;
+        }
+
+        /* ITEMS TABLE SECTION */
+        .items-section {
+            margin-bottom: 15px;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .items-table th {
+            color: #0f172a;
+            padding: 9px 10px;
+            font-weight: 700;
+            font-size: 11px;
+            background-color: #e8eff4;
+            border: 1px solid #cbd5e1;
+            text-align: left;
+        }
+
+        .items-table th.text-right,
+        .items-table td.text-right {
+            text-align: right;
+        }
+
+        .items-table th.text-center,
+        .items-table td.text-center {
+            text-align: center;
+        }
+
+        .items-table th.text-left,
+        .items-table td.text-left {
+            text-align: left;
+        }
+
+        .items-table tbody td {
+            padding: 10px 10px;
+            background-color: #ffffff;
+            vertical-align: top;
+            border: 1px solid #cbd5e1;
+            font-size: 10.5px;
+            color: #0f172a;
+        }
+
+        .items-table tbody tr:nth-child(even) td {
+            background-color: #f8fafc;
+        }
+
+        .items-table tbody td.amount-col {
+            background-color: inherit;
+            text-align: right;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        .product-name {
+            font-size: 11.5px;
+            font-weight: bold;
+            color: #0f172a;
+            margin-bottom: 3px;
+        }
+
+        .product-code {
+            font-size: 9.5px;
+            color: #3b7b99;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .product-desc-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-top: 4px;
+            margin-bottom: 2px;
+        }
+
+        .product-desc {
+            font-size: 10px;
+            color: #1e293b;
+            font-weight: 500;
+            line-height: 1.4;
+            white-space: pre-line;
+        }
+
+        .product-desc-bullets {
+            margin-top: 3px;
+        }
+
+        .desc-bullet-item {
+            font-size: 10px;
+            color: #1e293b;
+            font-weight: 500;
+            line-height: 1.4;
+            margin-bottom: 2px;
+        }
+
+        /* TOTALS CONTAINER (HORIZONTAL SUMMARY TABLE WITH HEADER & ROWS) */
+        .totals-container {
+            width: 100%;
+            margin-bottom: 15px;
+            clear: both;
+        }
+
+        .totals-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #cbd5e1;
+        }
+
+        .totals-table th {
+            background-color: #e8eff4;
+            color: #0f172a;
+            font-weight: 700;
+            font-size: 10.5px;
+            padding: 7px 10px;
+            border: 1px solid #cbd5e1;
+            text-align: center;
+        }
+
+        .totals-table th.grand-header {
+            background-color: #e1ebf2;
+            color: #3b7b99;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .totals-table td {
+            background-color: #ffffff;
+            color: #0f172a;
+            font-weight: 600;
+            font-size: 10.5px;
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            text-align: center;
+        }
+
+        .totals-table td.grand-val {
+            background-color: #f0f6fa;
+            color: #3b7b99;
+            font-weight: bold;
+            font-size: 11.5px;
+        }
+
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        /* TERMS & CONDITIONS SECTION (STARTS BELOW TOTALS, USES FULL 100% PAGE WIDTH) */
+        .terms-section {
+            clear: both;
+            margin-top: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .terms-title {
+            font-size: 10.5px;
+            font-style: italic;
+            color: #1e293b;
+            text-decoration: underline;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        .terms-content {
+            font-size: 10px;
+            color: #1e293b;
+            font-weight: 500;
+            line-height: 1.45;
+            width: 100%;
+        }
+
+        .term-item {
+            margin-bottom: 5px;
+        }
+
+        .term-sub-bullets {
+            margin-top: 2px;
+            margin-left: 14px;
+        }
+
+        .term-bullet-line {
+            font-size: 10px;
+            color: #1e293b;
+            font-weight: 500;
+            line-height: 1.45;
+            margin-bottom: 2.5px;
+        }
+
+        .thank-you-section {
+            margin-top: 1.6cm;
+            margin-bottom: 8px;
+            width: 100%;
+            max-width: 100%;
+            font-size: 10px;
+            font-weight: bold;
+            color: #0f172a;
+            line-height: 1.5;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            clear: both;
+            page-break-inside: avoid;
+        }
+
+        .thank-you-line {
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        /* SIGNATURES SECTION */
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            clear: both;
+            page-break-inside: avoid;
+        }
+
+        .signature-table td {
+            vertical-align: bottom;
+            width: 50%;
+        }
+
+        .sig-line {
+            border-top: 1px solid #cbd5e1;
+            width: 170px;
+            display: inline-block;
+            margin-top: 35px;
+            padding-top: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- REPEATING HEADER BOX ON EVERY SINGLE PAGE -->
+    <div id="pageHeader">
+        <div style="background-color: #ffffff; padding: 10px 32px 0 32px; width: 100%; box-sizing: border-box;">
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 5px;">
+                <tr>
+                    <td style="text-align: left; vertical-align: bottom;">
+                        <span style="font-size: 11px; font-weight: 800; color: #1e3a8a; letter-spacing: 0.2px;">
+                            D S AQUA® | D S WATER TECH PVT LTD
+                        </span>
+                    </td>
+                    <td style="text-align: right; vertical-align: bottom;">
+                        <span style="font-size: 8.5px; font-weight: 600; color: #64748b; letter-spacing: 0.4px; text-transform: uppercase;">
+                            TECHNICAL &amp; COMMERCIAL OFFER
+                        </span>
+                    </td>
+                </tr>
+            </table>
+            <div style="border-bottom: 1.5px solid #c28f62; width: 100%; height: 0;"></div>
+        </div>
+    </div>
+
+    <!-- REPEATING FOOTER BOX ON EVERY SINGLE PAGE -->
+    <div id="pageFooter">
+        <div style="background-color: #ffffff; padding: 0 32px 6px 32px; width: 100%; box-sizing: border-box;">
+            <div style="border-top: 1.5px solid #c28f62; width: 100%; height: 0; margin-bottom: 5px;"></div>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td style="vertical-align: top; text-align: left;">
+                        <div style="font-size: 9.5px; font-weight: 800; color: #1e3a8a; letter-spacing: 0.2px;">
+                            D S WATER TECH PRIVATE LIMITED | D S AQUA®
+                        </div>
+                        <div style="font-size: 8px; color: #475569; margin-top: 2px; font-weight: 500;">
+                            CIN: U28195PN2025PTC243252 | GSTIN: 27AALCD8065C1ZJ | dswatertech1@gmail.com
+                        </div>
+                        <div style="font-size: 8px; color: #475569; margin-top: 1.5px; font-weight: 500;">
+                            Plant: Manjari Bk, Hadapsar, Pune 411028 | Office: Deccan Heights, Pune 411004 | +91 866-827-4241 / +91 883-0373-068
+                        </div>
+                    </td>
+                    <td style="vertical-align: middle; text-align: right; width: 80px; white-space: nowrap;">
+                        <span style="font-size: 9.5px; color: #475569; font-weight: 500;">
+                            Page <span class="page-number"></span>
+                        </span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- DOCUMENT CONTAINER -->
+    <div class="pdf-container">
+        <!-- MAIN CONTENT AREA BELOW HEADER -->
+        <div class="main-content">
+            <!-- UPPER PART OF 1ST PAGE (MATCHING IMAGE 1 EXACTLY) -->
+            <div class="first-page-header" style="margin-bottom: 16px;">
+                <!-- CENTERED LOGO -->
+                <div style="text-align: center; margin-top: 4px; margin-bottom: 12px;">
+                    {% if logo_base64 %}
+                    <img src="{{ logo_base64 }}" style="width: 215px; max-width: 240px; height: auto; display: inline-block;" alt="D S AQUA Logo" />
+                    {% endif %}
+                </div>
+
+                <!-- COMPANY NAME IN LARGE BOLD BLUE -->
+                <div style="text-align: center; font-size: 21px; font-weight: 800; color: #1e3a8a; letter-spacing: 0.5px; margin-bottom: 4px;">
+                    D S WATER TECH PRIVATE LIMITED
+                </div>
+
+                <!-- SLOGAN IN CLEAN SLATE UPPERCASE -->
+                <div style="text-align: center; font-size: 10.5px; font-weight: 600; color: #475569; letter-spacing: 0.8px; margin-bottom: 10px;">
+                    PURE WATER. SAFE WATER. RELIABLE SERVICE.
+                </div>
+
+                <!-- CENTERED SHORT GOLD/ORANGE LINE -->
+                <div style="width: 38%; margin: 0 auto 10px auto; border-bottom: 1.5px solid #c28f62; height: 0;"></div>
+
+                <!-- COMPANY REGISTRATION & ADDRESS DETAILS (CENTERED) -->
+                <div style="text-align: center; font-size: 9px; color: #334155; line-height: 1.5; margin-bottom: 14px;">
+                    <div style="font-weight: 600;">
+                        CIN: U28195PN2025PTC243252 &nbsp;|&nbsp; GSTIN: 27AALCD8065C1ZJ<br>
+                        |Email:dswatertech1@gmail.com
+                    </div>
+                    <div style="margin-top: 3px;">
+                        Manufacturing Plant: S No 156/5A, Belhekar Wasti, Manjari Bk, Hadapsar, Pune City, Maharashtra 411028
+                    </div>
+                    <div style="margin-top: 2px;">
+                        Corporate Office: Office No. 216, 2nd Floor, Deccan Heights, Opp. KFC, Near PMT Bus Stop, Above Joshi Wadewale, Deccan, Pune 411004 &nbsp; Contact: +91 866-827-4241|+91 883-037-3068
+                    </div>
+                </div>
+
+                <!-- FULL WIDTH GOLD/ORANGE DIVIDER LINE -->
+                <div style="border-bottom: 1.5px solid #c28f62; width: 100%; height: 0; margin-bottom: 14px;"></div>
+            </div>
+
+            <!-- QUOTATION METADATA BANNER (ABOVE PREPARED FOR WITH 1CM GAP) -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 1cm; background-color: #f0f7ff; border: 1px solid #bfdbfe; font-size: 10px;">
+                <tr>
+                    <td style="width: 25%; padding: 7px 10px; border-right: 1px solid #bfdbfe; vertical-align: middle;">
+                        <strong style="color: #0369a1;">Quotation Ref:</strong> <span style="color: #0f172a;">{{ quotation_no }}</span>
+                    </td>
+                    <td style="width: 20%; padding: 7px 10px; border-right: 1px solid #bfdbfe; vertical-align: middle;">
+                        <strong style="color: #0369a1;">Date:</strong> <span style="color: #0f172a;">{{ quotation_date|date:"d M Y" }}</span>
+                    </td>
+                    <td style="width: 25%; padding: 7px 10px; border-right: 1px solid #bfdbfe; vertical-align: middle;">
+                        <strong style="color: #0369a1;">Version:</strong> <span style="color: #0f172a;">{{ version_no }}</span>
+                    </td>
+                    <td style="width: 30%; padding: 7px 10px; vertical-align: middle;">
+                        <strong style="color: #0369a1;">Validity:</strong> <span style="color: #0f172a;">{{ validity_display }}</span>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- PREPARED FOR BLOCK (COVER PRESENTATION MATCHING SCREENSHOT 1) -->
+            <div class="prepared-for-section" style="margin-top: 0; margin-bottom: 20px;">
+                <div style="font-size: 10px; font-weight: 700; color: #64748b; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; margin-bottom: 6px;">
+                    PREPARED FOR
+                </div>
+                <div style="font-size: 24px; font-weight: 800; color: #1e3a8a; letter-spacing: 0.5px; text-align: center; margin-bottom: 6px;">
+                    {% if company_name %}{% if not company_name|lower|slice:":3" == "m/s" %}M/S. {% endif %}{{ company_name|upper }}{% else %}M/S. VALUED CLIENT{% endif %}
+                </div>
+                <div style="font-size: 11.5px; color: #64748b; text-align: center; margin-bottom: 22px; font-weight: 500; line-height: 1.45;">
+                    {{ address|default:'' }}{% if city and not city in address %}{% if address %}, {% endif %}{{ city }}{% endif %}{% if state and not state in address %}{% if address or city %}, {% endif %}{{ state }}{% endif %}{% if ship_to_pincode and not ship_to_pincode in address %} – {{ ship_to_pincode }}{% endif %}
+                </div>
+
+                <!-- 2-COLUMN METADATA TABLE -->
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px; border: 1px solid #cbd5e1; font-size: 10px;">
+                    <tr>
+                        <td style="width: 28%; font-weight: 700; color: #1e293b; padding: 7px 12px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; background-color: #ffffff;">Quotation Reference</td>
+                        <td style="padding: 7px 12px; border-bottom: 1px solid #cbd5e1; color: #0f172a; font-weight: 600;">{{ quotation_no }}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #1e293b; padding: 7px 12px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; background-color: #ffffff;">Date</td>
+                        <td style="padding: 7px 12px; border-bottom: 1px solid #cbd5e1; color: #0f172a;">{{ quotation_date|date:"d F Y" }}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #1e293b; padding: 7px 12px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; background-color: #ffffff;">Supplier</td>
+                        <td style="padding: 7px 12px; border-bottom: 1px solid #cbd5e1; color: #0f172a; font-weight: 600;">D S WATER TECH PRIVATE LIMITED (D S AQUA®)</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #1e293b; padding: 7px 12px; border-right: 1px solid #cbd5e1; background-color: #ffffff;{% if plant_capacity %} border-bottom: 1px solid #cbd5e1;{% endif %}">Validity</td>
+                        <td style="padding: 7px 12px; color: #0f172a; font-weight: 600;{% if plant_capacity %} border-bottom: 1px solid #cbd5e1;{% endif %}">{{ validity_display }}</td>
+                    </tr>
+                    {% if plant_capacity %}
+                    <tr>
+                        <td style="font-weight: 700; color: #1e293b; padding: 7px 12px; border-right: 1px solid #cbd5e1; background-color: #ffffff;">System Capacity</td>
+                        <td style="padding: 7px 12px; color: #0f172a;">{{ plant_capacity }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+
+                <!-- BLUE HIGHLIGHT BANNER BOX -->
+                <div style="background-color: #f0f7fc; border: 1.5px solid #7cb5ec; padding: 10px 14px; text-align: center; border-radius: 2px; margin-bottom: 5px;">
+                    <span style="font-size: 13.5px; font-weight: 800; color: #1e3a8a; letter-spacing: 0.3px;">Pure Water. Trusted Expertise.</span>
+                </div>
+                <div style="font-size: 8.5px; color: #64748b; text-align: left; line-height: 1.45;">
+                    Final process design and output quality are subject to raw-water analysis, site inspection and mutually approved technical specifications.
+                </div>
+            </div>
+
+            <div style="page-break-after: always;"></div>
+
+            <!-- 1. QUOTATION & PARTY DETAILS (MATCHING SCREENSHOT 2) -->
+            <div class="party-details-section" style="margin-top: 6px; margin-bottom: 18px;">
+                <div style="font-size: 17px; font-weight: 800; color: #1e3a8a; margin-bottom: 10px; letter-spacing: -0.2px;">
+                    1. QUOTATION &amp; PARTY DETAILS
+                </div>
+
+                <!-- INTRO PARAGRAPH CALLING FORM SUBJECT DYNAMICALLY -->
+                <div style="font-size: 10px; color: #1e293b; line-height: 1.6; margin-bottom: 16px;">
+                    We thank {% if company_name %}{% if not company_name|lower|slice:":3" == "m/s" %}M/S {% endif %}{{ company_name }}{% else %}the client{% endif %} for the opportunity to submit our proposal for {{ subject|default:proposal_title|default:'Water Treatment Plant & Equipment' }}. The offer prioritises dependable operation, maintainability and hygienic treatment.
+                </div>
+
+                <!-- CUSTOMER BILLING TO DETAILS -->
+                <div style="font-size: 11.5px; font-weight: 700; color: #0284c7; margin-bottom: 5px;">
+                    Billing To
+                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 14px; border: 1px solid #cbd5e1; font-size: 9.5px;">
+                    <tr>
+                        <td style="width: 25%; font-weight: 700; color: #1e293b; padding: 6px 10px; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">Company Name</td>
+                        <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; color: #0f172a; font-weight: 600;">{{ company_name|default:'-' }}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #1e293b; padding: 6px 10px; border-right: 1px solid #e2e8f0;">Billing Address</td>
+                        <td style="padding: 6px 10px; color: #334155; line-height: 1.45;">
+                            {{ address|default:'-' }}{% if city and not city in address %}, {{ city }}{% endif %}{% if state and not state in address %}, {{ state }}{% endif %}
+                            {% if gst_number %}<br><strong>GSTIN:</strong> {{ gst_number }}{% endif %}
+                            {% if contact_person %}<br><strong>Contact:</strong> {{ contact_person }}{% if mobile_number %} | {{ mobile_number }}{% endif %}{% endif %}
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- CUSTOMER SHIPPING TO (SITE DELIVERY) DETAILS -->
+                <div style="font-size: 11.5px; font-weight: 700; color: #0284c7; margin-bottom: 5px;">
+                    Shipping To (Installation Site / Delivery Address)
+                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 14px; border: 1px solid #cbd5e1; font-size: 9.5px;">
+                    <tr>
+                        <td style="width: 25%; font-weight: 700; color: #1e293b; padding: 6px 10px; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">Site / Company Name</td>
+                        <td style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0; color: #0f172a; font-weight: 600;">{{ ship_to_company_name|default:company_name|default:'-' }}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #1e293b; padding: 6px 10px; border-right: 1px solid #e2e8f0;">Shipping Address</td>
+                        <td style="padding: 6px 10px; color: #334155; line-height: 1.45;">
+                            {{ ship_to_address|default:address|default:'-' }}{% if ship_to_city and not ship_to_city in ship_to_address %}, {{ ship_to_city }}{% elif city and not city in address %}, {{ city }}{% endif %}{% if ship_to_state and not ship_to_state in ship_to_address %}, {{ ship_to_state }}{% elif state and not state in address %}, {{ state }}{% endif %}{% if ship_to_pincode and not ship_to_pincode in ship_to_address %} – {{ ship_to_pincode }}{% endif %}
+                            {% if ship_to_gst_number %}<br><strong>Site GSTIN:</strong> {{ ship_to_gst_number }}{% elif gst_number %}<br><strong>Site GSTIN:</strong> {{ gst_number }}{% endif %}
+                            {% if ship_to_contact_person %}<br><strong>Site Contact:</strong> {{ ship_to_contact_person }}{% if ship_to_mobile_number %} | {{ ship_to_mobile_number }}{% endif %}{% elif contact_person %}<br><strong>Site Contact:</strong> {{ contact_person }}{% if mobile_number %} | {{ mobile_number }}{% endif %}{% endif %}
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- SUPPLIER DETAILS (FIXED INFO) -->
+                <div style="font-size: 11.5px; font-weight: 700; color: #0284c7; margin-bottom: 5px;">
+                    Supplier Details
+                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 14px; border: 1px solid #cbd5e1; font-size: 9.5px;">
+                    <tr>
+                        <td style="width: 25%; font-weight: 700; color: #1e293b; padding: 5px 10px; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">Legal Name</td>
+                        <td style="padding: 5px 10px; border-bottom: 1px solid #e2e8f0; color: #0f172a; font-weight: 600;">D S WATER TECH PRIVATE LIMITED</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #1e293b; padding: 5px 10px; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">CIN</td>
+                        <td style="padding: 5px 10px; border-bottom: 1px solid #e2e8f0; color: #0f172a;">U28195PN2025PTC243252</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #1e293b; padding: 5px 10px; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">GSTIN</td>
+                        <td style="padding: 5px 10px; border-bottom: 1px solid #e2e8f0; color: #0f172a; font-weight: 600;">27AALCD8065C1ZJ</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #1e293b; padding: 5px 10px; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">Manufacturing Plant</td>
+                        <td style="padding: 5px 10px; border-bottom: 1px solid #e2e8f0; color: #334155;">S No. 156/5A, Belhekar Wasti, Manjari Bk, Hadapsar, Pune City, Maharashtra – 411028</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #1e293b; padding: 5px 10px; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">Corporate Office</td>
+                        <td style="padding: 5px 10px; border-bottom: 1px solid #e2e8f0; color: #334155;">Office No. 216, 2nd Floor, Deccan Heights, Opp. KFC, near PMT Bus Stop, above Joshi Wadewale, Deccan, Pune – 411004</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #1e293b; padding: 5px 10px; border-right: 1px solid #e2e8f0;">Email / Contact</td>
+                        <td style="padding: 5px 10px; color: #334155;">dswatertech1@gmail.com | +91 866-827-4241 | +91 9405770468</td>
+                    </tr>
+                </table>
+
+                <!-- SUPPLIER'S PAYMENT DETAILS (FETCHED DYNAMICALLY FROM BILLING APP) -->
+                <div style="font-size: 11.5px; font-weight: 700; color: #0284c7; margin-bottom: 5px;">
+                    Supplier’s Payment Details
+                </div>
+                <table style="width: 65%; border-collapse: collapse; margin-bottom: 8px; border: 1px solid #cbd5e1; font-size: 9.5px;">
+                    <tr>
+                        <td style="width: 36%; font-weight: 700; color: #1e293b; padding: 5px 10px; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">Bank Name</td>
+                        <td style="padding: 5px 10px; border-bottom: 1px solid #e2e8f0; color: #0f172a; font-weight: 600;">{{ billing_detail.bank_name }}{% if billing_detail.branch_name %}, {{ billing_detail.branch_name }}{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #1e293b; padding: 5px 10px; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">Account No</td>
+                        <td style="padding: 5px 10px; border-bottom: 1px solid #e2e8f0; color: #0f172a; font-weight: 600;">{{ billing_detail.account_number }}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #1e293b; padding: 5px 10px; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">IFSC Code</td>
+                        <td style="padding: 5px 10px; border-bottom: 1px solid #e2e8f0; color: #0f172a; font-weight: 600;">{{ billing_detail.ifsc_code }}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #1e293b; padding: 5px 10px; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;">Account Holders Name</td>
+                        <td style="padding: 5px 10px; border-bottom: 1px solid #e2e8f0; color: #0f172a; font-weight: 600;">{{ billing_detail.account_holder_name|default:'D S Water Tech PVT LTD' }}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 700; color: #1e293b; padding: 5px 10px; border-right: 1px solid #e2e8f0;">Contact</td>
+                        <td style="padding: 5px 10px; color: #334155;">{{ billing_detail_contact|default:'+91 9881653030' }}</td>
+                    </tr>
+                </table>
+                <div style="font-size: 8.5px; color: #64748b; margin-top: 6px; margin-bottom: 14px; line-height: 1.45;">
+                    Please verify billing particulars and GSTIN before issuing the purchase order. The tax invoice will be raised using the supplier GSTIN stated above.
+                </div>
+            </div>
+
+            <div style="page-break-after: always;"></div>
+
+            <!-- DYNAMIC PROPOSAL CUSTOM SECTIONS (HEADINGS, DESCRIPTIONS, TABLES, BOLD BOXES, NOTES, BULLETS) -->
+            {% if custom_sections %}
+            {% for sec in custom_sections %}
+            <div style="margin-top: 14px; margin-bottom: 16px; page-break-inside: auto;">
+                <div style="font-size: 12.5px; font-weight: 800; color: #0369a1; text-transform: uppercase; margin-bottom: 5px; border-bottom: 1.5px solid #0284c7; padding-bottom: 3px; letter-spacing: 0.2px;">
+                    {{ sec.title }}
+                </div>
+                {% if sec.description %}
+                <div style="font-size: 10px; color: #334155; margin-bottom: 8px; line-height: 1.5;">
+                    {{ sec.description }}
+                </div>
+                {% endif %}
+
+                {% for blk in sec.blocks %}
+                    {% if blk.type == 'table' %}
+                        {% if blk.title %}
+                        <div style="font-size: 10.5px; font-weight: 700; color: #0f172a; margin-top: 8px; margin-bottom: 4px;">{{ blk.title }}</div>
+                        {% endif %}
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 9.5px; border: 1px solid #cbd5e1;">
+                            <thead>
+                                <tr style="background-color: #0369a1; color: #ffffff;">
+                                    {% for h in blk.headers %}
+                                    <th style="padding: 5px 8px; border: 1px solid #0284c7; font-weight: bold; text-align: left;">{{ h }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in blk.rows %}
+                                <tr style="background-color: {% cycle '#ffffff' '#f8fafc' %};">
+                                    {% for cell in r %}
+                                    <td style="padding: 4px 8px; border: 1px solid #e2e8f0; color: #1e293b; vertical-align: top;">{{ cell }}</td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% elif blk.type == 'highlight' or blk.type == 'bold' %}
+                        <div style="border: 1.5px solid #0284c7; background-color: #f0f9ff; color: #0369a1; font-weight: 700; font-size: 10px; padding: 8px 12px; border-radius: 4px; text-align: center; margin: 8px 0; line-height: 1.45;">
+                            {{ blk.content }}
+                        </div>
+                    {% elif blk.type == 'note' %}
+                        <div style="border-left: 3.5px solid #f59e0b; background-color: #fffbeb; color: #92400e; font-size: 9.5px; padding: 6px 10px; margin: 8px 0; line-height: 1.45; border-radius: 0 4px 4px 0;">
+                            <strong>Note:</strong> {{ blk.content }}
+                        </div>
+                    {% elif blk.type == 'bullets' or blk.type == 'text' %}
+                        {% if blk.title %}
+                        <div style="font-size: 10.5px; font-weight: 700; color: #0f172a; margin-top: 6px; margin-bottom: 4px;">{{ blk.title }}</div>
+                        {% endif %}
+                        {% if blk.bullets %}
+                        <ul style="margin: 0 0 8px 16px; padding: 0; font-size: 9.5px; color: #334155; line-height: 1.45;">
+                            {% for b in blk.bullets %}
+                            <li>{{ b }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% elif blk.content %}
+                        <div style="font-size: 9.5px; color: #334155; line-height: 1.45; margin-bottom: 8px;">{{ blk.content }}</div>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <!-- COMMERCIAL SECTION HEADING -->
+            <div style="font-size: 12.5px; font-weight: 800; color: #0369a1; text-transform: uppercase; margin-top: 16px; margin-bottom: 6px; border-bottom: 1.5px solid #0284c7; padding-bottom: 3px; letter-spacing: 0.2px;">
+                COMMERCIAL OFFER &amp; PRICE SCHEDULE
+            </div>
+
+            <!-- ITEMS SECTION -->
+            <div class="items-section">
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            {% if has_extra_discount %}
+                            <th style="width: 32%; text-align: left;" class="text-left">Products / Services</th>
+                            <th style="width: 10%; text-align: center;" class="text-center">Quantity</th>
+                            <th style="width: 12%; text-align: right;" class="text-right">Unit Price</th>
+                            <th style="width: 16%; text-align: right;" class="text-right">GST %</th>
+                            <th style="width: 16%; text-align: right;" class="text-right">Extra Discount %</th>
+                            <th style="width: 14%; text-align: right;" class="text-right">Amount</th>
+                            {% else %}
+                            <th style="width: 42%; text-align: left;" class="text-left">Products / Services</th>
+                            <th style="width: 12%; text-align: center;" class="text-center">Quantity</th>
+                            <th style="width: 14%; text-align: right;" class="text-right">Unit Price</th>
+                            <th style="width: 17%; text-align: right;" class="text-right">GST %</th>
+                            <th style="width: 15%; text-align: right;" class="text-right">Amount</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in quotation_items %}
+                        <tr>
+                            <td style="text-align: left;">
+                                <div class="product-name">{{ item.product_name }}</div>
+                                {% if item.product_code %}
+                                <div class="product-code">Product Code: {{ item.product_code }}</div>
+                                {% endif %}
+                                {% if item.description_bullets or item.description %}
+                                <div class="product-desc-title">Description:</div>
+                                {% if item.description_bullets %}
+                                <div class="product-desc-bullets">
+                                    {% for bullet in item.description_bullets %}
+                                    <div class="desc-bullet-item">&bull; {{ bullet }}</div>
+                                    {% endfor %}
+                                </div>
+                                {% elif item.description %}
+                                <div class="product-desc">{{ item.description }}</div>
+                                {% endif %}
+                                {% endif %}
+                            </td>
+                            <td class="text-center" style="text-align: center; color: #0f172a; font-weight: 500;">{{ item.quantity|floatformat:2 }} {{ item.unit }}</td>
+                            <td class="text-right" style="text-align: right; color: #0f172a; font-weight: 500;">{{ item.unit_price|floatformat:2|intcomma }}</td>
+                            <td class="text-right" style="text-align: right; color: #0f172a; font-weight: 500; white-space: nowrap;">
+                                {% if item.gst_percentage is not None %}{{ item.gst_percentage|floatformat:"-2" }}%{% else %}18%{% endif %}
+                                <span style="font-size: 8.5px; color: #475569;">(₹ {{ item.gst_amount|floatformat:2|intcomma }})</span>
+                            </td>
+                            {% if has_extra_discount %}
+                            <td class="text-right" style="text-align: right; color: #0f172a; font-weight: 500; white-space: nowrap;">
+                                {% if item.extra_discount and item.extra_discount > 0 %}
+                                {{ item.extra_discount|floatformat:"-2" }}%
+                                <span style="font-size: 8.5px; color: #475569;">(₹ {{ item.extra_discount_amount|floatformat:2|intcomma }})</span>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            {% endif %}
+                            <td class="amount-col" style="text-align: right;">₹ {{ item.total_with_gst|floatformat:2|intcomma }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="{% if has_extra_discount %}6{% else %}5{% endif %}" class="text-center" style="color: #64748b; padding: 16px;">No quotation items found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- TOTALS SECTION (HORIZONTAL SUMMARY TABLE WITH HEADER & ROWS) -->
+            <div class="totals-container">
+                <table class="totals-table">
+                    <thead>
+                        <tr>
+                            <th>Untaxed Amount</th>
+                            {% if gst_type == "NO_GST" %}
+                            <th>Tax Treatment</th>
+                            {% elif gst_type == "IGST" %}
+                            <th>IGST</th>
+                            {% elif cgst_amount and sgst_amount %}
+                            <th>SGST</th>
+                            <th>CGST</th>
+                            {% else %}
+                            <th>GST ({{ gst_percentage|default:"18"|floatformat:0 }}%)</th>
+                            {% endif %}
+                            {% if total_extra_discount and total_extra_discount > 0 %}
+                            <th>Extra Discount</th>
+                            {% endif %}
+                            <th class="grand-header">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>₹ {{ subtotal|floatformat:2|intcomma }}</td>
+                            {% if gst_type == "NO_GST" %}
+                            <td style="color: #64748b; font-weight: bold;">No GST (0%)</td>
+                            {% elif gst_type == "IGST" %}
+                            <td>₹ {{ igst_amount|floatformat:2|intcomma }}</td>
+                            {% elif cgst_amount and sgst_amount %}
+                            <td>₹ {{ sgst_amount|floatformat:2|intcomma }}</td>
+                            <td>₹ {{ cgst_amount|floatformat:2|intcomma }}</td>
+                            {% else %}
+                            <td>₹ {{ gst_amount|floatformat:2|intcomma }}</td>
+                            {% endif %}
+                            {% if total_extra_discount and total_extra_discount > 0 %}
+                            <td style="color: #dc2626;">- ₹ {{ total_extra_discount|floatformat:2|intcomma }}</td>
+                            {% endif %}
+                            <td class="grand-val">₹ {{ grand_total|floatformat:2|intcomma }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- TERMS & CONDITIONS SECTION (STARTS BELOW TOTALS, USES FULL 100% PAGE WIDTH) -->
+            {% if terms_list %}
+            <div class="terms-section">
+                <div class="terms-title">Terms Condition</div>
+                <div class="terms-content">
+                    {% for term in terms_list %}
+                    <div class="term-item">
+                        {% if term.bullets %}
+                            {% for b in term.bullets %}
+                            <div class="term-bullet-line">&bull; {{ b }}</div>
+                            {% endfor %}
+                        {% elif term.description %}
+                            <div class="term-bullet-line">&bull; {{ term.description }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- BANK & BILLING DETAILS SECTION -->
+            {% if billing_detail %}
+            <div style="clear: both; margin-top: 15px; margin-bottom: 15px; width: 100%; border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 12px; background-color: #f8fafc;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="vertical-align: top; font-size: 9.5px; line-height: 1.5; color: #1e293b;">
+                            <div style="font-weight: bold; color: #3b7b99; font-size: 10.5px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Bank &amp; Payment Details</div>
+                            <div><strong>Bank Name:</strong> {{ billing_detail.bank_name }} {% if billing_detail.branch_name %}({{ billing_detail.branch_name }}){% endif %}</div>
+                            <div><strong>Beneficiary / A/C Name:</strong> {{ billing_detail.account_holder_name }}</div>
+                            <div><strong>Account Number:</strong> {{ billing_detail.account_number }} ({{ billing_detail.account_type }})</div>
+                            <div><strong>IFSC Code:</strong> {{ billing_detail.ifsc_code }}</div>
+                            {% if billing_detail.upi_id %}
+                            <div><strong>UPI ID:</strong> {{ billing_detail.upi_id }}</div>
+                            {% endif %}
+                            {% if billing_detail.notes %}
+                            <div style="font-style: italic; color: #475569; margin-top: 3px;"><strong>Note:</strong> {{ billing_detail.notes }}</div>
+                            {% endif %}
+                        </td>
+                        {% if qr_code_base64 %}
+                        <td style="vertical-align: top; text-align: right; width: 90px;">
+                            <div style="font-size: 8.5px; color: #64748b; margin-bottom: 2px; text-align: center;">Scan to Pay</div>
+                            <img src="{{ qr_code_base64 }}" style="width: 75px; height: 75px; object-fit: contain; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px; background: #fff;" alt="Payment QR" />
+                        </td>
+                        {% endif %}
+                    </tr>
+                </table>
+            </div>
+            {% endif %}
+
+            <!-- SIGNATURES SECTION -->
+            <table class="signature-table">
+                <tr>
+                    <td>
+                        <div class="sig-line">Customer Acceptance</div>
+                    </td>
+                    <td style="text-align: right;">
+                        <div style="font-weight: bold; font-size: 10px; color: #1e3a8a; margin-bottom: 2px;">For D S WATER TECH PRIVATE LIMITED</div>
+                        {% if signature_base64 %}
+                        <div style="margin-bottom: 2px;">
+                            <img src="{{ signature_base64 }}" style="max-height: 48px; max-width: 140px; object-fit: contain; display: inline-block;" alt="Authorized Signature" />
+                        </div>
+                        <div class="sig-line" style="margin-top: 0;">Authorized Signatory</div>
+                        {% else %}
+                        <div class="sig-line">Authorized Signatory</div>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+
+            <!-- THANK YOU NOTE SECTION (AT END AFTER SIGNATURE, FULL 100% PAGE WIDTH) -->
+            {% if thank_you_note %}
+            <div class="thank-you-section">
+                {% if thank_you_lines %}
+                    {% for line in thank_you_lines %}
+                    <div class="thank-you-line">{{ line }}</div>
+                    {% endfor %}
+                {% else %}
+                    <div class="thank-you-line">{{ thank_you_note }}</div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+</html>

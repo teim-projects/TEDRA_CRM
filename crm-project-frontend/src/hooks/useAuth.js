@@ -1,0 +1,145 @@
+import { useState, useEffect, useCallback } from 'react';
+import { getValidAccessToken, clearAuthSession } from '../utils/authUtils';
+
+const SYSTEM_MODULE_KEYS = [
+  "dashboard",
+  "leads",
+  "followups",
+  "quotations",
+  "products",
+  "customers",
+  "projects",
+  "amc",
+  "terms",
+  "accounts",
+  "roles",
+  "templates",
+  "tally",
+  "billing",
+  "inventory",
+  "invoices",
+];
+
+function getDefaultPermissionsForRole(roleName) {
+  const norm = (roleName || "").toLowerCase();
+  const matrix = {};
+
+  SYSTEM_MODULE_KEYS.forEach((key) => {
+    if (norm === "admin" || norm === "superuser") {
+      matrix[key] = { view: true, create: true, edit: true, delete: true };
+    } else {
+      const isSystemAdminMod = key === "accounts" || key === "roles";
+      matrix[key] = { view: !isSystemAdminMod, create: false, edit: false, delete: false };
+    }
+  });
+
+  return matrix;
+}
+
+export function useUserRole(baseApi) {
+  const [userInfo, setUserInfo] = useState(() => {
+    try {
+      const cached = localStorage.getItem("crm_user_info");
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [isLoading, setIsLoading] = useState(() => !localStorage.getItem("crm_user_info"));
+  const [trigger, setTrigger] = useState(0);
+
+  useEffect(() => {
+    const handleAuthChange = () => {
+      setTrigger(prev => prev + 1);
+    };
+    window.addEventListener("authChange", handleAuthChange);
+    return () => {
+      window.removeEventListener("authChange", handleAuthChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    const token = getValidAccessToken();
+    if (!token) {
+      setUserInfo(null);
+      localStorage.removeItem("crm_user_info");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!userInfo) setIsLoading(true);
+    fetch(`${baseApi}/auth/me/`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => {
+        if (res.status === 401) {
+          clearAuthSession();
+          throw new Error("Unauthorized");
+        }
+        if (!res.ok) throw new Error("Failed to fetch user");
+        return res.json();
+      })
+      .then(data => {
+        setUserInfo(data);
+        try {
+          localStorage.setItem("crm_user_info", JSON.stringify(data));
+        } catch (e) {
+          console.warn("Could not cache user info:", e);
+        }
+      })
+      .catch(err => {
+        console.error("Failed to fetch user profile:", err);
+        setUserInfo(null);
+        localStorage.removeItem("crm_user_info");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [baseApi, trigger]);
+
+  const userRole = userInfo?.role || (userInfo?.is_superuser ? { id: 1, name: "admin" } : null);
+
+  const hasPermission = useCallback((moduleKey, action = "view") => {
+    if (!userInfo) return false;
+
+    const roleName = userRole?.name?.toLowerCase() || "";
+
+    // Superuser or Admin role gets full access to all features and modules
+    if (userInfo.is_superuser || roleName === "admin" || roleName === "superuser") {
+      return true;
+    }
+
+    // 1. DYNAMIC CHECK FROM DB ROLE PERMISSIONS OBJECT
+    if (userRole?.permissions && typeof userRole.permissions === 'object' && Object.keys(userRole.permissions).length > 0) {
+      const modPerms = userRole.permissions[moduleKey];
+      if (modPerms !== undefined && modPerms !== null) {
+        return Boolean(modPerms[action]);
+      }
+    }
+
+    // 2. DYNAMIC CHECK FROM LOCAL STORAGE CACHE (KEYED BY ROLE NAME)
+    if (roleName) {
+      const savedStr = localStorage.getItem(`crm_role_permissions_${roleName}`);
+      if (savedStr) {
+        try {
+          const matrix = JSON.parse(savedStr);
+          if (matrix && matrix[moduleKey] !== undefined) {
+            return Boolean(matrix[moduleKey][action]);
+          }
+        } catch (e) {
+          console.error("Error parsing role matrix cache:", e);
+        }
+      }
+    }
+
+    // 3. Fallback defaults if not yet configured in DB or LocalStorage
+    const defaultMatrix = getDefaultPermissionsForRole(roleName);
+    if (defaultMatrix && defaultMatrix[moduleKey] !== undefined) {
+      return Boolean(defaultMatrix[moduleKey][action]);
+    }
+
+    return false;
+  }, [userInfo, userRole]);
+
+  return { userRole, userInfo, isLoading, hasPermission };
+}

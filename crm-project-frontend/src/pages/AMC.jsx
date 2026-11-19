@@ -1,0 +1,1196 @@
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+import { useSearchParams } from "react-router-dom";
+import Base from "../components/Base";
+import TableView from "../components/TableView";
+import AddAMCContractForm from "../components/amc/AddAMCContractForm";
+import RenewAMCModal from "../components/amc/RenewAMCModal";
+import AMCDetailView from "../components/amc/AMCDetailView";
+import AddServiceForm from "../components/amc/AddServiceForm";
+import AllocateTechniciansModal from "../components/projects/AllocateTechniciansModal";
+import AMCCalendarView from "../components/amc/AMCCalendarView";
+import CycleVisitsModal from "../components/amc/CycleVisitsModal";
+import RecordViewer from "../components/RecordViewer";
+import AdvancedTableFilter from "../components/AdvancedTableFilter";
+import {
+  MdAdd,
+  MdFilterList,
+  MdDelete,
+  MdZoomIn,
+  MdOutlineRemoveRedEye,
+  MdToggleOn,
+  MdToggleOff,
+  MdHistory,
+  MdAutorenew,
+  MdOutlineBuild,
+  MdEngineering,
+  MdEdit,
+  MdMail,
+  MdCalendarMonth,
+  MdViewList,
+} from "react-icons/md";
+import Swal from "sweetalert2";
+import SendMessageModal from "../components/templates/SendMessageModal";
+import { useUserRole } from "../hooks/useAuth";
+
+const BASE_API = import.meta.env.VITE_BASE_API_URL ?? "http://127.0.0.1:8000";
+
+export default function AMC() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { hasPermission } = useUserRole(BASE_API);
+  const canCreateAMC = hasPermission("amc", "create");
+  const canEditAMC = hasPermission("amc", "edit");
+  const canDeleteAMC = hasPermission("amc", "delete");
+  const token = useMemo(
+    () =>
+      localStorage.getItem("access") ||
+      localStorage.getItem("access_token") ||
+      localStorage.getItem("token") ||
+      localStorage.getItem("authToken") ||
+      "",
+    []
+  );
+
+  const API_URL = `${BASE_API.replace(/\/$/, "")}/lead/amc/contracts/`;
+
+  const [rows, setRows] = useState([]);
+  const [allRows, setAllRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [viewMode, setViewMode] = useState("table"); // 'table' | 'calendar'
+
+  // Form modal state
+  const [showForm, setShowForm] = useState(false);
+  const [editingAMC, setEditingAMC] = useState(null);
+  const [productList, setProductList] = useState([]);
+
+  useEffect(() => {
+    const headers = {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+    fetch(`${BASE_API.replace(/\/$/, "")}/product/products/?limit=1000`, { headers })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        const list = Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : [];
+        setProductList(list);
+      })
+      .catch(() => setProductList([]));
+  }, [BASE_API, token]);
+
+  const getAMCProductName = useCallback(
+    (prodVal) => {
+      if (!prodVal) return "-";
+      let val = typeof prodVal === "object" && prodVal !== null ? (prodVal.name || prodVal.product || "") : String(prodVal).trim();
+      if (/^\d+$/.test(val) && productList.length > 0) {
+        const match = productList.find((p) => String(p.id) === val);
+        if (match) return match.name || match.product_name || "-";
+        return "-";
+      }
+      if (/^\d+$/.test(val)) return "-";
+      if (val.toLowerCase() === "product" || val.toLowerCase() === "null" || val.toLowerCase() === "undefined") return "-";
+      return val || "-";
+    },
+    [productList]
+  );
+
+  // Details viewing states
+  const [viewingAMC, setViewingAMC] = useState(null);
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [recordViewerOpen, setRecordViewerOpen] = useState(false);
+
+  // Send Message Modal state
+  const [sendMessageModalOpen, setSendMessageModalOpen] = useState(false);
+  const [selectedMessageRecord, setSelectedMessageRecord] = useState(null);
+
+  const [highlightedAmcId, setHighlightedAmcId] = useState(null);
+
+  // Highlight target AMC row and paginate when redirected from notification (without auto-opening record viewer)
+  useEffect(() => {
+    const targetAmcId = searchParams.get("amcId") || searchParams.get("id");
+    if (targetAmcId) {
+      setHighlightedAmcId(targetAmcId);
+      if (allRows.length > 0) {
+        const itemIdx = allRows.findIndex((r) => String(r.id) === String(targetAmcId));
+        if (itemIdx !== -1) {
+          const pageNum = Math.floor(itemIdx / itemsPerPage) + 1;
+          setCurrentPage(pageNum);
+        }
+      }
+    }
+  }, [searchParams, allRows, itemsPerPage]);
+
+  // Clear highlight and remove query parameters when user clicks anywhere on screen
+  useEffect(() => {
+    if (!highlightedAmcId) return;
+
+    const handleScreenClick = () => {
+      if (window._lastNotificationClickTime && Date.now() - window._lastNotificationClickTime < 600) {
+        return;
+      }
+      setHighlightedAmcId(null);
+      if (window.location.search) {
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      window.addEventListener("click", handleScreenClick, { capture: true });
+      window.addEventListener("pointerdown", handleScreenClick, { capture: true });
+    }, 400);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("click", handleScreenClick, { capture: true });
+      window.removeEventListener("pointerdown", handleScreenClick, { capture: true });
+    };
+  }, [highlightedAmcId]);
+
+  // Quick filter state
+  const [filterType, setFilterType] = useState(searchParams.get("filter") || "all");
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+
+  useEffect(() => {
+    const f = searchParams.get("filter");
+    if (f) {
+      setFilterType(f);
+    }
+  }, [searchParams]);
+
+  // Filter drawer state
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filteredData, setFilteredData] = useState([]);
+
+  // Version / History row expansion state
+  const [openRow, setOpenRow] = useState(null);
+
+  // Renew modal state
+  const [renewingAMC, setRenewingAMC] = useState(null);
+  const [showRenewModal, setShowRenewModal] = useState(false);
+
+  // Cycle visits modal state (view visits for any cycle)
+  const [viewingCycleVisits, setViewingCycleVisits] = useState(null);
+
+  // Contract Services state for viewingAMC
+  const [contractServices, setContractServices] = useState([]);
+  const [loadingServices, setLoadingServices] = useState(false);
+  const [showAddServiceModal, setShowAddServiceModal] = useState(false);
+  const [editingContractService, setEditingContractService] = useState(null);
+  const [allocatingContractService, setAllocatingContractService] = useState(null);
+
+  const fetchContractServices = useCallback(async (amcId) => {
+    if (!amcId) return;
+    setLoadingServices(true);
+    try {
+      const headers = {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+      const res = await fetch(`${BASE_API}/amc/visits/?amc_contract=${amcId}&limit=100`, { headers });
+      if (res.ok) {
+        const data = await res.json();
+        const list = Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : [];
+        setContractServices(list);
+      }
+    } catch (err) {
+      console.error("Error fetching AMC contract services:", err);
+    } finally {
+      setLoadingServices(false);
+    }
+  }, [BASE_API, token]);
+
+  useEffect(() => {
+    if (viewingAMC?.id) {
+      fetchContractServices(viewingAMC.id);
+    } else {
+      setContractServices([]);
+    }
+  }, [viewingAMC, fetchContractServices]);
+
+  const formatNumber = (num) => String(num || 0).padStart(2, "0");
+
+  const filterOptions = [
+    { value: "all", label: "All Records" },
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" },
+    { value: "expiring_soon", label: "Expiring Soon" },
+    { value: "expired", label: "Expired" },
+    { value: "renewed", label: "Renewed" },
+  ];
+
+  const currentFilterLabel = filterOptions.find((f) => f.value === filterType)?.label || "All Records";
+
+  const stats = useMemo(() => {
+    const total = allRows.length;
+    const active = allRows.filter((r) => r.status !== "inactive").length;
+    const inactive = allRows.filter((r) => r.status === "inactive").length;
+    const expiringSoon = allRows.filter((r) => r.status === "expiring_soon").length;
+    const expired = allRows.filter((r) => r.status === "expired").length;
+    const renewed = allRows.filter((r) => r.status === "renewed" || r.status === "renewal_pending").length;
+
+    return { total, active, inactive, expiringSoon, expired, renewed };
+  }, [allRows]);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_URL}?limit=1000`, {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        throw new Error(`${res.status} ${res.statusText} ${txt}`);
+      }
+
+      const data = await res.json();
+      const list = Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : [];
+
+      const normalized = list.map((r) => ({
+        ...r,
+        customer_name:
+          r.customer_details?.company_name ||
+          r.customer_details?.name ||
+          (typeof r.customer === "string" ? r.customer : ""),
+        site_name:
+          r.site_details?.name ||
+          (typeof r.site === "object" ? r.site?.name : "") ||
+          "",
+        support_coordinator_name:
+          r.support_coordinator_details?.full_name ||
+          r.support_coordinator_details?.name ||
+          r.support_coordinator_details?.username ||
+          "",
+        period:
+          r.start_date && r.end_date
+            ? `${r.start_date} to ${r.end_date}`
+            : r.start_date || r.end_date || "",
+      }));
+
+      setAllRows(normalized);
+      setFilteredData(normalized);
+      setRows(normalized);
+      setTotalCount(normalized.length);
+      setTotalPages(Math.max(1, Math.ceil(normalized.length / itemsPerPage)));
+    } catch (err) {
+      console.error("Fetch AMC error:", err);
+      setError(err.message || String(err));
+      setRows([]);
+      setAllRows([]);
+      setFilteredData([]);
+      setTotalCount(0);
+      setTotalPages(1);
+    } finally {
+      setLoading(false);
+    }
+  }, [API_URL, token, itemsPerPage]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  useEffect(() => {
+    if (productList.length === 0) return;
+    const enrich = (list) =>
+      list.map((r) => {
+        const pName = getAMCProductName(r.product);
+        return {
+          ...r,
+          product: pName !== "-" ? pName : (r.product || ""),
+          product_name: pName !== "-" ? pName : (r.product || ""),
+        };
+      });
+    setAllRows((prev) => enrich(prev));
+    setFilteredData((prev) => enrich(prev));
+    setRows((prev) => enrich(prev));
+  }, [productList, getAMCProductName]);
+
+  useEffect(() => {
+    let result = filteredData;
+    if (filterType !== "all") {
+      const ft = (filterType || "").toLowerCase();
+      result = filteredData.filter((r) => {
+        const st = (r.status || "").toLowerCase();
+        if (ft === "renewed") {
+          return st === "renewed" || st === "renewal_pending";
+        }
+        if (ft === "active") {
+          return st !== "inactive";
+        }
+        if (ft === "expiring_soon") {
+          return st === "expiring_soon" || st === "expiring soon";
+        }
+        return st === ft;
+      });
+    }
+
+    setRows(result);
+    setTotalCount(result.length);
+    setTotalPages(Math.max(1, Math.ceil(result.length / itemsPerPage)));
+    if (!window.location.search.includes("amcId") && !window.location.search.includes("id=") && !window.location.search.includes("highlight")) {
+      setCurrentPage(1);
+    }
+  }, [filteredData, filterType, itemsPerPage]);
+
+  const handleDelete = async (id) => {
+    const res = await Swal.fire({
+      title: "Delete AMC Contract?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Delete",
+      confirmButtonColor: "#e11d48",
+      cancelButtonColor: "#64748b",
+    });
+
+    if (!res.isConfirmed) return;
+
+    try {
+      const response = await fetch(`${API_URL}${id}/`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete AMC contract.");
+      }
+
+      Swal.fire({
+        icon: "success",
+        text: "AMC Contract deleted",
+        timer: 1200,
+        showConfirmButton: false,
+      });
+      fetchData();
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Delete failed",
+        text: err.message || String(err),
+      });
+    }
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const handleToggleStatus = async (row) => {
+    try {
+      const response = await fetch(`${API_URL}${row.id}/toggle-status/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update AMC contract status.");
+      }
+
+      const updated = await response.json();
+      const newStatus = updated.status === "active" ? "Active" : "Inactive";
+      Swal.fire({
+        icon: "success",
+        text: `AMC Contract status changed to ${newStatus}`,
+        timer: 1200,
+        showConfirmButton: false,
+      });
+      fetchData();
+    } catch (err) {
+      Swal.fire("Error", err.message || "Failed to change status", "error");
+    }
+  };
+
+  const getRowClassName = (row) => {
+    if (highlightedAmcId && String(row.id) === String(highlightedAmcId)) {
+      return "!bg-blue-100/90 font-bold border-l-4 border-l-blue-600 ring-2 ring-blue-400/60 shadow-md animate-pulse";
+    }
+    if (row.status === "expiring_soon") return "bg-yellow-100/60";
+    if (row.status === "expired") return "bg-red-100/60";
+    return "";
+  };
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "active":
+        return <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-bold uppercase tracking-wider">Active</span>;
+      case "inactive":
+        return <span className="px-2.5 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase tracking-wider">Inactive</span>;
+      case "expiring_soon":
+        return <span className="px-2.5 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-[10px] font-bold uppercase tracking-wider">Expiring Soon</span>;
+      case "expired":
+        return <span className="px-2.5 py-0.5 bg-red-100 text-red-700 rounded-full text-[10px] font-bold uppercase tracking-wider">Expired</span>;
+      case "renewed":
+      case "renewal_pending":
+        return <span className="px-2.5 py-0.5 bg-blue-100 text-blue-700 rounded-full text-[10px] font-bold uppercase tracking-wider">Renewed</span>;
+      default:
+        return <span className="px-2.5 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-medium uppercase tracking-wider">{status || "Active"}</span>;
+    }
+  };
+
+  const columns = [
+    {
+      key: "sr",
+      label: "Sr.No",
+      render: (_, idx) => (
+        <span className="text-slate-600 font-medium text-xs py-0 whitespace-nowrap block">
+          {(currentPage - 1) * itemsPerPage + (idx + 1)}
+        </span>
+      ),
+      className: "w-14 whitespace-nowrap",
+    },
+    {
+      key: "contract_id",
+      label: "Contract ID",
+      render: (r) => {
+        const cid = r.contract_id || `#${r.id}`;
+        return (
+          <span className="font-mono font-bold text-blue-600 text-xs py-0 block whitespace-nowrap" title={cid}>
+            {cid}
+          </span>
+        );
+      },
+      className: "w-28 whitespace-nowrap",
+    },
+    {
+      key: "project_code",
+      label: "Project No.",
+      render: (r) => {
+        const pcode = r.project_details?.project_code || r.project_code || "-";
+        return (
+          <span className="font-mono text-slate-700 text-xs py-0 block whitespace-nowrap" title={pcode}>
+            {pcode}
+          </span>
+        );
+      },
+      className: "w-28 whitespace-nowrap",
+    },
+    {
+      key: "customer",
+      label: "Customer",
+      render: (r) => {
+        const cname = r.customer_details?.company_name || r.customer_details?.name || r.customer || "-";
+        return (
+          <span
+            className="text-slate-900 font-semibold text-xs py-0 block max-w-[150px] truncate mx-auto cursor-default"
+            title={cname}
+          >
+            {cname}
+          </span>
+        );
+      },
+      className: "min-w-[140px] max-w-[170px]",
+    },
+    {
+      key: "site_name",
+      label: "Site Name",
+      render: (r) => {
+        const sName = r.site_details?.name || r.site_name || "";
+        const sCode = r.site_details?.site_shortcut || "";
+        if (!sName) return <span className="text-slate-400 text-xs">—</span>;
+        return (
+          <div className="flex flex-col items-center justify-center max-w-[150px] mx-auto text-xs py-0">
+            <span
+              className="text-slate-900 font-semibold truncate max-w-[140px] block cursor-default"
+              title={sName}
+            >
+              📍 {sName}
+            </span>
+            {sCode && (
+              <span className="text-[9px] font-mono font-bold text-cyan-700 bg-cyan-50 border border-cyan-200/80 px-1 py-0.2 rounded mt-0.5">
+                {sCode}
+              </span>
+            )}
+          </div>
+        );
+      },
+      className: "min-w-[130px] max-w-[160px] text-center",
+    },
+    {
+      key: "product",
+      label: (
+        <div className="leading-tight">
+          <div>Product</div>
+        </div>
+      ),
+      render: (r) => {
+        const pName = getAMCProductName(r.product);
+        return (
+          <span
+            className="text-slate-800 font-medium text-xs py-0 block max-w-[130px] truncate mx-auto cursor-default"
+            title={pName}
+          >
+            {pName}
+          </span>
+        );
+      },
+      className: "w-36 max-w-[140px]",
+    },
+    {
+      key: "amc_type",
+      label: "Type",
+      render: (r) => {
+        const typeText = r.amc_type_display || r.amc_type || "Comprehensive";
+        return (
+          <span className="text-slate-600 text-xs py-0 block capitalize whitespace-nowrap" title={typeText}>
+            {typeText}
+          </span>
+        );
+      },
+      className: "w-32 whitespace-nowrap",
+    },
+    {
+      key: "period",
+      label: "Period (Start - End)",
+      render: (r) => {
+        const periodText = `${formatDate(r.start_date)} to ${formatDate(r.end_date)}`;
+        return (
+          <span className="text-slate-600 text-xs py-0 block whitespace-nowrap" title={periodText}>
+            {periodText}
+          </span>
+        );
+      },
+      className: "w-44 whitespace-nowrap",
+    },
+    {
+      key: "annual_value",
+      label: "Annual Value",
+      render: (r) => {
+        const valText = r.annual_value ? `₹${parseFloat(r.annual_value).toLocaleString("en-IN")}` : "₹0";
+        return (
+          <span className="text-slate-900 font-bold text-xs py-0 block whitespace-nowrap" title={valText}>
+            {valText}
+          </span>
+        );
+      },
+      className: "w-28 whitespace-nowrap",
+    },
+    {
+      key: "visits",
+      label: "Site Visits",
+      render: (r) => {
+        const freq = r.service_frequency_display || r.service_frequency || "Quarterly";
+        const count = r.no_of_visits !== undefined && r.no_of_visits !== null ? `${r.no_of_visits} visits` : "4 visits";
+        return (
+          <div className="text-xs py-0 block whitespace-nowrap" title={`${freq} (${count})`}>
+            <span className="font-semibold text-slate-800 capitalize block">{freq}</span>
+            <span className="text-[10px] text-slate-500 block">({count})</span>
+          </div>
+        );
+      },
+      className: "w-28 whitespace-nowrap",
+    },
+    {
+      key: "support_coordinator",
+      label: "Coordinator",
+      render: (r) => {
+        const scName = r.support_coordinator_details?.full_name || r.support_coordinator_details?.name || r.support_coordinator_details?.username || "-";
+        return (
+          <span
+            className="text-slate-700 text-xs py-0 block max-w-[120px] truncate mx-auto cursor-default"
+            title={scName}
+          >
+            {scName}
+          </span>
+        );
+      },
+      className: "w-32 max-w-[130px]",
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (r) => getStatusBadge(r.status),
+      className: "w-28 text-center whitespace-nowrap",
+    },
+  ];
+
+  const actionsRenderer = (row) => (
+    <div className="flex items-center justify-center gap-1.5 py-0 whitespace-nowrap">
+      {/* Version / Renewal History Symbol Button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpenRow(openRow === row.id ? null : row.id);
+        }}
+        className={`p-1 rounded transition-all duration-150 text-sm shadow-xs cursor-pointer ${openRow === row.id
+          ? "bg-purple-600 text-white"
+          : "bg-purple-50 hover:bg-purple-100 text-purple-600"
+          }`}
+        title="Renewal History & Old AMC Versions"
+      >
+        <MdHistory size={16} />
+      </button>
+
+      {/* Renew AMC Contract Button */}
+      {canEditAMC && (
+        <button
+          onClick={() => {
+            setRenewingAMC(row);
+            setShowRenewModal(true);
+          }}
+          className="p-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 hover:text-emerald-700 rounded transition-all duration-150 text-sm shadow-xs cursor-pointer"
+          title="Renew AMC Contract"
+        >
+          <MdAutorenew size={16} />
+        </button>
+      )}
+
+      {/* View Record Viewer Button */}
+      <button
+        onClick={() => {
+          setSelectedRecord(row);
+          setRecordViewerOpen(true);
+        }}
+        className="p-1 bg-slate-100 hover:bg-purple-100 text-slate-600 hover:text-purple-700 rounded transition-all duration-150 text-sm shadow-xs cursor-pointer"
+        title="View Full Record"
+      >
+        <MdZoomIn />
+      </button>
+
+      {/* View Details Button */}
+      <button
+        onClick={() => setViewingAMC(row)}
+        className="p-1 bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-700 rounded transition-all duration-150 text-sm shadow-xs cursor-pointer"
+        title="View Details"
+      >
+        <MdOutlineRemoveRedEye />
+      </button>
+
+      {/* Send Message */}
+      <button
+        onClick={() => {
+          setSelectedMessageRecord(row);
+          setSendMessageModalOpen(true);
+        }}
+        className="p-1 bg-slate-100 hover:bg-sky-100 text-slate-600 hover:text-sky-700 rounded transition-all duration-150 text-sm shadow-xs cursor-pointer"
+        title="Send Email / WhatsApp"
+      >
+        <MdMail />
+      </button>
+
+      {/* Status Toggle (Active / Inactive) */}
+      {canEditAMC && (() => {
+        const isRowActive = row.status !== "inactive";
+        return (
+          <button
+            onClick={() => handleToggleStatus(row)}
+            className={`p-1 rounded transition-all duration-150 text-sm shadow-xs cursor-pointer ${isRowActive
+              ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-600"
+              : "bg-slate-100 hover:bg-slate-200 text-slate-500"
+              }`}
+            title={isRowActive ? "Mark Inactive" : "Mark Active"}
+          >
+            {isRowActive ? <MdToggleOn size={18} /> : <MdToggleOff size={18} />}
+          </button>
+        );
+      })()}
+
+      {/* Delete Button */}
+      {canDeleteAMC && (
+        <button
+          onClick={() => handleDelete(row.id)}
+          className="p-1 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 rounded transition-all duration-150 text-sm shadow-xs cursor-pointer"
+          title="Delete Contract"
+        >
+          <MdDelete />
+        </button>
+      )}
+    </div>
+  );
+
+  const getCycleStatusBadge = (st) => {
+    switch (st) {
+      case "active":
+        return <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 font-bold rounded text-[10px] uppercase">Active</span>;
+      case "scheduled":
+        return <span className="px-2 py-0.5 bg-sky-100 text-sky-700 font-bold rounded text-[10px] uppercase">Scheduled</span>;
+      case "expiring_soon":
+        return <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 font-bold rounded text-[10px] uppercase">Expiring Soon</span>;
+      case "expired":
+        return <span className="px-2 py-0.5 bg-red-100 text-red-700 font-bold rounded text-[10px] uppercase">Expired</span>;
+      default:
+        return <span className="px-2 py-0.5 bg-slate-100 text-slate-700 font-bold rounded text-[10px] uppercase">{st || "Inactive"}</span>;
+    }
+  };
+
+  const renderExpandedRow = useCallback((row) => {
+    if (openRow !== row.id) return null;
+
+    const cycles = row.cycles || [];
+
+    return (
+      <tr className="bg-slate-50/70 border-b">
+        <td colSpan={11} className="p-4">
+          <div className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-xs">
+            <div className="flex items-center justify-between mb-3 border-b pb-2">
+              <div className="flex items-center gap-2">
+                <span className="p-1 bg-purple-100 text-purple-700 rounded-md">
+                  <MdHistory className="text-base" />
+                </span>
+                <div>
+                  <h4 className="font-bold text-xs text-slate-800">
+                    AMC Contract Cycles ({cycles.length} cycle{cycles.length !== 1 ? 's' : ''})
+                  </h4>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setRenewingAMC(row);
+                  setShowRenewModal(true);
+                }}
+                className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <MdAutorenew className="text-sm" />
+                Renew Contract Now
+              </button>
+            </div>
+
+            {cycles.length === 0 ? (
+              <p className="text-xs text-slate-400 italic py-2">
+                No contract cycles logged. Active period: {formatDate(row.start_date)} to {formatDate(row.end_date)}.
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left border-collapse">
+                  <thead className="bg-slate-100/70 text-slate-500 font-semibold text-[10px] uppercase">
+                    <tr>
+                      <th className="py-2 px-3">Cycle</th>
+                      <th className="py-2 px-3">Status</th>
+                      <th className="py-2 px-3">Period (Start - End)</th>
+                      <th className="py-2 px-3">Annual Value (₹)</th>
+                      <th className="py-2 px-3">Site Visits</th>
+                      <th className="py-2 px-3">Payment Frequency</th>
+                      <th className="py-2 px-3">Created On</th>
+                      <th className="py-2 px-3">Created / Renewed By</th>
+                      <th className="py-2 px-3">Notes / Remarks</th>
+                      <th className="py-2 px-3 text-center">Visits</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {cycles.map((item) => (
+                      <tr key={item.id} className="hover:bg-slate-50/50">
+                        <td className="py-2 px-3 font-bold text-purple-700">
+                          <span className="px-2 py-0.5 bg-purple-50 rounded text-[10px]">
+                            Cycle #{item.cycle_number}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3">
+                          {getCycleStatusBadge(item.status)}
+                        </td>
+                        <td className="py-2 px-3 text-slate-700 font-medium whitespace-nowrap">
+                          {formatDate(item.start_date)} to {formatDate(item.end_date)}
+                        </td>
+                        <td className="py-2 px-3 font-bold text-emerald-700">
+                          ₹{parseFloat(item.annual_value || 0).toLocaleString("en-IN")}
+                        </td>
+                        <td className="py-2 px-3 text-slate-700 whitespace-nowrap">
+                          <span className="font-semibold capitalize block">{item.service_frequency_display || item.service_frequency || "Quarterly"}</span>
+                          <span className="text-[10px] text-slate-500 block">({item.no_of_visits !== undefined && item.no_of_visits !== null ? item.no_of_visits : 4} visits)</span>
+                        </td>
+                        <td className="py-2 px-3 text-slate-600 capitalize">
+                          {item.payment_frequency_display || item.payment_frequency}
+                        </td>
+                        <td className="py-2 px-3 text-slate-500 text-[10px]">
+                          {formatDate(item.created_at)}
+                        </td>
+                        <td className="py-2 px-3 text-slate-600">
+                          {item.created_by_details?.full_name || item.created_by_details?.username || "System"}
+                        </td>
+                        <td className="py-2 px-3 text-slate-500 max-w-[200px] truncate">
+                          {item.remarks || "—"}
+                        </td>
+                        <td className="py-2 px-3 text-center whitespace-nowrap">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setViewingCycleVisits({ cycle: item, amc: row });
+                            }}
+                            className="px-2.5 py-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 rounded-md text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                            title={`View All Visits for Cycle #${item.cycle_number}`}
+                          >
+                            <MdOutlineRemoveRedEye size={13} className="text-sky-600" />
+                            <span>View Visits</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </td>
+      </tr>
+    );
+  }, [openRow, formatDate, setViewingCycleVisits]);
+
+  const getCurrentPageData = () => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return rows.slice(start, start + itemsPerPage);
+  };
+
+  return (
+    <Base title="">
+      <div className="w-full space-y-4 font-sans antialiased text-slate-800 pt-1 sm:pt-2 px-1">
+        {viewingAMC ? (
+          <AMCDetailView
+            amc={viewingAMC}
+            onBack={() => setViewingAMC(null)}
+            onRenew={(target) => {
+              setRenewingAMC(target);
+              setShowRenewModal(true);
+            }}
+            onEdit={(target) => {
+              setEditingAMC(target);
+              setShowForm(true);
+            }}
+            onDelete={(id) => {
+              handleDelete(id);
+              setViewingAMC(null);
+            }}
+            contractServices={contractServices}
+            loadingServices={loadingServices}
+            onRefreshServices={() => {
+              if (viewingAMC?.id) fetchContractServices(viewingAMC.id);
+            }}
+            onAddService={() => {
+              setEditingContractService(null);
+              setShowAddServiceModal(true);
+            }}
+            onAllocateService={(srv) => setAllocatingContractService(srv)}
+            onEditService={(srv) => {
+              setEditingContractService(srv);
+              setShowAddServiceModal(true);
+            }}
+            formatDate={formatDate}
+            token={token}
+            baseApi={BASE_API}
+            canEdit={canEditAMC}
+            canDelete={canDeleteAMC}
+          />
+        ) : (
+          <>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-1 pt-1">
+          <div className="flex items-center gap-3">
+            <span className="w-1.5 h-10 bg-sky-600 rounded-full block"></span>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-tight">
+                AMC Contracts
+              </h1>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {loading
+                  ? "Synchronizing AMC records..."
+                  : `Total ${totalCount} contracts active`}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            <div className="relative">
+              <button
+                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                className="px-2.5 sm:px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-xs flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+              >
+                <MdFilterList className="text-slate-400 text-sm" />
+                <span>{currentFilterLabel}</span>
+              </button>
+
+              {showFilterDropdown && (
+                <>
+                  <div
+                    className="fixed inset-0 z-20 cursor-default"
+                    onClick={() => setShowFilterDropdown(false)}
+                  />
+                  <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl z-30 py-1 text-xs animate-in fade-in zoom-in-95 duration-150">
+                    {filterOptions.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => {
+                          setFilterType(opt.value);
+                          setShowFilterDropdown(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center justify-between transition-colors cursor-pointer ${
+                          filterType === opt.value ? "font-medium text-blue-600 bg-blue-50" : "text-slate-700"
+                        }`}
+                      >
+                        <span>{opt.label}</span>
+                        {filterType === opt.value && (
+                          <span className="text-blue-600 font-bold">✓</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            <button
+              onClick={() => setIsFilterOpen(true)}
+              className="px-2.5 sm:px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-xs flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
+            >
+              <MdFilterList className="text-slate-400 text-sm" />
+              Filter
+            </button>
+
+            {/* Calendar View Toggle placed directly beside Filter */}
+            <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 shrink-0">
+              <button
+                onClick={() => setViewMode("table")}
+                className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 cursor-pointer ${
+                  viewMode === "table"
+                    ? "bg-white text-slate-800 shadow-xs"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+                title="Table View"
+              >
+                <MdViewList className="text-sm" />
+                <span>Table</span>
+              </button>
+              <button
+                onClick={() => setViewMode("calendar")}
+                className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 cursor-pointer ${
+                  viewMode === "calendar"
+                    ? "bg-sky-600 text-white shadow-xs font-bold"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+                title="Calendar View"
+              >
+                <MdCalendarMonth className="text-sm" />
+                <span>Calendar</span>
+              </button>
+            </div>
+
+            {canCreateAMC && (
+              <button
+                onClick={() => {
+                  setEditingAMC(null);
+                  setShowForm(true);
+                }}
+                className="px-3 sm:px-4 py-1.5 bg-sky-600 text-white text-xs font-semibold rounded-lg hover:bg-sky-700 transition-colors shadow-2xs shadow-sky-500/10 flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+              >
+                <MdAdd className="text-sm" />
+                Add AMC Contract
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* 4 SUMMARY STAT CARDS (Styled matching Services page KPI blocks) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs">
+            <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">Total Contracts</span>
+            <span className="text-xs sm:text-[13px] font-bold text-slate-900 block mt-0.5">{formatNumber(stats.total)} contracts</span>
+            <span className="text-[10px] text-slate-400 font-normal block mt-0.5">All AMC agreements</span>
+          </div>
+
+          <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs">
+            <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">Active Contracts</span>
+            <span className="text-xs sm:text-[13px] font-bold text-sky-700 block mt-0.5">
+              {formatNumber(stats.active)} active <span className="text-slate-400 font-normal">· {formatNumber(stats.inactive)} inactive</span>
+            </span>
+            <span className="text-[10px] text-sky-600 font-medium block mt-0.5">Ongoing service agreements</span>
+          </div>
+
+          <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs">
+            <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">Expiring / Expired</span>
+            <span className="text-xs sm:text-[13px] font-bold text-amber-700 block mt-0.5">
+              {formatNumber(stats.expiringSoon)} soon <span className="text-slate-400 font-normal">· {formatNumber(stats.expired)} expired</span>
+            </span>
+            <span className="text-[10px] text-amber-600 font-medium block mt-0.5">Needs renewal attention</span>
+          </div>
+
+          <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs">
+            <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">Renewed</span>
+            <span className="text-xs sm:text-[13px] font-bold text-emerald-700 block mt-0.5">{formatNumber(stats.renewed)} renewed</span>
+            <span className="text-[10px] text-emerald-600 font-medium block mt-0.5">Successfully extended</span>
+          </div>
+        </div>
+
+        {viewMode === "calendar" ? (
+          <AMCCalendarView
+            contracts={allRows}
+            onViewRecord={(r) => {
+              setSelectedRecord(r);
+              setRecordViewerOpen(true);
+            }}
+            onViewDetails={(r) => setViewingAMC(r)}
+            onRenewRecord={(r) => {
+              setRenewingAMC(r);
+              setShowRenewModal(true);
+            }}
+            formatDate={formatDate}
+          />
+        ) : (
+          <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <TableView
+              columns={columns}
+              rows={getCurrentPageData()}
+              loading={loading}
+              error={error}
+              page={currentPage}
+              totalPages={totalPages}
+              onPageChange={(p) => setCurrentPage(p)}
+              pageSize={itemsPerPage}
+              actions={actionsRenderer}
+              rowClassName={getRowClassName}
+              renderExpandedRow={renderExpandedRow}
+              emptyMessage="No AMC contracts matched the active criteria"
+            />
+          </div>
+        )}
+          </>
+        )}
+      </div>
+
+      {/* FILTER DRAWER - PORTAL TO BODY PREVENTS LAYOUT PUSH AND WHITE BOTTOM STRIP */}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <>
+            {isFilterOpen && (
+              <div
+                className="fixed inset-0 w-screen h-screen bg-black/40 z-[9999]"
+                onClick={() => setIsFilterOpen(false)}
+              />
+            )}
+
+            <div
+              className={`fixed top-0 right-0 h-screen w-full max-w-[380px] sm:w-[380px] bg-white shadow-2xl z-[10000] flex flex-col transition-transform duration-300 ease-in-out ${
+                isFilterOpen ? "translate-x-0" : "translate-x-full"
+              }`}
+            >
+              <div className="flex items-center justify-between p-5 border-b border-slate-200 flex-shrink-0">
+                <h3 className="text-lg font-bold text-slate-900">Filters</h3>
+                <button
+                  onClick={() => setIsFilterOpen(false)}
+                  className="text-slate-400 hover:text-slate-600 text-2xl font-bold p-1 cursor-pointer"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="p-5 overflow-y-auto flex-1">
+                <AdvancedTableFilter
+                  data={allRows}
+                  onFilter={setFilteredData}
+                  setItemsPerPage={setItemsPerPage}
+                  columns={columns}
+                />
+              </div>
+            </div>
+          </>,
+          document.body
+        )}
+
+        <AddAMCContractForm
+          open={showForm}
+          onClose={() => {
+            setShowForm(false);
+            setEditingAMC(null);
+          }}
+          onSuccess={() => fetchData()}
+          amcContract={editingAMC}
+          token={token}
+          baseUrl={BASE_API}
+        />
+
+        <RecordViewer
+          isOpen={recordViewerOpen}
+          onClose={() => {
+            setRecordViewerOpen(false);
+            setSelectedRecord(null);
+          }}
+          record={selectedRecord}
+          title="AMC Contract Details"
+        />
+
+        {/* Add/Edit AMC Service Modal */}
+        <AddServiceForm
+          open={showAddServiceModal}
+          onClose={() => {
+            setShowAddServiceModal(false);
+            setEditingContractService(null);
+          }}
+          service={editingContractService}
+          initialContract={viewingAMC}
+          initialCategory="amc_service"
+          baseApi={BASE_API}
+          token={token}
+          onSuccess={() => {
+            if (viewingAMC?.id) fetchContractServices(viewingAMC.id);
+          }}
+        />
+
+        {/* Allocate Technicians for AMC Service */}
+        {allocatingContractService && (
+          <AllocateTechniciansModal
+            open={!!allocatingContractService}
+            onClose={() => setAllocatingContractService(null)}
+            entity={allocatingContractService}
+            endpoint={`${BASE_API}/amc/visits/${allocatingContractService.id}/allocate-technicians/`}
+            title={`Allocate Technicians — ${allocatingContractService.visit_number || allocatingContractService.service_number || `#VIS-${allocatingContractService.id}`}`}
+            baseApi={BASE_API}
+            token={token}
+            onSuccess={() => {
+              if (viewingAMC?.id) fetchContractServices(viewingAMC.id);
+              setAllocatingContractService(null);
+            }}
+          />
+        )}
+
+        <RenewAMCModal
+          open={showRenewModal}
+          onClose={() => {
+            setShowRenewModal(false);
+            setRenewingAMC(null);
+          }}
+          onSuccess={() => fetchData()}
+          amcContract={renewingAMC}
+          token={token}
+          baseUrl={BASE_API}
+        />
+
+        {/* Dedicated Cycle Visits Modal */}
+        <CycleVisitsModal
+          open={!!viewingCycleVisits}
+          onClose={() => setViewingCycleVisits(null)}
+          cycle={viewingCycleVisits?.cycle}
+          amcContract={viewingCycleVisits?.amc}
+          baseApi={BASE_API}
+          token={token}
+          formatDate={formatDate}
+        />
+
+        {/* Send Message Modal */}
+        <SendMessageModal
+          isOpen={sendMessageModalOpen}
+          onClose={() => {
+            setSendMessageModalOpen(false);
+            setSelectedMessageRecord(null);
+          }}
+          category="amc"
+          recordData={selectedMessageRecord}
+          onSuccess={() => {}}
+        />
+    </Base>
+  );
+}

@@ -1,0 +1,912 @@
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCircleUser,
+  faBars,
+  faBell,
+  faSearch,
+  faSignOutAlt,
+  faTimes,
+  faArrowLeft
+} from "@fortawesome/free-solid-svg-icons";
+import { useUserRole } from "../hooks/useAuth";
+import { getBaseApiUrl } from "../utils/apiConfig";
+import { getValidAccessToken, clearAuthSession } from "../utils/authUtils";
+import NotificationDrawer from "./NotificationDrawer";
+import ChatbotAssistant from "./chatbot/ChatbotAssistant";
+import { Sparkles, SquareParking } from "lucide-react";
+
+const baseApi = getBaseApiUrl();
+
+// ✅ NEW: Terms & Conditions Icon
+function TermsIcon(props) {
+  return <svg {...props} viewBox="0 0 24 24" fill="none">
+    <path d="M4 4h16v16H4V4z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M8 8h8M8 12h6M8 16h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+  </svg>;
+}
+
+// ✅ NEW: Role Management Shield Icon
+function ShieldIcon(props) {
+  return (
+    <svg {...props} viewBox="0 0 24 24" fill="none">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ✅ NEW: Technician Icon (Wrench / Tool)
+function TechnicianIcon(props) {
+  return (
+    <svg {...props} viewBox="0 0 24 24" fill="none">
+      <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ✅ NEW: Project Icon
+function ProjectIcon(props) {
+  return (
+    <svg {...props} viewBox="0 0 24 24" fill="none">
+      <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// Service / Maintenance Icon
+function ServiceIcon(props) {
+  return (
+    <svg {...props} viewBox="0 0 24 24" fill="none">
+      <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ✅ NEW: AMC Icon
+function AmcIcon(props) {
+  return (
+    <svg {...props} viewBox="0 0 24 24" fill="none">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ✅ NEW: Message Templates Icon
+function TemplateIcon(props) {
+  return (
+    <svg {...props} viewBox="0 0 24 24" fill="none">
+      <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function TallyIcon(props) {
+  return (
+    <svg {...props} viewBox="0 0 24 24" fill="none">
+      <path d="M9 7h6m-6 4h6m-6 4h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ✅ NEW: Technician Operational Icons
+function TodaysWorkIcon(props) {
+  return (
+    <svg {...props} viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M9 16l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function WorkDeskIcon(props) {
+  return (
+    <svg {...props} viewBox="0 0 24 24" fill="none">
+      <rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="2" />
+      <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" stroke="currentColor" strokeWidth="2" />
+    </svg>
+  );
+}
+
+function FieldMapIcon(props) {
+  return (
+    <svg {...props} viewBox="0 0 24 24" fill="none">
+      <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <line x1="8" y1="2" x2="8" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <line x1="16" y1="6" x2="16" y2="22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function CompletedWorkIcon(props) {
+  return (
+    <svg {...props} viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+      <path d="M8 12l2.5 2.5L16 9.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function BillingIcon(props) {
+  return (
+    <svg {...props} viewBox="0 0 24 24" fill="none">
+      <path d="M3 21h18M3 10h18M5 10v11M9 10v11M15 10v11M19 10v11M12 3l9 7H3l9-7z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ✅ Inventory Management Icon (Warehouse / Boxes)
+function InventoryIcon(props) {
+  return (
+    <svg {...props} viewBox="0 0 24 24" fill="none">
+      <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 12l8-4M12 12L4 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ✅ Invoice / Billing Icon
+function InvoiceIcon(props) {
+  return (
+    <svg {...props} viewBox="0 0 24 24" fill="none">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+const allSidebarItems = [
+  { key: "home", label: "Dashboard", icon: HomeIcon, path: "/dashboard", section: "OVERVIEW" },
+
+  // SALES (Pre-Sales & Deal Pipeline)
+  { key: "leads", label: "Lead Management", icon: TargetIcon, path: "/leads", section: "SALES" },
+  { key: "followups", label: "Follow-up Management", icon: FollowUpIcon, path: "/follow-up", section: "SALES" },
+  { key: "quotes", label: "Quotations", icon: QuoteIcon, path: "/quotations", section: "SALES" },
+
+  // OPERATIONS (Post-Sales Delivery & Service)
+  { key: "contacts", label: "Customers", icon: UserIcon, path: "/customer", section: "OPERATIONS" },
+  { key: "projects", label: "Project Management", icon: ProjectIcon, path: "/projects", section: "OPERATIONS" },
+  { key: "amc", label: "AMC Contracts", icon: AmcIcon, path: "/amc", section: "OPERATIONS" },
+  { key: "amc_services", label: "Services", icon: ServiceIcon, path: "/amc-services", section: "OPERATIONS" },
+  { key: "invoices", label: "Invoice / Billing", icon: InvoiceIcon, path: "/invoices", section: "OPERATIONS" },
+  { key: "inventory", label: "Inventory", icon: InventoryIcon, path: "/inventory", section: "OPERATIONS" },
+
+  // WORK LIST (Technician Field Operations - Single Unified Work Desk & Route Map)
+  { key: "work_desk", label: "Work Desk", icon: WorkDeskIcon, path: "/technician/work-desk", section: "WORK LIST" },
+  { key: "field_map", label: "Field Route Map", icon: FieldMapIcon, path: "/technician/field-map", section: "WORK LIST" },
+
+  // MASTER DATA (Catalog & Master Configurations)
+  { key: "products", label: "Product Master", icon: BoxIcon, path: "/products", section: "MASTER DATA" },
+  { key: "terms", label: "Terms & Conditions", icon: TermsIcon, path: "/terms", section: "MASTER DATA" },
+  { key: "templates", label: "Message Templates", icon: TemplateIcon, path: "/message-templates", section: "MASTER DATA" },
+  { key: "billing", label: "Billing Details", icon: BillingIcon, path: "/billing-details", section: "MASTER DATA" },
+
+  // INTEGRATIONS (External Systems & Accounting)
+  { key: "tally", label: "Tally Integration", icon: TallyIcon, path: "/tally-integration", section: "INTEGRATIONS" },
+
+  // ADMINISTRATION (System & Role Management)
+  { key: "accounts", label: "Accounts", icon: BuildingIcon, path: "/accounts", section: "ADMINISTRATION" },
+  { key: "technicians", label: "Technicians", icon: TechnicianIcon, path: "/technicians", section: "ADMINISTRATION" },
+  { key: "roles", label: "Role Management", icon: ShieldIcon, path: "/roles", section: "ADMINISTRATION" },
+];
+
+export default function Sidebar({ children }) {
+  const [isOpen, setIsOpen] = useState(() => typeof window !== "undefined" && window.innerWidth >= 1024);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+  const [collapsedSections, setCollapsedSections] = useState({});
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  const baseApi = getBaseApiUrl();
+  const { userRole, userInfo, isLoading: loadingRole, hasPermission } = useUserRole(baseApi);
+  const roleName = (userRole?.name || userInfo?.role_name || userInfo?.role?.name || "").toLowerCase();
+  const isTechnician = roleName === "technician" || roleName.includes("technician") || Boolean(userInfo?.is_technician);
+
+  // Auto-close sidebar on mobile when navigating
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setIsOpen(false);
+    }
+  }, [currentPath]);
+
+  // Handle window resize gracefully
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsOpen(true);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Real-time unread notification counter sync
+  const updateNotifCount = useCallback(() => {
+    const readIds = new Set(JSON.parse(localStorage.getItem("crm_notif_read_ids") || "[]"));
+    const deletedIds = new Set(JSON.parse(localStorage.getItem("crm_notif_deleted_ids") || "[]"));
+    const customNotifs = JSON.parse(localStorage.getItem("crm_custom_notifs") || "[]");
+
+    const token = localStorage.getItem("access") || localStorage.getItem("access_token") || "";
+    if (!token) {
+      setUnreadNotifCount(0);
+      return;
+    }
+    const headers = { Authorization: `Bearer ${token}` };
+
+    fetch(`${baseApi}/lead/lead/?limit=100`, { headers })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        const leads = Array.isArray(data) ? data : data.results || [];
+        const today = new Date().toISOString().split("T")[0];
+        let count = 0;
+
+        leads.forEach((l) => {
+          if (l.followup_date && l.followup_date <= today && !["close_win", "close_loss", "closed"].includes(l.status)) {
+            const id = l.followup_date < today ? `f_overdue_${l.id}_${l.followup_date}` : `f_today_${l.id}_${today}`;
+            if (!deletedIds.has(id) && !readIds.has(id)) count++;
+          }
+          const leadId = `lead_new_${l.id}`;
+          if (!deletedIds.has(leadId) && !readIds.has(leadId)) count++;
+        });
+
+        customNotifs.forEach((cn) => {
+          if (!deletedIds.has(cn.id) && !readIds.has(cn.id)) count++;
+        });
+
+        setUnreadNotifCount(count);
+      })
+      .catch(() => {
+        const unreadCustom = customNotifs.filter((cn) => !readIds.has(cn.id) && !deletedIds.has(cn.id)).length;
+        setUnreadNotifCount(unreadCustom);
+      });
+  }, [baseApi]);
+
+  useEffect(() => {
+    updateNotifCount();
+    window.addEventListener("crm_notification_updated", updateNotifCount);
+    window.addEventListener("storage", updateNotifCount);
+    return () => {
+      window.removeEventListener("crm_notification_updated", updateNotifCount);
+      window.removeEventListener("storage", updateNotifCount);
+    };
+  }, [updateNotifCount]);
+
+  const toggleSection = (sectionName) => {
+    setCollapsedSections((prev) => ({
+      ...prev,
+      [sectionName]: !prev[sectionName],
+    }));
+  };
+
+  const filteredItems = React.useMemo(() => {
+    if (loadingRole && !userInfo) return [];
+
+    const rName = (userRole?.name || userInfo?.role_name || userInfo?.role?.name || "").toLowerCase();
+    const isTech = rName === "technician" || rName.includes("technician") || Boolean(userInfo?.is_technician);
+
+    // If technician, allow Dashboard ("home"), Work Desk ("work_desk"), Field Route Map ("field_map"), and Project Management ("projects")!
+    if (isTech) {
+      return allSidebarItems.filter((item) => item.key === "home" || item.key === "work_desk" || item.key === "field_map" || item.key === "projects");
+    }
+
+    const keyToModuleMap = {
+      home: "dashboard",
+      todays_work: "amc",
+      work_desk: "amc",
+      field_map: "amc",
+      completed_work: "amc",
+      leads: "leads",
+      followups: "followups",
+      quotes: "quotations",
+      products: "products",
+      categories: "products",
+      contacts: "customers",
+      projects: "projects",
+      amc: "amc",
+      amc_services: "amc",
+      terms: "terms",
+      templates: "templates",
+      tally: "tally",
+      accounts: "accounts",
+      technicians: "accounts",
+      roles: "roles",
+      billing: "billing",
+      invoices: "invoices",
+    };
+
+    return allSidebarItems.filter((item) => {
+      if (item.key === "work_desk" || item.key === "field_map") {
+        return true;
+      }
+      if (item.key === "technicians") {
+        return hasPermission("accounts", "view") || rName === "technician" || rName === "admin" || userInfo?.is_superuser;
+      }
+      const moduleKey = keyToModuleMap[item.key] || item.key;
+      return hasPermission(moduleKey, "view");
+    });
+  }, [loadingRole, hasPermission, userRole, userInfo]);
+
+  const getPageTitle = () => {
+    if (currentPath.startsWith("/technician/todays-work")) return "Today's Work";
+    if (currentPath.startsWith("/technician/work-desk")) return "Work Desk";
+    if (currentPath.startsWith("/technician/completed-work")) return "Completed Work";
+    if (currentPath.startsWith("/technician/dashboard")) return "Technician Field Desk";
+    if (currentPath.startsWith("/categories")) return "Category Master";
+    if (currentPath.startsWith("/billing-details")) return "Billing Details Master";
+    if (currentPath.startsWith("/technicians")) return "Technician Management";
+    if (currentPath.startsWith("/invoices")) return "Invoice & Billing Management";
+    const currentItem = allSidebarItems.find(item => isActive(item.path, currentPath));
+    return currentItem ? currentItem.label : "Executive Dashboard";
+  };
+
+  const sections = [
+    "OVERVIEW",
+    "SALES",
+    "OPERATIONS",
+    "WORK LIST",
+    "MASTER DATA",
+    "INTEGRATIONS",
+    "ADMINISTRATION",
+  ];
+
+  return (
+    <div className="h-screen h-[100dvh] bg-[#0f172a] flex flex-row font-sans antialiased relative w-full overflow-hidden">
+
+      {/* MOBILE BACKDROP OVERLAY */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[90] lg:hidden transition-opacity duration-300"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* SIDEBAR CONTAINER */}
+      <aside
+        className={`bg-[#0f172a] text-slate-300 h-full flex flex-col flex-shrink-0 transition-all duration-300 ease-in-out fixed lg:relative inset-y-0 left-0 z-[100] ${isOpen
+            ? "w-64 translate-x-0 opacity-100 shadow-2xl lg:shadow-none"
+            : "-translate-x-full lg:translate-x-0 lg:w-0 lg:opacity-0 pointer-events-none"
+          }`}
+      >
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-slate-800/60 min-w-[256px]">
+          <button
+            onClick={() => setIsOpen(false)}
+            className="w-9 h-9 min-w-[36px] min-h-[36px] shrink-0 aspect-square rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 flex flex-col items-center justify-center gap-1 text-white shadow-md shadow-cyan-600/20 hover:from-cyan-500 hover:to-teal-500 transition-colors cursor-pointer"
+            title="Close Sidebar"
+            aria-label="Close Sidebar"
+          >
+            <span className="block w-4 h-0.5 bg-white rounded-full shrink-0"></span>
+            <span className="block w-4 h-0.5 bg-white rounded-full shrink-0"></span>
+            <span className="block w-4 h-0.5 bg-white rounded-full shrink-0"></span>
+          </button>
+
+          <Link to="/dashboard" className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-cyan-500/25 border border-cyan-400/40 backdrop-blur-md flex items-center justify-center text-cyan-300 shadow-sm shrink-0">
+              <SquareParking className="w-4 h-4 text-cyan-300" />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-bold text-white tracking-tight leading-none">
+                TEDRA
+              </span>
+              <span className="text-[9px] font-medium text-cyan-400 tracking-wider uppercase mt-1">
+                Parking Systems
+              </span>
+            </div>
+          </Link>
+        </div>
+
+        <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto min-w-[256px]">
+          {sections.map(section => {
+            const sectionItems = filteredItems.filter(item => item.section === section);
+            if (sectionItems.length === 0) return null;
+            const isCollapsed = Boolean(collapsedSections[section]);
+
+            return (
+              <div key={section} className="space-y-1">
+                <button
+                  type="button"
+                  onClick={() => toggleSection(section)}
+                  className="w-full flex items-center justify-between px-3 py-1 text-[10px] font-bold tracking-wider text-slate-500 hover:text-slate-300 uppercase transition-colors cursor-pointer"
+                >
+                  <span>{section}</span>
+                  <span className="text-[9px] text-slate-600">
+                    {isCollapsed ? "►" : "▼"}
+                  </span>
+                </button>
+
+                {!isCollapsed && (
+                  <div className="space-y-1 pt-0.5">
+                    {sectionItems.map((it) => (
+                      <SidebarItem
+                        key={it.key}
+                        item={it}
+                        active={isActive(it.path, currentPath)}
+                        onNavigate={() => {
+                          if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                            setIsOpen(false);
+                          }
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </nav>
+      </aside>
+
+      {/* RIGHT SIDE CONTAINER */}
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto overflow-x-hidden bg-[#f4f5f9]">
+
+        {/* NAVBAR */}
+        <Navbar
+          onMenuClick={() => setIsOpen((prev) => !prev)}
+          pageTitle={getPageTitle()}
+          isSidebarOpen={isOpen}
+          onNotificationClick={() => setIsNotificationOpen(true)}
+          unreadCount={unreadNotifCount}
+          modules={filteredItems}
+          onChatbotClick={() => setIsChatbotOpen((prev) => !prev)}
+          isChatbotOpen={isChatbotOpen}
+        />
+
+        <main className="flex-1 p-3 sm:p-5 md:p-6 w-full bg-[#f4f5f9] overflow-x-hidden">
+          {children}
+        </main>
+      </div>
+
+      {/* NOTIFICATION DRAWER - SLIDES IN FROM RIGHT */}
+      <NotificationDrawer
+        isOpen={isNotificationOpen}
+        onClose={() => setIsNotificationOpen(false)}
+        onUnreadCountChange={setUnreadNotifCount}
+      />
+
+      {/* AI CHATBOT ASSISTANT - DRAGGABLE ANYWHERE */}
+      <ChatbotAssistant
+        isOpen={isChatbotOpen}
+        onClose={() => setIsChatbotOpen(false)}
+      />
+    </div>
+  );
+}
+
+const Navbar = ({
+  onMenuClick,
+  pageTitle,
+  isSidebarOpen,
+  onNotificationClick,
+  unreadCount,
+  modules = [],
+  onChatbotClick,
+  isChatbotOpen
+}) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const baseApi = getBaseApiUrl();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+
+  const searchRef = useRef(null);
+  const inputRef = useRef(null);
+
+  const handleLogout = useCallback(() => {
+    setIsAuthenticated(false);
+    clearAuthSession();
+    navigate("/login", { replace: true });
+  }, [navigate]);
+
+  const checkAuth = useCallback(async () => {
+    const token = getValidAccessToken();
+    if (!token) return setIsAuthenticated(false);
+
+    try {
+      const res = await fetch(
+        `${baseApi}/auth/dj-rest-auth/user/`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.ok) {
+        setIsAuthenticated(true);
+      } else if (res.status === 401) {
+        handleLogout();
+      }
+    } catch (e) {
+      console.warn("Session check temporary failure:", e);
+    }
+  }, [handleLogout]);
+
+  useEffect(() => {
+    const publicPaths = ["/login", "/register"];
+    if (!publicPaths.includes(location.pathname)) {
+      checkAuth();
+    } else {
+      setIsAuthenticated(false);
+    }
+  }, [location, checkAuth]);
+
+  // Click outside listener for search suggestions dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Filter modules based on search query
+  const suggestions = React.useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return modules;
+    return modules.filter(
+      (item) =>
+        item.label.toLowerCase().includes(query) ||
+        item.section.toLowerCase().includes(query) ||
+        item.key.toLowerCase().includes(query)
+    );
+  }, [searchQuery, modules]);
+
+  // Reset selected index when suggestions change
+  useEffect(() => {
+    setSelectedIndex(suggestions.length > 0 ? 0 : -1);
+  }, [suggestions]);
+
+  const handleSelectModule = (item) => {
+    if (!item || !item.path) return;
+    navigate(item.path);
+    setSearchQuery("");
+    setIsDropdownOpen(false);
+    setIsMobileSearchOpen(false);
+  };
+
+  const handleKeyDown = (e) => {
+    if (!isDropdownOpen) {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        setIsDropdownOpen(true);
+      }
+      return;
+    }
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev < suggestions.length - 1 ? prev + 1 : 0));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev > 0 ? prev - 1 : suggestions.length - 1));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
+        handleSelectModule(suggestions[selectedIndex]);
+      } else if (suggestions.length > 0) {
+        handleSelectModule(suggestions[0]);
+      }
+    } else if (e.key === "Escape") {
+      setIsDropdownOpen(false);
+      inputRef.current?.blur();
+    }
+  };
+
+  const handleGoBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate("/dashboard");
+    }
+  };
+
+  return (
+    <nav className="bg-white border-b border-gray-100 flex-shrink-0 sticky top-0 z-30 w-full px-4 sm:px-6 py-3 flex items-center justify-between shadow-md shadow-gray-200/40">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <button
+          onClick={onMenuClick}
+          className={`w-9 h-9 min-w-[36px] min-h-[36px] shrink-0 aspect-square rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 flex flex-col items-center justify-center gap-1 text-white shadow-md shadow-cyan-600/20 hover:from-cyan-500 hover:to-teal-500 transition-colors mr-1 cursor-pointer ${isSidebarOpen ? "lg:hidden" : "block"
+            }`}
+          title="Toggle Sidebar"
+          aria-label="Toggle Sidebar"
+        >
+          <span className="block w-4 h-0.5 bg-white rounded-full shrink-0"></span>
+          <span className="block w-4 h-0.5 bg-white rounded-full shrink-0"></span>
+          <span className="block w-4 h-0.5 bg-white rounded-full shrink-0"></span>
+        </button>
+
+        <button
+          onClick={handleGoBack}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-cyan-50 text-slate-700 hover:text-cyan-700 hover:border-cyan-200 border border-slate-200/80 text-xs font-semibold transition-all duration-150 shadow-xs cursor-pointer active:scale-95"
+          title="Go back to previous page"
+        >
+          <FontAwesomeIcon icon={faArrowLeft} className="text-xs text-slate-500" />
+          <span className="hidden sm:inline">Back</span>
+        </button>
+
+        <div className="flex flex-col">
+          <h1 className="text-xs sm:text-sm font-bold text-gray-900 leading-tight">
+            {pageTitle === "Dashboard" ? "Executive Dashboard" : pageTitle}
+          </h1>
+          <span className="text-[10px] sm:text-[11px] text-gray-400 font-medium hidden sm:block">
+            Real-time business overview
+          </span>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 sm:gap-4">
+        {/* DESKTOP SEARCH BAR */}
+        <div ref={searchRef} className="relative hidden md:block">
+          <div className="relative">
+            <input
+              ref={inputRef}
+              type="text"
+              placeholder="Search modules..."
+              value={searchQuery}
+              onFocus={() => setIsDropdownOpen(true)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setIsDropdownOpen(true);
+              }}
+              onKeyDown={handleKeyDown}
+              className="w-52 lg:w-72 px-3 py-1.5 pl-9 pr-8 rounded-lg border border-gray-200/80 
+                bg-gray-50/50 text-gray-800 text-xs font-medium
+                focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500
+                transition-all duration-200"
+            />
+            <FontAwesomeIcon
+              icon={faSearch}
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-[11px]"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedIndex(-1);
+                  inputRef.current?.focus();
+                }}
+                className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            )}
+          </div>
+
+          {/* SUGGESTIONS DROPDOWN */}
+          {isDropdownOpen && (
+            <div className="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white rounded-xl shadow-2xl border border-slate-100 z-50 overflow-hidden py-2 animate-in fade-in duration-150">
+              <div className="px-3 py-1.5 border-b border-slate-100 flex items-center justify-between">
+                <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
+                  {searchQuery.trim() ? "Search Results" : "Quick Module Access"}
+                </span>
+                <span className="text-[9px] text-slate-400">Press ↑↓ to navigate</span>
+              </div>
+
+              <div className="max-h-64 overflow-y-auto py-1">
+                {suggestions.length > 0 ? (
+                  suggestions.map((item, idx) => {
+                    const isSelected = idx === selectedIndex;
+                    const IconComponent = item.icon;
+                    return (
+                      <div
+                        key={item.key}
+                        onClick={() => handleSelectModule(item)}
+                        onMouseEnter={() => setSelectedIndex(idx)}
+                        className={`px-3.5 py-2.5 flex items-center justify-between cursor-pointer transition-colors ${isSelected
+                            ? "bg-cyan-50/90 text-cyan-950 font-semibold border-l-4 border-cyan-600 pl-2.5"
+                            : "text-slate-700 hover:bg-slate-50"
+                          }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span
+                            className={`p-1.5 rounded-lg flex-shrink-0 transition-colors ${isSelected ? "bg-cyan-600 text-white" : "bg-slate-100 text-slate-500"
+                              }`}
+                          >
+                            {IconComponent && <IconComponent className="w-3.5 h-3.5" />}
+                          </span>
+                          <div className="flex flex-col min-w-0 truncate">
+                            <span className="text-xs font-medium leading-snug truncate">
+                              {item.label}
+                            </span>
+                            <span className="text-[9px] text-slate-400 font-normal">
+                              {item.path}
+                            </span>
+                          </div>
+                        </div>
+
+                        <span
+                          className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider flex-shrink-0 ml-2 ${isSelected
+                              ? "bg-cyan-100 text-cyan-800"
+                              : "bg-slate-100 text-slate-500"
+                            }`}
+                        >
+                          {item.section}
+                        </span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="px-4 py-6 text-center text-slate-400 text-xs">
+                    No modules found matching &ldquo;<span className="font-semibold text-slate-600">{searchQuery}</span>&rdquo;
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* MOBILE SEARCH TOGGLE BUTTON */}
+        <button
+          onClick={() => setIsMobileSearchOpen((prev) => !prev)}
+          className="p-1.5 sm:p-2 text-gray-400 hover:text-cyan-600 md:hidden transition-colors cursor-pointer"
+          title="Search modules"
+        >
+          <FontAwesomeIcon icon={faSearch} className="text-sm sm:text-base" />
+        </button>
+
+        {/* MOBILE SEARCH DROPDOWN OVERLAY */}
+        {isMobileSearchOpen && (
+          <div className="absolute top-full left-0 right-0 bg-white border-b border-slate-200 p-3 shadow-xl md:hidden z-50">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search modules..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+                className="w-full px-3 py-2 pl-9 pr-8 rounded-lg border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              />
+              <FontAwesomeIcon
+                icon={faSearch}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs"
+                >
+                  <FontAwesomeIcon icon={faTimes} />
+                </button>
+              )}
+            </div>
+
+            <div className="mt-2 max-h-56 overflow-y-auto space-y-1 py-1">
+              {suggestions.length > 0 ? (
+                suggestions.map((item) => {
+                  const IconComponent = item.icon;
+                  return (
+                    <div
+                      key={item.key}
+                      onClick={() => handleSelectModule(item)}
+                      className="p-2.5 rounded-lg bg-slate-50 flex items-center justify-between text-xs text-slate-700 hover:bg-cyan-50 active:bg-cyan-100 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        {IconComponent && <IconComponent className="w-4 h-4 text-cyan-600" />}
+                        <span className="font-semibold">{item.label}</span>
+                      </div>
+                      <span className="text-[9px] bg-cyan-100 text-cyan-700 px-2 py-0.5 rounded font-bold uppercase">
+                        {item.section}
+                      </span>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="px-3 py-4 text-center text-slate-400 text-xs">
+                  No modules found matching &ldquo;{searchQuery}&rdquo;
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* AI CHATBOT BUTTON (Beside notification bell) */}
+        <button
+          onClick={onChatbotClick}
+          className={`p-1.5 sm:p-2 rounded-xl relative transition-all cursor-pointer flex items-center justify-center ${isChatbotOpen
+              ? "bg-cyan-50 text-cyan-600 shadow-xs"
+              : "text-gray-400 hover:text-cyan-600 hover:bg-gray-50"
+            }`}
+          title="AI Assistant (Ask any Lead or CRM doubt)"
+        >
+          <Sparkles className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-indigo-500 hover:text-cyan-600 transition-transform hover:scale-110" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-500 rounded-full animate-pulse border border-white" />
+        </button>
+
+        <button
+          onClick={onNotificationClick}
+          className="p-1.5 sm:p-2 text-gray-400 hover:text-cyan-600 relative transition-colors cursor-pointer"
+          title="Notifications"
+        >
+          <FontAwesomeIcon icon={faBell} className="text-sm sm:text-base" />
+          {unreadCount > 0 && (
+            <>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-cyan-500 rounded-full animate-ping"></span>
+              <span className="absolute -top-0.5 -right-1 px-1 min-w-[15px] h-[15px] bg-cyan-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white shadow-xs">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            </>
+          )}
+        </button>
+
+        {isAuthenticated ? (
+          <div className="flex items-center gap-1 sm:gap-2 border-l border-gray-100 pl-1.5 sm:pl-2">
+            <Link
+              to="/profile"
+              className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              title="Profile"
+            >
+              <FontAwesomeIcon icon={faCircleUser} className="text-base sm:text-lg" />
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:text-red-600 hover:bg-red-50/50 transition-all duration-150 cursor-pointer"
+            >
+              <FontAwesomeIcon icon={faSignOutAlt} />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
+          </div>
+        ) : (
+          <Link to="/login" className="px-3 py-1.5 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-lg hover:from-cyan-500 hover:to-teal-500 transition-colors duration-150 text-xs font-semibold shadow-sm shadow-cyan-500/10">
+            Login
+          </Link>
+        )}
+      </div>
+    </nav>
+  );
+};
+
+const SidebarItem = ({ item, active, onNavigate }) => {
+  return (
+    <Link
+      to={item.path || "#"}
+      onClick={onNavigate}
+      className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-150 group ${active
+        ? "bg-gradient-to-r from-cyan-600 to-teal-600 text-white font-semibold shadow-md shadow-cyan-600/20"
+        : "text-slate-400 hover:bg-white/5 hover:text-white"
+        }`}
+    >
+      <div className="flex items-center gap-3">
+        <span className={`flex-shrink-0 transition-colors ${active ? "text-white" : "text-slate-500 group-hover:text-slate-300"
+          }`}>
+          <item.icon className="w-[18px] h-[18px]" />
+        </span>
+        <span className="text-xs tracking-wide">
+          {item.label}
+        </span>
+      </div>
+
+      {active && (
+        <svg className="w-3 h-3 text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      )}
+    </Link>
+  );
+};
+
+function isActive(itemPath, currentPath) {
+  if (!itemPath) return false;
+  return currentPath === itemPath || currentPath.startsWith(itemPath + "/");
+}
+
+// Icon Components
+function HomeIcon(props) { return <svg {...props} viewBox="0 0 24 24" fill="none"><path d="M3 11.5L12 4l9 7.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M9 21V12h6v9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>; }
+function TargetIcon(props) { return <svg {...props} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="7" stroke="currentColor" strokeWidth="2" /><circle cx="12" cy="12" r="2" stroke="currentColor" strokeWidth="2" /><path d="M17 7l4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>; }
+function UserIcon(props) { return <svg {...props} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" /><path d="M5 20a7 7 0 0114 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>; }
+function BuildingIcon(props) { return <svg {...props} viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="currentColor" strokeWidth="2" /><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>; }
+function BoxIcon(props) { return <svg {...props} viewBox="0 0 24 24" fill="none"><path d="M21 16V8a2 2 0 00-1-1.73L13 3.27a2 2 0 00-2 0L4 6.27A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>; }
+function CategoryIcon(props) { return <svg {...props} viewBox="0 0 24 24" fill="none"><path d="M7 7h.01M7 3h5a2 2 0 011.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V5a2 2 0 012-2h2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>; }
+function QuoteIcon(props) { return <svg {...props} viewBox="0 0 24 24" fill="none"><path d="M8 7H5a2 2 0 00-2 2v4a2 2 0 002 2h3V7zM19 7h-3a2 2 0 00-2 2v4a2 2 0 002 2h3V7z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>; }
+
+function FollowUpIcon(props) {
+  return <svg {...props} viewBox="0 0 24 24" fill="none">
+    <path d="M12 8v4l2 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+    <path d="M8 4L6 2M16 4l2-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M4 8H2M4 16H2M20 8h2M20 16h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+  </svg>;
+}

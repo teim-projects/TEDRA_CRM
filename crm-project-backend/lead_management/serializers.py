@@ -1,0 +1,671 @@
+from rest_framework import serializers
+from .models import (
+    lead_management, LeadFollowUp, LeadFAQ, 
+    LeadFollowUpFAQAnswer, Customer, LeadSource, IndustryType, 
+    Priority, PipelineStage, LeadStatus, Project
+)
+from api.serializers import CustomUserDetailsSerializer
+from django.contrib.auth import get_user_model
+from django.db import transaction
+
+User = get_user_model()
+
+
+def resolve_product_names_list(items):
+    """
+    Normalizes a list of products (which might contain IDs, dicts, or strings)
+    into a clean list of product name strings. Drops unresolvable raw digits or empty values.
+    """
+    if not items:
+        return []
+    if not isinstance(items, list):
+        items = [items]
+
+    from product_management.models import Product
+
+    ids_to_lookup = set()
+    for item in items:
+        if isinstance(item, int):
+            ids_to_lookup.add(item)
+        elif isinstance(item, str) and item.strip().isdigit():
+            ids_to_lookup.add(int(item.strip()))
+        elif isinstance(item, dict):
+            val = item.get("name") or item.get("product") or item.get("product_name") or ""
+            if isinstance(val, int) or (isinstance(val, str) and str(val).strip().isdigit()):
+                ids_to_lookup.add(int(str(val).strip()))
+
+    prod_map = {}
+    if ids_to_lookup:
+        for p in Product.objects.filter(id__in=ids_to_lookup):
+            prod_map[p.id] = p.name
+
+    resolved = []
+    for item in items:
+        if not item:
+            continue
+        if isinstance(item, dict):
+            val = item.get("name") or item.get("product") or item.get("product_name") or ""
+            val_str = str(val).strip()
+            if val_str.isdigit():
+                name = prod_map.get(int(val_str))
+                if name:
+                    resolved.append(name)
+            elif val_str:
+                resolved.append(val_str)
+        elif isinstance(item, int) or (isinstance(item, str) and str(item).strip().isdigit()):
+            name = prod_map.get(int(str(item).strip()))
+            if name:
+                resolved.append(name)
+        elif isinstance(item, str):
+            val_str = item.strip()
+            if val_str and not val_str.isdigit():
+                resolved.append(val_str)
+
+    seen = set()
+    out = []
+    for x in resolved:
+        if x not in seen:
+            seen.add(x)
+            out.append(x)
+    return out
+
+
+class CustomerSerializer(serializers.ModelSerializer):
+    sales_executive_details = CustomUserDetailsSerializer(
+        source="sales_executive",
+        read_only=True
+    )
+    customer_status_display = serializers.CharField(
+        source="get_customer_status_display",
+        read_only=True
+    )
+    payment_terms_display = serializers.CharField(
+        source="get_payment_terms_display",
+        read_only=True
+    )
+    industry_category = serializers.CharField(
+        max_length=100,
+        required=False,
+        allow_blank=True,
+        allow_null=True
+    )
+    lead_source = serializers.CharField(
+        max_length=100,
+        required=False,
+        allow_blank=True,
+        allow_null=True
+    )
+    city = serializers.CharField(max_length=100, required=False, allow_blank=True, allow_null=True)
+    state = serializers.CharField(max_length=100, required=False, allow_blank=True, allow_null=True)
+    contact_person = serializers.CharField(max_length=200, required=False, allow_blank=True, allow_null=True)
+    billing_address = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    industry_category_display = serializers.SerializerMethodField()
+    lead_source_display = serializers.SerializerMethodField()
+
+    def get_industry_category_display(self, obj):
+        val = getattr(obj, "industry_category", "") or ""
+        return dict(IndustryType.choices).get(val, val)
+
+    def get_lead_source_display(self, obj):
+        val = getattr(obj, "lead_source", "") or ""
+        return dict(LeadSource.choices).get(val, val)
+
+    has_project = serializers.SerializerMethodField()
+
+    def get_has_project(self, obj):
+        return obj.projects.exists()
+
+    referral_points = serializers.SerializerMethodField()
+    referred_leads = serializers.SerializerMethodField()
+
+    def get_referral_points(self, obj):
+        return obj.referred_leads.count()
+
+    def get_referred_leads(self, obj):
+        leads = obj.referred_leads.all().order_by('-created_at')
+        return [
+            {
+                'id': l.id,
+                'enquiry_date': str(l.enquiry_date) if l.enquiry_date else None,
+                'company_name': l.company_name or 'N/A',
+                'contact_person': l.contact_person or '',
+                'mobile_number': l.mobile_number or '',
+                'email_address': l.email_address or '',
+                'lead_source': l.lead_source or '',
+                'pipeline_stage': l.pipeline_stage,
+                'pipeline_stage_display': l.get_pipeline_stage_display(),
+                'status': l.status,
+                'status_display': l.get_status_display(),
+                'is_converted': l.is_converted,
+                'converted_customer_id': l.converted_to_customer_id,
+                'created_at': l.created_at.isoformat() if l.created_at else None,
+                'points': 1,
+            }
+            for l in leads
+        ]
+
+    class Meta:
+        model = Customer
+        fields = "__all__"
+        read_only_fields = ('id', 'customer_code', 'created_at', 'updated_at')
+
+    def validate_contact_number(self, value):
+        if value:
+            value = value.strip()
+            qs = Customer.objects.filter(contact_number=value)
+            if self.instance:
+                qs = qs.exclude(id=self.instance.id)
+            if qs.exists():
+                raise serializers.ValidationError(
+                    "Customer with this contact number already exists."
+                )
+        return value
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        raw_purchased = instance.product_purchased
+        if raw_purchased and isinstance(raw_purchased, list):
+            from product_management.models import Product
+            resolved = []
+            for item in raw_purchased:
+                if isinstance(item, dict):
+                    p_name = item.get("product") or item.get("name") or item.get("product_name") or ""
+                    p_str = str(p_name).strip()
+                    if p_str.isdigit():
+                        p_obj = Product.objects.filter(id=int(p_str)).first()
+                        if p_obj:
+                            item_copy = dict(item)
+                            item_copy["product"] = p_obj.name
+                            resolved.append(item_copy)
+                    elif p_str:
+                        resolved.append(item)
+                elif isinstance(item, (int, float)) or (isinstance(item, str) and str(item).strip().isdigit()):
+                    p_obj = Product.objects.filter(id=int(str(item).strip())).first()
+                    if p_obj:
+                        resolved.append({"product": p_obj.name, "value": None})
+                elif isinstance(item, str) and item.strip() and not item.strip().isdigit():
+                    resolved.append({"product": item.strip(), "value": None})
+            data['product_purchased'] = resolved
+        return data
+
+
+class LeadFAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LeadFAQ
+        fields = ["id", "question", "is_active", "sort_order"]
+
+
+class LeadFollowUpFAQAnswerSerializer(serializers.ModelSerializer):
+    faq_question = serializers.CharField(source="faq.question", read_only=True)
+
+    class Meta:
+        model = LeadFollowUpFAQAnswer
+        fields = ["id", "faq", "faq_question", "answer"]
+        read_only_fields = ["id", "faq_question"]
+
+
+class LeadFollowUpSerializer(serializers.ModelSerializer):
+    faq_answers = LeadFollowUpFAQAnswerSerializer(many=True, required=False)
+    created_by_details = CustomUserDetailsSerializer(
+        source="created_by",
+        read_only=True
+    )
+    lead_company_name = serializers.CharField(
+        source="lead.company_name",
+        read_only=True
+    )
+    # Display fields
+    followup_mode_display = serializers.CharField(
+        source="get_followup_mode_display", 
+        read_only=True
+    )
+    client_response_display = serializers.CharField(
+        source="get_client_response_display", 
+        read_only=True
+    )
+    decision_maker_contacted_display = serializers.CharField(
+        source="get_decision_maker_contacted_display", 
+        read_only=True
+    )
+    budget_status_display = serializers.CharField(
+        source="get_budget_status_display", 
+        read_only=True
+    )
+    timeline_urgency_display = serializers.CharField(
+        source="get_timeline_urgency_display", 
+        read_only=True
+    )
+    pain_point_urgency_display = serializers.CharField(
+        source="get_pain_point_urgency_display", 
+        read_only=True
+    )
+    next_followup_mode_display = serializers.CharField(
+        source="get_next_followup_mode_display", 
+        read_only=True
+    )
+    current_stage_display = serializers.CharField(
+        source="get_current_stage_display", 
+        read_only=True
+    )
+    move_to_stage_display = serializers.CharField(
+        source="get_move_to_stage_display", 
+        read_only=True
+    )
+
+    class Meta:
+        model = LeadFollowUp
+        fields = [
+            "id",
+            "followup_number",
+            "lead",
+            "lead_company_name",
+            # Follow-up Details
+            "followup_date",
+            "followup_time",
+            "followup_mode",
+            "followup_mode_display",
+            # Stage & Response
+            "current_stage",
+            "current_stage_display",
+            "move_to_stage",
+            "move_to_stage_display",
+            "client_response",
+            "client_response_display",
+            # Discussion Notes
+            "discussion_summary",
+            "commitment_client",
+            "commitment_us",
+            # Qualifying Questions
+            "decision_maker_contacted",
+            "decision_maker_contacted_display",
+            "timeline_urgency",
+            "timeline_urgency_display",
+            "pain_point_urgency",
+            "pain_point_urgency_display",
+            "budget_status",
+            "budget_status_display",
+            "competition",
+            "number_of_users",
+            "competitors_list",
+            # Next Follow-up
+            "next_followup_date",
+            "next_followup_mode",
+            "next_followup_mode_display",
+            "additional_remarks",
+            "ready_to_send_quotation",
+            "products_interested",
+            "amount",
+            # System fields
+            "status",
+            "created_by",
+            "created_by_details",
+            "created_at",
+            "faq_answers",
+        ]
+        read_only_fields = ["id", "followup_number", "created_by", "created_at"]
+
+    def validate(self, attrs):
+        if self.instance is None and not attrs.get("next_followup_date"):
+            raise serializers.ValidationError({"next_followup_date": "Next follow-up date is required."})
+        if "next_followup_date" in attrs and not attrs.get("next_followup_date"):
+            raise serializers.ValidationError({"next_followup_date": "Next follow-up date is required."})
+        return super().validate(attrs)
+
+    @transaction.atomic
+    def create(self, validated_data):
+        request = self.context.get("request")
+        faq_data = validated_data.pop("faq_answers", [])
+        
+        if request and request.user.is_authenticated:
+            validated_data["created_by"] = request.user
+            
+        if "products_interested" in validated_data and validated_data["products_interested"] is not None:
+            validated_data["products_interested"] = resolve_product_names_list(validated_data["products_interested"])
+
+        followup = LeadFollowUp.objects.create(**validated_data)
+        
+        # ✅ Update lead's products if provided
+        if followup.products_interested is not None:
+            lead = followup.lead
+            lead.product_interested = followup.products_interested
+            lead.save(update_fields=['product_interested'])
+        
+        for item in faq_data:
+            LeadFollowUpFAQAnswer.objects.create(followup=followup, **item)
+        
+        return followup
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        faq_data = validated_data.pop("faq_answers", None)
+        
+        if "products_interested" in validated_data and validated_data["products_interested"] is not None:
+            validated_data["products_interested"] = resolve_product_names_list(validated_data["products_interested"])
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+        
+        # ✅ Update lead's products if provided
+        if instance.products_interested is not None:
+            lead = instance.lead
+            lead.product_interested = instance.products_interested
+            lead.save(update_fields=['product_interested'])
+        
+        if faq_data is not None:
+            instance.faq_answers.all().delete()
+            for item in faq_data:
+                LeadFollowUpFAQAnswer.objects.create(followup=instance, **item)
+        
+        return instance
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.products_interested is not None:
+            data["products_interested"] = resolve_product_names_list(instance.products_interested)
+        return data
+
+
+
+class LeadSerializer(serializers.ModelSerializer):
+    assigned_executive_details = CustomUserDetailsSerializer(
+        source="assigned_executive", 
+        read_only=True
+    )
+    created_by_details = CustomUserDetailsSerializer(
+        source="created_by", 
+        read_only=True
+    )
+    followups = LeadFollowUpSerializer(many=True, read_only=True)
+    ready_to_send_quotation = serializers.SerializerMethodField()
+
+    def get_ready_to_send_quotation(self, obj):
+        has_ready_followup = obj.followups.filter(ready_to_send_quotation=True).exists()
+        if not has_ready_followup:
+            return False
+
+        from quotation.models import Quotation
+
+        if obj.quotations.exists():
+            return False
+
+        if obj.mobile_number:
+            digits = "".join(filter(str.isdigit, str(obj.mobile_number)))
+            if digits:
+                for q in Quotation.objects.exclude(mobile_number__isnull=True).exclude(mobile_number=""):
+                    q_digits = "".join(filter(str.isdigit, str(q.mobile_number)))
+                    if q_digits and (q_digits == digits or (len(digits) >= 10 and len(q_digits) >= 10 and digits[-10:] == q_digits[-10:])):
+                        return False
+
+        return True
+
+    # Display fields - now just return the value directly
+    lead_source_display = serializers.CharField(source="lead_source", read_only=True)
+    referred_by_customer_details = serializers.SerializerMethodField()
+
+    def get_referred_by_customer_details(self, obj):
+        cust = getattr(obj, "referred_by_customer", None)
+        if not cust:
+            return None
+        return {
+            "id": cust.id,
+            "customer_code": cust.customer_code,
+            "name": cust.name,
+            "contact_person": cust.contact_person,
+            "contact_number": cust.contact_number,
+        }
+
+    industry_type_display = serializers.CharField(source="industry_type", read_only=True)
+    priority_display = serializers.CharField(
+        source="get_priority_display", 
+        read_only=True
+    )
+    pipeline_stage_display = serializers.CharField(
+        source="get_pipeline_stage_display", 
+        read_only=True
+    )
+    status_display = serializers.CharField(
+        source="get_status_display", 
+        read_only=True
+    )
+
+    class Meta:
+        model = lead_management
+        fields = [
+            "id",
+            "enquiry_date",
+            "company_name",
+            "mobile_number",
+            "linkedin_profile_url",
+            "state",
+            "product_interested",
+            "amount",
+            "expected_closure_date",
+            "lead_source",
+            "lead_source_display",
+            "referred_by_customer",
+            "referred_by_customer_details",
+            "contact_person",
+            "email_address",
+            "city",
+            "industry_type",
+            "industry_type_display",
+            "expected_budget",
+            "priority",
+            "priority_display",
+            "assigned_executive",
+            "assigned_executive_details",
+            "followup_date",
+            "last_followup_date",
+            "pipeline_stage",
+            "pipeline_stage_display",
+            "is_tally_user",
+            "tally_number",
+            "requirement_details",
+            "remarks",
+            "status",
+            "status_display",
+            "gst_number",
+            "pan_number",
+            "msme_number",
+            "address",
+            "created_by",
+            "created_by_details",
+            "created_at",
+            "updated_at",
+            "converted_to_customer",
+            "is_converted",
+            "ready_to_send_quotation",
+            "followups",
+        ]
+        read_only_fields = ("id", "created_by", "created_at", "updated_at")
+
+    def validate_mobile_number(self, value):
+        if not value:
+            return value
+
+        digits = "".join(filter(str.isdigit, str(value)))
+        if not digits:
+            return value
+
+        target_digits = digits[-10:] if len(digits) >= 10 else digits
+
+        qs = lead_management.objects.exclude(mobile_number__isnull=True).exclude(mobile_number="").select_related('created_by', 'assigned_executive')
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+
+        for existing_lead in qs:
+            existing_digits = "".join(filter(str.isdigit, str(existing_lead.mobile_number)))
+            if existing_digits:
+                if existing_digits == digits or (
+                    len(existing_digits) >= 10 and len(digits) >= 10 and existing_digits[-10:] == target_digits
+                ):
+                    assigned_user = existing_lead.assigned_executive
+                    creator = existing_lead.created_by
+                    target_user = assigned_user or creator
+                    first_last = f"{getattr(target_user, 'first_name', '')} {getattr(target_user, 'last_name', '')}".strip() if target_user else ""
+                    person_name = first_last if first_last else (getattr(target_user, 'email', '') if target_user and getattr(target_user, 'email', '') else "Staff")
+                    person_email = getattr(target_user, 'email', '') if target_user and getattr(target_user, 'email', '') else "No email"
+                    if assigned_user:
+                        msg = f"This lead is already assigned to {person_name} ({person_email})."
+                    else:
+                        msg = f"This lead has already been added by {person_name} ({person_email})."
+                    raise serializers.ValidationError(msg)
+
+        return value
+
+    @transaction.atomic
+    def create(self, validated_data):
+        request = self.context.get("request")
+        if request and request.user.is_authenticated:
+            validated_data["created_by"] = request.user
+        if "product_interested" in validated_data and validated_data["product_interested"] is not None:
+            validated_data["product_interested"] = resolve_product_names_list(validated_data["product_interested"])
+        lead = lead_management.objects.create(**validated_data)
+        return lead
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        if "product_interested" in validated_data and validated_data["product_interested"] is not None:
+            validated_data["product_interested"] = resolve_product_names_list(validated_data["product_interested"])
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.product_interested is not None:
+            data["product_interested"] = resolve_product_names_list(instance.product_interested)
+        return data
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    customer_details = CustomerSerializer(source="customer", read_only=True)
+    site_details = serializers.SerializerMethodField()
+    project_executive_details = CustomUserDetailsSerializer(
+        source="project_executive",
+        read_only=True
+    )
+    created_by_details = CustomUserDetailsSerializer(
+        source="created_by",
+        read_only=True
+    )
+    project_stage_display = serializers.CharField(
+        source="get_project_stage_display",
+        read_only=True
+    )
+    priority_display = serializers.CharField(
+        source="get_priority_display",
+        read_only=True
+    )
+    technicians_details = CustomUserDetailsSerializer(
+        source="technicians",
+        many=True,
+        read_only=True
+    )
+    has_amc = serializers.SerializerMethodField()
+    amc_contract_number = serializers.SerializerMethodField()
+    amc_contract_id = serializers.SerializerMethodField()
+    amc_service_frequency = serializers.SerializerMethodField()
+    amc_no_of_visits = serializers.SerializerMethodField()
+
+    def get_has_amc(self, obj):
+        try:
+            if hasattr(obj, 'amc_contracts') and obj.amc_contracts.exists():
+                return True
+        except Exception:
+            pass
+        return bool(obj.amc_start_date and obj.amc_end_date)
+
+    def get_amc_contract_number(self, obj):
+        try:
+            if hasattr(obj, 'amc_contracts'):
+                amc = obj.amc_contracts.order_by('-id').first()
+                if amc:
+                    return amc.contract_id
+        except Exception:
+            pass
+        return None
+
+    def get_amc_contract_id(self, obj):
+        try:
+            if hasattr(obj, 'amc_contracts'):
+                amc = obj.amc_contracts.order_by('-id').first()
+                if amc:
+                    return amc.id
+        except Exception:
+            pass
+        return None
+
+    def get_amc_service_frequency(self, obj):
+        try:
+            if hasattr(obj, 'amc_contracts'):
+                amc = obj.amc_contracts.order_by('-id').first()
+                if amc:
+                    return amc.get_service_frequency_display() if hasattr(amc, 'get_service_frequency_display') else amc.service_frequency
+        except Exception:
+            pass
+        return None
+
+    def get_amc_no_of_visits(self, obj):
+        try:
+            if hasattr(obj, 'amc_contracts'):
+                amc = obj.amc_contracts.order_by('-id').first()
+                if amc:
+                    return amc.no_of_visits
+        except Exception:
+            pass
+        return None
+
+    def get_site_details(self, obj):
+        if not obj.site:
+            return None
+        return {
+            "id": obj.site.id,
+            "name": obj.site.name,
+            "site_shortcut": obj.site.site_shortcut,
+            "city": obj.site.city,
+            "state": obj.site.state,
+            "address": obj.site.address,
+            "pincode": obj.site.pincode,
+            "capacity_cars": obj.site.capacity_cars,
+            "amount": str(obj.site.amount) if obj.site.amount is not None else "0",
+        }
+
+    class Meta:
+        model = Project
+        fields = "__all__"
+        read_only_fields = ('id', 'project_code', 'created_at', 'updated_at')
+
+    @transaction.atomic
+    def create(self, validated_data):
+        request = self.context.get("request")
+        if request and request.user.is_authenticated and "created_by" not in validated_data:
+            validated_data["created_by"] = request.user
+        if "product" in validated_data and validated_data["product"] is not None:
+            validated_data["product"] = resolve_product_names_list(validated_data["product"])
+        technicians_data = validated_data.pop('technicians', None)
+        project = Project.objects.create(**validated_data)
+        if technicians_data is not None:
+            project.technicians.set(technicians_data)
+        return project
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        if "product" in validated_data and validated_data["product"] is not None:
+            validated_data["product"] = resolve_product_names_list(validated_data["product"])
+        technicians_data = validated_data.pop('technicians', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        if technicians_data is not None:
+            instance.technicians.set(technicians_data)
+        return instance
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.product is not None:
+            data["product"] = resolve_product_names_list(instance.product)
+        return data

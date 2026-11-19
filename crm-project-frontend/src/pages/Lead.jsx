@@ -1,0 +1,1007 @@
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+import { useSearchParams } from "react-router-dom";
+import Base from "../components/Base";
+import TableView from "../components/TableView";
+import LeadDetails from "../components/lead/LeadDetails";
+import AddLeadFollowUpForm from "../components/lead/AddLeadFollowUpForm";
+import AddLeadForm from "../components/lead/AddLeadForm";
+import { MdEdit, MdDelete, MdOutlineRemoveRedEye, MdEditDocument, MdAdd, MdFilterList, MdZoomIn, MdUpload, MdMail, MdDownload, MdHistory } from "react-icons/md";
+import FollowupHistoryView from "../components/lead/FollowupHistoryView";
+import Swal from "sweetalert2";
+import { useUserRole } from '../hooks/useAuth';
+import AddQuotation from "../components/quotations/AddQuotation";
+import AdvancedTableFilter from "../components/AdvancedTableFilter";
+import RecordViewer from "../components/RecordViewer";
+import ImportLeadModal from "../components/lead/ImportLeadModal";
+import SendMessageModal from "../components/templates/SendMessageModal";
+import { exportToExcel, formatExcelDate } from "../utils/excelExport";
+import { getBaseApiUrl } from "../utils/apiConfig";
+
+export default function Lead() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const BASE_API = getBaseApiUrl();
+  const API_URL = `${BASE_API}/lead/lead/`;
+
+  const { userRole, isLoading: loadingUser, hasPermission } = useUserRole(BASE_API);
+  const canCreateLead = hasPermission("leads", "create");
+  const canEditLead = hasPermission("leads", "edit");
+  const canDeleteLead = hasPermission("leads", "delete");
+
+  const [showQuotationForm, setShowQuotationForm] = useState(false);
+  const [quotationLeadData, setQuotationLeadData] = useState(null);
+
+  const [rows, setRows] = useState([]);
+  const [allRows, setAllRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [products, setProducts] = useState([]);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const [showLeadForm, setShowLeadForm] = useState(false);
+  const [editingLead, setEditingLead] = useState(null);
+  const [showImportModal, setShowImportModal] = useState(false);
+
+  // Record Viewer state
+  const [viewOpen, setViewOpen] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
+
+  // Send Message Modal state
+  const [sendMessageModalOpen, setSendMessageModalOpen] = useState(false);
+  const [selectedMessageRecord, setSelectedMessageRecord] = useState(null);
+
+  const [showLeadDetails, setShowLeadDetails] = useState(false);
+  const [leadDetailsId, setLeadDetailsId] = useState(null);
+
+  const [showLeadFollowUp, setShowLeadFollowUp] = useState(false);
+  const [followUpLeadId, setFollowUpLeadId] = useState(null);
+
+  // Follow-up history states
+  const [selectedHistoryLead, setSelectedHistoryLead] = useState(null);
+  const [selectedHistoryLeadId, setSelectedHistoryLeadId] = useState(null);
+  const [historyRefreshTrigger, setHistoryRefreshTrigger] = useState(0);
+
+  // Filter state
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filteredData, setFilteredData] = useState([]);
+  const [highlightedLeadId, setHighlightedLeadId] = useState(null);
+
+  const isLeadMatch = useCallback((r, targetId) => {
+    if (!targetId) return false;
+    const strTarget = String(targetId).toLowerCase().trim();
+    if (!strTarget) return false;
+
+    const idMatch = String(r.id).toLowerCase() === strTarget;
+    const leadIdMatch = String(r.lead_id || "").toLowerCase() === strTarget;
+    const enquiryIdMatch = String(r.enquiry_id || "").toLowerCase() === strTarget;
+
+    const companyName = String(r.company_name || "").toLowerCase().trim();
+    const contactPerson = String(r.contact_person || "").toLowerCase().trim();
+
+    const nameMatch =
+      (companyName && (companyName === strTarget || companyName.includes(strTarget) || strTarget.includes(companyName))) ||
+      (contactPerson && (contactPerson === strTarget || contactPerson.includes(strTarget) || strTarget.includes(contactPerson)));
+
+    return idMatch || leadIdMatch || enquiryIdMatch || nameMatch;
+  }, []);
+
+  // Highlight target lead row and paginate when redirected from notification
+  useEffect(() => {
+    const targetLeadId = searchParams.get("leadId") || searchParams.get("id");
+    const isLatest = searchParams.get("highlight") === "latest" || targetLeadId === "latest";
+
+    if ((targetLeadId || isLatest) && allRows.length > 0) {
+      if (isLatest) {
+        setHighlightedLeadId(allRows[0].id);
+        setCurrentPage(1);
+      } else {
+        const itemIdx = allRows.findIndex((r) => isLeadMatch(r, targetLeadId));
+        if (itemIdx !== -1) {
+          setHighlightedLeadId(allRows[itemIdx].id);
+          const pageNum = Math.floor(itemIdx / itemsPerPage) + 1;
+          setCurrentPage(pageNum);
+        } else {
+          setHighlightedLeadId(allRows[0].id);
+          setCurrentPage(1);
+        }
+      }
+    }
+  }, [searchParams, allRows, itemsPerPage, isLeadMatch]);
+
+  // Clear highlight and remove query parameters when user clicks anywhere on screen
+  useEffect(() => {
+    if (!highlightedLeadId) return;
+
+    const handleScreenClick = () => {
+      if (window._lastNotificationClickTime && Date.now() - window._lastNotificationClickTime < 600) {
+        return;
+      }
+      setHighlightedLeadId(null);
+      if (window.location.search) {
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      window.addEventListener("click", handleScreenClick, { capture: true });
+      window.addEventListener("pointerdown", handleScreenClick, { capture: true });
+    }, 400);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("click", handleScreenClick, { capture: true });
+      window.removeEventListener("pointerdown", handleScreenClick, { capture: true });
+    };
+  }, [highlightedLeadId]);
+
+  const token = useMemo(() => (
+    localStorage.getItem("access") ||
+    localStorage.getItem("access_token") ||
+    localStorage.getItem("token") ||
+    localStorage.getItem("authToken") ||
+    ""
+  ), []);
+
+  const PRODUCT_API_URL = `${BASE_API}/product/products/?limit=1000`;
+
+  // Fetch product definitions to resolve IDs to product names
+  useEffect(() => {
+    let isMounted = true;
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch(PRODUCT_API_URL, {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+        if (res.ok && isMounted) {
+          const data = await res.json();
+          const items = Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : [];
+          setProducts(items);
+        }
+      } catch (err) {
+        console.error("Failed to fetch products in Lead:", err);
+      }
+    };
+    fetchProducts();
+    return () => {
+      isMounted = false;
+    };
+  }, [PRODUCT_API_URL, token]);
+
+  const productMap = useMemo(() => {
+    const map = new Map();
+    products.forEach((p) => {
+      if (p && p.id !== undefined && p.id !== null) {
+        map.set(String(p.id).trim(), p.name || "");
+      }
+    });
+    return map;
+  }, [products]);
+
+  const getProductDisplayNames = useCallback(
+    (r) => {
+      if (!r) return [];
+      const raw = r.product_interested ?? r.product ?? r.products ?? [];
+      let items = [];
+      if (Array.isArray(raw)) {
+        items = raw;
+      } else if (typeof raw === "string" && raw.trim()) {
+        const trimmed = raw.trim();
+        if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+          try {
+            const parsed = JSON.parse(trimmed);
+            items = Array.isArray(parsed) ? parsed : [parsed];
+          } catch {
+            items = trimmed.split(",").map((s) => s.trim()).filter(Boolean);
+          }
+        } else {
+          items = trimmed.split(",").map((s) => s.trim()).filter(Boolean);
+        }
+      } else if (raw !== null && raw !== undefined && raw !== "") {
+        items = [raw];
+      }
+
+      const resolved = items
+        .map((item) => {
+          if (!item) return "";
+          if (typeof item === "object") {
+            const val = item.name || item.product || item.product_name || item.title || "";
+            const valStr = String(val).trim();
+            if (productMap.has(valStr) && productMap.get(valStr)) return productMap.get(valStr);
+            if (/^\d+$/.test(valStr)) return "";
+            return typeof val === "string" ? val : String(val);
+          }
+          const str = String(item).trim();
+          if (productMap.has(str) && productMap.get(str)) return productMap.get(str);
+          if (/^\d+$/.test(str)) return "";
+          return str;
+        })
+        .filter(Boolean);
+
+      return Array.from(new Set(resolved));
+    },
+    [productMap]
+  );
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      if (!token) throw new Error("No bearer token found in localStorage.");
+
+      const url = `${API_URL}?limit=1000`;
+      const res = await fetch(url, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const body = await res.text().catch(() => "");
+        throw new Error(`${res.status} ${res.statusText}${body ? " — " + body : ""}`);
+      }
+
+      const data = await res.json();
+      const results = Array.isArray(data.results) ? data.results : Array.isArray(data) ? data : [];
+
+      const normalized = results.map((r) => {
+        const prodNames = getProductDisplayNames(r);
+        return {
+          ...r,
+          product: prodNames.join(", "),
+          date: r.enquiry_date || r.created_at || "",
+          assign_to:
+            r.assigned_executive_details?.full_name ||
+            r.assigned_executive_details?.first_name ||
+            (r.assigned_executive ? String(r.assigned_executive) : ""),
+        };
+      });
+
+      // Sort leads by lead date (enquiry_date or created_at) descending (latest on top)
+      normalized.sort((a, b) => {
+        const getLeadDateVal = (item) => {
+          if (item.enquiry_date) {
+            const t = new Date(item.enquiry_date).getTime();
+            if (!isNaN(t)) return t;
+          }
+          if (item.created_at) {
+            const t = new Date(item.created_at).getTime();
+            if (!isNaN(t)) return t;
+          }
+          return 0;
+        };
+
+        const timeDiff = getLeadDateVal(b) - getLeadDateVal(a);
+        if (timeDiff !== 0) return timeDiff;
+
+        const createdA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const createdB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        if (!isNaN(createdA) && !isNaN(createdB) && createdB !== createdA) {
+          return createdB - createdA;
+        }
+
+        return (b.id || 0) - (a.id || 0);
+      });
+
+      setAllRows(normalized);
+      setFilteredData(normalized);
+      setRows(normalized);
+      setTotalCount(normalized.length);
+      setTotalPages(Math.max(1, Math.ceil(normalized.length / itemsPerPage)));
+    } catch (err) {
+      setError(err.message || String(err));
+      setRows([]);
+      setAllRows([]);
+      setFilteredData([]);
+      setTotalCount(0);
+      setTotalPages(1);
+    } finally {
+      setLoading(false);
+    }
+  }, [token, API_URL, itemsPerPage, getProductDisplayNames]);
+
+  // Update rows when products list is retrieved to ensure all names are resolved
+  useEffect(() => {
+    if (products.length === 0) return;
+    const enrichRows = (list) =>
+      list.map((r) => {
+        const prodNames = getProductDisplayNames(r);
+        return {
+          ...r,
+          product: prodNames.join(", "),
+        };
+      });
+
+    setAllRows((prev) => enrichRows(prev));
+    setFilteredData((prev) => enrichRows(prev));
+    setRows((prev) => enrichRows(prev));
+  }, [products, getProductDisplayNames]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Update pagination when filtered data changes
+  useEffect(() => {
+    setRows(filteredData);
+    setTotalCount(filteredData.length);
+    setTotalPages(Math.max(1, Math.ceil(filteredData.length / itemsPerPage)));
+    if (!window.location.search.includes("leadId") && !window.location.search.includes("id=") && !window.location.search.includes("highlight")) {
+      setCurrentPage(1);
+    }
+  }, [filteredData, itemsPerPage]);
+
+  // Get current page data
+  const getCurrentPageData = useCallback(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return rows.slice(startIndex, startIndex + itemsPerPage);
+  }, [rows, currentPage, itemsPerPage]);
+
+  const handleDelete = async (id) => {
+    const res = await Swal.fire({
+      title: "Delete Lead?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Delete",
+      confirmButtonColor: "#e11d48",
+      cancelButtonColor: "#64748b"
+    });
+    if (!res.isConfirmed) return;
+
+    try {
+      const resp = await fetch(`${API_URL}${id}/`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!resp.ok) {
+        const text = await resp.text().catch(() => "");
+        throw new Error(`${resp.status} ${resp.statusText} — ${text}`);
+      }
+      Swal.fire({ icon: "success", text: "Lead deleted", timer: 1000, showConfirmButton: false });
+      fetchData();
+    } catch (err) {
+      Swal.fire({ icon: "error", title: "Delete failed", text: err.message || String(err) });
+    }
+  };
+
+  const handleConvertToCustomer = async (leadId) => {
+    const result = await Swal.fire({
+      title: "Convert to Customer?",
+      text: "This will create a customer record from this lead data.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Convert",
+      cancelButtonText: "Cancel"
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const response = await fetch(`${API_URL}${leadId}/convert-to-customer/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to convert lead");
+      }
+
+      Swal.fire({
+        icon: "success",
+        title: "Success!",
+        text: data.message || "Lead converted to customer successfully",
+        timer: 2000,
+        showConfirmButton: false
+      });
+
+      fetchData();
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Conversion Failed",
+        text: err.message
+      });
+    }
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+    const d = new Date(dateStr);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const getRowClassName = (lead) => {
+    if (highlightedLeadId && String(lead.id) === String(highlightedLeadId)) {
+      return "!bg-blue-100/90 font-bold border-l-4 border-l-blue-600 ring-2 ring-blue-400/60 shadow-md animate-pulse";
+    }
+    // If status is closed, won, or lost, return normal styling
+    if (lead.status === "close_win" || lead.status === "close_loss" || lead.status === "closed") return "";
+
+    if (!lead.followup_date) return "";
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const followupDate = new Date(lead.followup_date);
+    followupDate.setHours(0, 0, 0, 0);
+
+    if (followupDate.getTime() === today.getTime()) return "bg-yellow-100";
+    if (followupDate < today) return "bg-red-100";
+    return "";
+  };
+
+  const columns = [
+    {
+      key: "sr",
+      label: "Sr.No",
+      render: (r, idx) => {
+        const isReady = Boolean(r.ready_to_send_quotation);
+        const srNum = (currentPage - 1) * itemsPerPage + (idx + 1);
+        return (
+          <div className="flex items-center gap-1.5" title={isReady ? "Ready to Send Quotation" : ""}>
+            <span className="text-slate-600 font-medium text-xs">{srNum}</span>
+            {isReady && (
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-200 animate-pulse inline-block shrink-0" />
+            )}
+          </div>
+        );
+      },
+    },
+    { key: "date", label: "Date", render: (r) => <span className="text-slate-600 text-xs whitespace-nowrap block">{formatDate(r.enquiry_date || r.created_at)}</span> },
+    {
+      key: "followup_date",
+      label: (
+        <div className="leading-tight">
+          <div>Next Followup</div>
+          <div>Date</div>
+        </div>
+      ),
+      render: (r) => <span className="font-semibold text-slate-700 text-xs whitespace-nowrap block">{formatDate(r.followup_date)}</span>
+    },
+    {
+      key: "company_name",
+      label: (
+        <div className="leading-tight">
+          <div>Company</div>
+          <div>Name</div>
+        </div>
+      ),
+      render: (r) => (
+        <span
+          className="text-slate-900 font-semibold text-xs tracking-tight block max-w-[150px] truncate mx-auto cursor-default"
+          title={r.company_name || ""}
+        >
+          {r.company_name || "-"}
+        </span>
+      ),
+      className: "min-w-[130px] max-w-[170px]"
+    },
+    {
+      key: "contact_person",
+      label: (
+        <div className="leading-tight">
+          <div>Contact</div>
+          <div>Person</div>
+        </div>
+      ),
+      render: (r) => (
+        <span
+          className="text-slate-700 text-xs block max-w-[130px] truncate mx-auto cursor-default"
+          title={r.contact_person || ""}
+        >
+          {r.contact_person || "-"}
+        </span>
+      ),
+      className: "min-w-[120px] max-w-[150px]"
+    },
+    {
+      key: "product",
+      label: (
+        <div className="leading-tight">
+          <div>Product</div>
+        </div>
+      ),
+      render: (r) => {
+        const names = getProductDisplayNames(r);
+        const fullText = names.join(", ");
+        return (
+          <span
+            className="text-slate-800 font-medium text-xs block max-w-[130px] truncate mx-auto cursor-default"
+            title={fullText}
+          >
+            {fullText || "-"}
+          </span>
+        );
+      },
+      className: "min-w-[110px] max-w-[150px]"
+    },
+    {
+      key: "mobile_number",
+      label: "Mobile",
+      render: (r) => <span className="text-slate-700 text-xs font-medium whitespace-nowrap block">{r.mobile_number || "-"}</span>,
+      className: "whitespace-nowrap"
+    },
+    {
+      key: "lead_source",
+      label: "Source",
+      render: (r) => (
+        <div>
+          <span
+            className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-medium uppercase tracking-wider whitespace-nowrap inline-block max-w-[110px] truncate"
+            title={r.lead_source || ""}
+          >
+            {r.lead_source || "-"}
+          </span>
+        </div>
+      ),
+      className: "whitespace-nowrap"
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (r) => (
+        <div>
+          <span
+            className="px-2 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap inline-block"
+            title={r.status || ""}
+          >
+            {r.status || "-"}
+          </span>
+        </div>
+      ),
+      className: "whitespace-nowrap"
+    },
+    {
+      key: "is_converted",
+      label: "Converted",
+      render: (r) => r.is_converted ?
+        <span className="text-emerald-600 font-bold text-xs block">✓</span> :
+        <span className="text-slate-300 text-xs block">-</span>,
+      className: "whitespace-nowrap"
+    },
+    ...(userRole?.name !== "sales"
+      ? [{
+        key: "assign_to",
+        label: (
+          <div className="leading-tight">
+            <div>Assign</div>
+            <div>To</div>
+          </div>
+        ),
+        render: (r) => {
+          const name = r.assigned_executive_details?.full_name || r.assigned_executive_details?.first_name || (r.assigned_executive ? String(r.assigned_executive) : "");
+          const email = r.assigned_executive_details?.email || "";
+          const tooltip = name && email ? `${name} (${email})` : name || email || "-";
+          return (
+            <span
+              className="text-slate-800 font-medium text-xs block max-w-[130px] truncate mx-auto cursor-default"
+              title={tooltip}
+            >
+              {name || email || "-"}
+            </span>
+          );
+        },
+        className: "min-w-[110px] max-w-[140px]"
+      }]
+      : [])
+  ];
+
+  const actionsRenderer = useCallback((row) => (
+    <div className="flex items-center justify-center gap-1 whitespace-nowrap">
+      {/* Record Viewer Button */}
+      <button
+        onClick={() => {
+          setSelectedLead(row);
+          setViewOpen(true);
+        }}
+        className="p-1 bg-slate-100 hover:bg-purple-100 text-slate-600 hover:text-purple-700 rounded transition-all duration-150 text-sm shadow-sm"
+        title="View Full Record"
+      >
+        <MdZoomIn />
+      </button>
+
+      {/* Lead Details Button */}
+      <button
+        onClick={() => {
+          setLeadDetailsId(row.id);
+          setShowLeadDetails(true);
+        }}
+        className="p-1 bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-700 rounded transition-all duration-150 text-sm shadow-sm"
+        title="View Profile Details"
+      >
+        <MdOutlineRemoveRedEye />
+      </button>
+
+      <button
+        onClick={() => {
+          setFollowUpLeadId(row.id);
+          setShowLeadFollowUp(true);
+        }}
+        className="p-1 bg-slate-100 hover:bg-indigo-100 text-slate-600 hover:text-indigo-700 rounded transition-all duration-150 text-sm shadow-sm cursor-pointer"
+        title="Log Follow-up"
+      >
+        <MdEditDocument />
+      </button>
+
+      {!row.is_converted && (
+        <button
+          onClick={() => handleConvertToCustomer(row.id)}
+          className="p-1 bg-slate-100 hover:bg-emerald-100 text-slate-600 hover:text-emerald-700 rounded transition-all duration-150 flex items-center justify-center text-sm shadow-sm"
+          title="Convert to Customer"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+            <line x1="12" y1="11" x2="12" y2="15"></line>
+            <line x1="9" y1="14" x2="15" y2="14"></line>
+          </svg>
+        </button>
+      )}
+
+      {row.is_converted && (
+        <span className="text-emerald-600 text-xs font-bold" title="Already converted to customer">✓</span>
+      )}
+
+      <button
+        onClick={() => {
+          setQuotationLeadData(row);
+          setShowQuotationForm(true);
+        }}
+        className="p-1 bg-slate-100 hover:bg-teal-100 text-slate-600 hover:text-teal-700 rounded transition-all duration-150 text-sm shadow-sm"
+        title="Create New Quotation"
+      >
+        <MdAdd />
+      </button>
+
+      <button
+        onClick={() => {
+          setSelectedMessageRecord(row);
+          setSendMessageModalOpen(true);
+        }}
+        className="p-1 bg-slate-100 hover:bg-sky-100 text-slate-600 hover:text-sky-700 rounded transition-all duration-150 text-sm shadow-sm cursor-pointer"
+        title="Send Email / WhatsApp"
+      >
+        <MdMail />
+      </button>
+
+      {canEditLead && (
+        <button
+          onClick={() => { setEditingLead(row); setShowLeadForm(true); }}
+          className="p-1 bg-amber-50 hover:bg-amber-100 text-amber-600 hover:text-amber-700 rounded transition-all duration-150 text-sm shadow-sm cursor-pointer"
+          title="Edit Record"
+        >
+          <MdEdit />
+        </button>
+      )}
+
+      {canDeleteLead && (
+        <button
+          onClick={() => handleDelete(row.id)}
+          className="p-1 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 rounded transition-all duration-150 text-sm shadow-sm cursor-pointer"
+          title="Delete Record"
+        >
+          <MdDelete />
+        </button>
+      )}
+    </div>
+  ), [handleDelete, handleConvertToCustomer, canEditLead, canDeleteLead]);
+
+  const currentPageData = getCurrentPageData();
+
+  const handleExportExcel = () => {
+    const dataToExport = rows && rows.length > 0 ? rows : allRows;
+    const formatted = dataToExport.map((r, idx) => ({
+      "Sr No": idx + 1,
+      "Enquiry No": r.lead_id || r.enquiry_id || `LEAD-${r.id}`,
+      "Enquiry Date": formatExcelDate(r.enquiry_date || r.created_at),
+      "Next Followup Date": formatExcelDate(r.followup_date),
+      "Company Name": r.company_name || "-",
+      "Contact Person": r.contact_person || "-",
+      "Mobile Number": r.mobile_number || "-",
+      "Email Address": r.email_address || "-",
+      "Pipeline Stage": r.pipeline_stage_display || r.pipeline_stage || "-",
+      "Status": r.status_display || r.status || "-",
+      "Products Interested": Array.isArray(r.product_interested)
+        ? r.product_interested.map((p) => (typeof p === "object" ? p.name || p.product || "" : p)).filter(Boolean).join(", ")
+        : (r.product_interested || "-"),
+      "Requirement Details": r.requirement_details || "-",
+      "Lead Source": r.lead_source_display || r.lead_source || "-",
+      "Priority": r.priority_display || r.priority || "-",
+      "Industry Type": r.industry_type_display || r.industry_type || "-",
+      "Expected Closure Date": formatExcelDate(r.expected_closure_date),
+      "Assigned Executive": r.assigned_executive_details?.full_name || r.assigned_executive_details?.first_name || (r.assigned_executive ? String(r.assigned_executive) : "-"),
+      "State": r.state || "-",
+      "City": r.city || "-",
+      "Address": r.address || "-",
+      "GST Number": r.gst_number || "-",
+      "PAN Number": r.pan_number || "-",
+      "Estimated Amount (₹)": r.amount ? parseFloat(r.amount) : 0,
+      "Converted to Customer": r.is_converted ? "Yes" : "No",
+      "Created At": formatExcelDate(r.created_at),
+    }));
+
+    exportToExcel({
+      data: formatted,
+      fileName: "Leads_Enquiries",
+      sheetName: "Leads",
+    });
+  };
+
+  const historyLeadId = searchParams.get("history") || selectedHistoryLeadId || selectedHistoryLead?.id;
+
+  if (historyLeadId) {
+    const handleCloseHistory = () => {
+      setSelectedHistoryLead(null);
+      setSelectedHistoryLeadId(null);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("history");
+        return next;
+      });
+    };
+
+    return (
+      <Base title="">
+        <FollowupHistoryView
+          key={historyRefreshTrigger}
+          leadId={historyLeadId}
+          initialLead={selectedHistoryLead}
+          baseApi={BASE_API}
+          token={token}
+          onBack={handleCloseHistory}
+          onAddFollowUp={(lead) => {
+            setFollowUpLeadId(lead.id);
+            setShowLeadFollowUp(true);
+          }}
+          onRefreshList={() => {
+            setHistoryRefreshTrigger((prev) => prev + 1);
+            fetchData();
+          }}
+        />
+
+        {showLeadFollowUp && (
+          <AddLeadFollowUpForm
+            open={showLeadFollowUp}
+            onClose={() => setShowLeadFollowUp(false)}
+            baseApi={BASE_API}
+            token={token}
+            leadId={followUpLeadId}
+            onViewHistory={(targetLead) => {
+              setShowLeadFollowUp(false);
+              setSelectedHistoryLead(targetLead);
+              setSelectedHistoryLeadId(targetLead.id);
+              setSearchParams((prev) => {
+                const next = new URLSearchParams(prev);
+                next.set("history", targetLead.id);
+                return next;
+              });
+            }}
+            onSuccess={() => {
+              setHistoryRefreshTrigger((prev) => prev + 1);
+              fetchData();
+              setShowLeadFollowUp(false);
+              setFollowUpLeadId(null);
+            }}
+          />
+        )}
+      </Base>
+    );
+  }
+
+  return (
+    <Base title="">
+      <div className="w-full space-y-4 font-sans antialiased text-slate-800 pt-1 sm:pt-2 px-1">
+
+        {/* HEADER BLOCK WITH THE BLUE VERTICAL ACCENT LINE */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-1 pt-1">
+          <div className="flex items-center gap-3">
+            <span className="w-1.5 h-10 bg-sky-600 rounded-full block"></span>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-tight">Enquiry Management</h1>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {loading ? "Synchronizing pipeline records..." : `Total ${totalCount} records identified across channels`}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            <button
+              onClick={() => setIsFilterOpen(true)}
+              className="px-3 sm:px-4 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <MdFilterList className="text-slate-400" />
+              Filter
+            </button>
+            {canCreateLead && (
+              <button
+                onClick={() => setShowImportModal(true)}
+                className="px-2.5 sm:px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 hover:text-sky-600 hover:border-sky-200 transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
+                title="Import Leads from Excel or CSV"
+              >
+                <MdUpload className="text-sky-600 text-sm" />
+                Import
+              </button>
+            )}
+            <button
+              onClick={handleExportExcel}
+              className="px-2.5 sm:px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
+              title="Export Leads to Excel"
+            >
+              <MdDownload className="text-emerald-600 text-sm" />
+              Export
+            </button>
+            {canCreateLead && (
+              <button
+                onClick={() => { setEditingLead(null); setShowLeadForm(true); }}
+                className="px-3 sm:px-4 py-1.5 bg-sky-600 text-white text-xs font-semibold rounded-lg hover:bg-sky-700 transition-colors shadow-2xs shadow-sky-500/10 flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+              >
+                <span>+</span> Add Enquiry
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* COMPACT DATA TABLE COMPONENT */}
+        <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <TableView
+            columns={columns}
+            rows={currentPageData}
+            loading={loading}
+            error={error}
+            page={currentPage}
+            totalPages={totalPages}
+            onPageChange={(p) => setCurrentPage(p)}
+            pageSize={itemsPerPage}
+            actions={actionsRenderer}
+            emptyMessage="No enquiry records matches the active criteria filters"
+            rowClassName={getRowClassName}
+          />
+        </div>
+      </div>
+
+      {/* FILTER DRAWER - PORTAL TO BODY PREVENTS LAYOUT PUSH AND WHITE BOTTOM STRIP */}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <>
+            {isFilterOpen && (
+              <div
+                className="fixed inset-0 w-screen h-screen bg-black/40 z-[9999]"
+                onClick={() => setIsFilterOpen(false)}
+              />
+            )}
+
+            <div
+              className={`fixed top-0 right-0 h-screen w-full max-w-[380px] sm:w-[380px] bg-white shadow-2xl z-[10000] flex flex-col transition-transform duration-300 ease-in-out ${isFilterOpen ? "translate-x-0" : "translate-x-full"
+                }`}
+            >
+              <div className="flex items-center justify-between p-5 border-b border-slate-200 flex-shrink-0">
+                <h3 className="text-lg font-bold text-slate-900">Filters</h3>
+                <button
+                  onClick={() => setIsFilterOpen(false)}
+                  className="text-slate-400 hover:text-slate-600 text-2xl font-bold p-1 cursor-pointer"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="p-5 overflow-y-auto flex-1">
+                <AdvancedTableFilter
+                  data={allRows}
+                  onFilter={setFilteredData}
+                  setItemsPerPage={setItemsPerPage}
+                  columns={columns}
+                />
+              </div>
+            </div>
+          </>,
+          document.body
+        )}
+
+      {/* RECORD VIEWER - Slides in from right */}
+      <RecordViewer
+        isOpen={viewOpen}
+        onClose={() => {
+          setViewOpen(false);
+          setSelectedLead(null);
+        }}
+        record={selectedLead}
+        title="Lead Details"
+      />
+
+      <AddLeadForm
+        open={showLeadForm}
+        onClose={() => setShowLeadForm(false)}
+        baseApi={BASE_API}
+        token={token}
+        lead={editingLead}
+        onSuccess={() => {
+          fetchData();
+          setShowLeadForm(false);
+          setEditingLead(null);
+        }}
+      />
+
+      <LeadDetails
+        open={showLeadDetails}
+        onClose={() => setShowLeadDetails(false)}
+        leadId={leadDetailsId}
+        baseApi={BASE_API}
+        token={token}
+        onViewHistory={(targetLead) => {
+          setShowLeadDetails(false);
+          setSelectedHistoryLead(targetLead);
+          setSelectedHistoryLeadId(targetLead.id);
+          setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            next.set("history", targetLead.id);
+            return next;
+          });
+        }}
+      />
+
+      <AddLeadFollowUpForm
+        open={showLeadFollowUp}
+        onClose={() => setShowLeadFollowUp(false)}
+        baseApi={BASE_API}
+        token={token}
+        leadId={followUpLeadId}
+        onViewHistory={(targetLead) => {
+          setShowLeadFollowUp(false);
+          setSelectedHistoryLead(targetLead);
+          setSelectedHistoryLeadId(targetLead.id);
+          setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            next.set("history", targetLead.id);
+            return next;
+          });
+        }}
+        onSuccess={() => {
+          fetchData();
+          setShowLeadFollowUp(false);
+          setFollowUpLeadId(null);
+        }}
+      />
+
+      {showQuotationForm && (
+        <AddQuotation
+          leadData={quotationLeadData}
+          onBack={() => {
+            setShowQuotationForm(false);
+            setQuotationLeadData(null);
+            fetchData();
+          }}
+        />
+      )}
+
+      <ImportLeadModal
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onSuccess={fetchData}
+        baseApi={BASE_API}
+        token={token}
+      />
+
+      <SendMessageModal
+        isOpen={sendMessageModalOpen}
+        onClose={() => {
+          setSendMessageModalOpen(false);
+          setSelectedMessageRecord(null);
+        }}
+        category="lead"
+        recordData={selectedMessageRecord}
+        onSuccess={() => { }}
+      />
+    </Base>
+  );
+}

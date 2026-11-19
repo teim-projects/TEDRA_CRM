@@ -1,0 +1,326 @@
+from rest_framework import viewsets, status, filters
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.decorators import action, api_view
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
+from api.permissions import is_admin_or_subadmin
+import logging
+from .serializers import (
+    QuotationSerializer, QuotationCreateSerializer,
+    TermCategorySerializer, TermCategoryCreateSerializer,
+    TermsConditionsSerializer, TermsConditionsCreateSerializer,
+    BillingDetailSerializer
+)
+
+from django.http import HttpResponse
+from .models import Quotation, QuotationVersion, TermCategory, TermsConditions, BillingDetail
+
+logger = logging.getLogger(__name__)
+
+
+
+# =====================================================
+# TERMS & CONDITIONS VIEWS
+# =====================================================
+
+class TermCategoryViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['name', 'description']
+    filterset_fields = ['is_active']
+    
+    def get_queryset(self):
+        return TermCategory.objects.all().prefetch_related('terms')
+    
+    def get_serializer_class(self):
+        if self.action == 'create' or self.action == 'update':
+            return TermCategoryCreateSerializer
+        return TermCategorySerializer
+    
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+
+class TermsConditionsViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['name', 'description']
+    filterset_fields = ['category', 'is_active', 'is_default']
+    
+    def get_queryset(self):
+        return TermsConditions.objects.all().select_related('category')
+    
+    def get_serializer_class(self):
+        if self.action == 'create' or self.action == 'update':
+            return TermsConditionsCreateSerializer
+        return TermsConditionsSerializer
+    
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+
+# =====================================================
+# BILLING DETAILS MASTER VIEWS
+# =====================================================
+
+class BillingDetailViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing company bank & billing accounts"""
+    permission_classes = [IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
+    queryset = BillingDetail.objects.all()
+    serializer_class = BillingDetailSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['bank_name', 'account_holder_name', 'account_number', 'ifsc_code', 'upi_id', 'company_name']
+    filterset_fields = ['is_active', 'is_default', 'account_type']
+    ordering_fields = ['created_at', 'bank_name', 'is_default']
+    ordering = ['-is_default', '-created_at']
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+    @action(detail=True, methods=['post'], url_path='set-default')
+    def set_default(self, request, pk=None):
+        """Set this billing account as primary/default and demote others"""
+        obj = self.get_object()
+        BillingDetail.objects.filter(is_default=True).exclude(pk=obj.pk).update(is_default=False)
+        obj.is_default = True
+        obj.save(update_fields=['is_default', 'updated_at'])
+        return Response(self.get_serializer(obj).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_path='toggle-status')
+    def toggle_status(self, request, pk=None):
+        """Toggle active/inactive status"""
+        obj = self.get_object()
+        obj.is_active = not obj.is_active
+        obj.save(update_fields=['is_active', 'updated_at'])
+        return Response(self.get_serializer(obj).data, status=status.HTTP_200_OK)
+
+
+
+@api_view(['GET'])
+def thank_you_suggestions(request):
+    """Get thank you note suggestions based on search term"""
+    search = request.GET.get('search', '').strip()
+    
+    query = Quotation.objects.filter(
+        thank_you_note__isnull=False
+    ).exclude(thank_you_note='')
+
+    if search:
+        query = query.filter(thank_you_note__icontains=search)
+    
+    notes = query.values_list('thank_you_note', flat=True).distinct()[:15]
+    
+    return Response([{'id': i, 'text': note} for i, note in enumerate(notes)])
+
+
+@api_view(['GET'])
+def subject_suggestions(request):
+    """Get subject suggestions based on search term"""
+    search = request.GET.get('search', '').strip()
+    
+    query = Quotation.objects.filter(
+        subject__isnull=False
+    ).exclude(subject='')
+
+    if search:
+        query = query.filter(subject__icontains=search)
+
+    subjects = query.values_list('subject', flat=True).distinct()[:15]
+    
+    return Response([{'id': i, 'text': subj} for i, subj in enumerate(subjects)])
+
+
+class QuotationViewSet(viewsets.ModelViewSet):
+    serializer_class = QuotationSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = [
+        "quotation_no",
+        "lead__company_name",
+        "lead__contact_person",
+        "lead__mobile_number",
+        "company_name",
+        "contact_person",
+        "mobile_number",
+        "email_address",
+        "subject",
+        "quotation_for",
+    ]
+    filterset_fields = ['gst_type', 'quotation_for']
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = Quotation.objects.all().select_related('lead').prefetch_related(
+            'versions',
+            'versions__items'
+        ).order_by('-created_at')
+        if not is_admin_or_subadmin(user):
+            qs = qs.filter(
+                Q(created_by=user) |
+                Q(lead__assigned_executive=user) |
+                Q(lead__created_by=user)
+            )
+
+        customer_id = self.request.query_params.get('customer')
+        if customer_id:
+            from lead_management.models import Customer
+            try:
+                cust = Customer.objects.get(id=customer_id)
+                clean_name = (cust.name or '').strip()
+                q_filter = Q(company_name__iexact=clean_name) | Q(company_name__icontains=clean_name)
+                if cust.lead_id:
+                    q_filter |= Q(lead_id=cust.lead_id)
+                q_filter |= Q(lead__converted_to_customer_id=cust.id)
+                if cust.email:
+                    q_filter |= Q(email_address__iexact=cust.email)
+                if cust.contact_number:
+                    clean_phone = cust.contact_number[-10:] if len(cust.contact_number) >= 10 else cust.contact_number
+                    q_filter |= Q(mobile_number__icontains=clean_phone)
+                qs = qs.filter(q_filter).distinct()
+            except (Customer.DoesNotExist, ValueError):
+                pass
+
+        return qs
+
+    def get_serializer_class(self):
+        if self.action in ['create', 'update']:
+            return QuotationCreateSerializer
+        if self.action == 'partial_update' and hasattr(self, 'request') and self.request and 'items' in self.request.data:
+            return QuotationCreateSerializer
+        return QuotationSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+    @action(detail=True, methods=['post', 'patch'], url_path='toggle-drop')
+    def toggle_drop(self, request, pk=None):
+        """Toggle or update quotation dropped status"""
+        quotation = self.get_object()
+        new_status = request.data.get("is_dropped", not quotation.is_dropped)
+        quotation.is_dropped = new_status
+        quotation.save(update_fields=['is_dropped', 'updated_at'])
+        return Response({
+            "message": f"Quotation marked as {'dropped' if quotation.is_dropped else 'active'}.",
+            "is_dropped": quotation.is_dropped
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['get'], url_path='latest-version')
+    def latest_version(self, request, pk=None):
+        """Get the latest active version of a quotation"""
+        quotation = self.get_object()
+        version = quotation.versions.filter(is_active=True).first()
+        if not version:
+            return Response(
+                {"message": "No active version found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        serializer = self.get_serializer(quotation)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['delete'], url_path='version/(?P<version_id>[^/.]+)/delete')
+    def delete_version(self, request, pk=None, version_id=None):
+        """Delete a specific version of a quotation"""
+        quotation = self.get_object()
+        version = get_object_or_404(
+            QuotationVersion,
+            pk=version_id,
+            quotation=quotation
+        )
+
+        was_active = version.is_active
+        version.delete()
+
+        remaining_versions = quotation.versions.order_by("-created_at")
+
+        if not remaining_versions.exists():
+            quotation.delete()
+            return Response({"message": "Quotation deleted (last version removed)"})
+
+        if was_active:
+            latest = remaining_versions.first()
+            latest.is_active = True
+            latest.save(update_fields=["is_active"])
+
+        return Response({"message": "Version deleted"})
+
+    @action(detail=True, methods=['post'], url_path='finalize')
+    def finalize(self, request, pk=None):
+        """Finalize the active version of a quotation"""
+        quotation = self.get_object()
+        active_version = quotation.versions.filter(is_active=True).first()
+        if not active_version:
+            return Response(
+                {"error": "No active version found to finalize."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        new_status = not active_version.is_finalized
+        quotation.versions.update(is_finalized=False)
+        active_version.is_finalized = new_status
+        active_version.save(update_fields=['is_finalized'])
+        quotation.is_finalized = new_status
+        quotation.save(update_fields=['is_finalized'])
+
+        return Response({
+            "message": "Quotation version marked as final." if new_status else "Quotation finalization removed.",
+            "is_finalized": new_status,
+            "version_id": active_version.id
+        })
+
+    @action(detail=True, methods=['post'], url_path='version/(?P<version_id>[^/.]+)/finalize')
+    def finalize_version(self, request, pk=None, version_id=None):
+        """Finalize a specific version of a quotation (active version only)"""
+        quotation = self.get_object()
+        version = get_object_or_404(
+            QuotationVersion,
+            pk=version_id,
+            quotation=quotation
+        )
+
+        if not version.is_active:
+            return Response(
+                {"error": "Archived versions cannot be finalized."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        new_status = not version.is_finalized
+        quotation.versions.update(is_finalized=False)
+        version.is_finalized = new_status
+        version.save(update_fields=['is_finalized'])
+        quotation.is_finalized = new_status
+        quotation.save(update_fields=['is_finalized'])
+
+        return Response({
+            "message": "Version marked as final." if new_status else "Version finalization removed.",
+            "is_finalized": new_status,
+            "version_id": version.id
+        })
+
+    @action(detail=True, methods=['get'], url_path='pdf')
+    def pdf(self, request, pk=None):
+        """Generate and stream Quotation PDF using WeasyPrint"""
+        quotation = self.get_object()
+        version_id = request.query_params.get('version_id')
+        if version_id:
+            version = get_object_or_404(QuotationVersion, id=version_id, quotation=quotation)
+        else:
+            version = quotation.versions.filter(is_active=True).first() or quotation.versions.first()
+            
+        if not version:
+            return Response({"error": "No version found for this quotation"}, status=status.HTTP_404_NOT_FOUND)
+            
+        try:
+            from .utils.pdf_generator import generate_quotation_pdf
+            pdf_bytes = generate_quotation_pdf(quotation, version)
+            disposition = request.query_params.get('disposition', 'inline')
+            response = HttpResponse(pdf_bytes, content_type='application/pdf')
+            filename = f"Quotation_{quotation.quotation_no}.pdf"
+            response['Content-Disposition'] = f'{disposition}; filename="{filename}"'
+            return response
+        except Exception as e:
+            logger.error(f"Error generating PDF: {str(e)}", exc_info=True)
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
