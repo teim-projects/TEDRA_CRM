@@ -865,7 +865,7 @@ export default function ServiceDetailView({
         </div>
 
         {/* TOP HEADER SECTION */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="min-w-0 flex-1">
             {/* Reference ID Tag */}
             <div className="text-[11px] font-bold text-sky-600 uppercase tracking-wide">
@@ -883,11 +883,11 @@ export default function ServiceDetailView({
                 {customerName}
               </span>
 
-              {/* Site Name (Reduced size, compact badge below Customer Name) */}
+              {/* Site Name (Reduced size, compact badge strictly below Customer Name) */}
               {siteName && (
                 <div className="mt-0.5">
                   <span
-                    className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-semibold bg-sky-50 text-sky-800 border border-sky-200 shadow-2xs max-w-full sm:max-w-xs truncate"
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-sky-50 text-sky-800 border border-sky-200 shadow-2xs max-w-xs truncate"
                     title={`${siteName}${siteShortcut ? ` (${siteShortcut})` : ""}`}
                   >
                     <span className="text-[10px] shrink-0">📍</span>
@@ -910,8 +910,8 @@ export default function ServiceDetailView({
             </div>
           </div>
 
-          {/* Top Right Controls & Action Buttons (Strictly in single line matching 2nd screenshot) */}
-          <div className="flex items-center gap-1.5 sm:gap-2 self-start lg:self-center shrink-0 flex-nowrap overflow-x-auto max-w-full pb-1 sm:pb-0">
+          {/* Top Right Controls & Action Buttons (Strictly in single line matching Image 4) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 self-start sm:self-center shrink-0 flex-nowrap overflow-x-auto max-w-full pb-1 sm:pb-0">
             {/* Status Pill Badge */}
             <span
               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold border shadow-2xs capitalize whitespace-nowrap shrink-0 ${

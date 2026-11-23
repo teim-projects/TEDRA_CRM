@@ -137,13 +137,11 @@ def generate_amc_visits_for_contract(amc, cycle=None, user=None):
         visit_num = candidate
 
         site_addr = getattr(cycle_obj, 'site_address', None) or amc.site_address or ""
-        resolved_site = getattr(amc, 'site', None) or (getattr(amc.project, 'site', None) if amc.project else None)
 
         v = AMCVisit(
             visit_number=visit_num,
             amc_contract=amc,
             cycle=cycle_obj,
-            site=resolved_site,
             visit_index=v_idx,
             customer=amc.customer,
             project=amc.project,
@@ -395,6 +393,7 @@ class AMCServiceSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
+        validated_data.pop('site', None)
         technicians_data = validated_data.pop('technicians', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -483,11 +482,7 @@ class AMCVisitSerializer(serializers.ModelSerializer):
         user = request.user if request and request.user.is_authenticated else None
         if user and "created_by" not in validated_data:
             validated_data["created_by"] = user
-        if not validated_data.get("site"):
-            if validated_data.get("amc_contract") and getattr(validated_data["amc_contract"], "site", None):
-                validated_data["site"] = validated_data["amc_contract"].site
-            elif validated_data.get("project") and getattr(validated_data["project"], "site", None):
-                validated_data["site"] = validated_data["project"].site
+        validated_data.pop('site', None)
         technicians_data = validated_data.pop('technicians', None)
         visit = AMCVisit.objects.create(**validated_data)
         if technicians_data is not None:
@@ -496,6 +491,7 @@ class AMCVisitSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
+        validated_data.pop('site', None)
         technicians_data = validated_data.pop('technicians', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)

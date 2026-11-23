@@ -281,6 +281,14 @@ export default function CustomerDetailView({
   const [siteStatusFilter, setSiteStatusFilter] = useState("all");
   const SITE_PAGE_SIZE = 8;
 
+  // Global Site Filter for Customer Detail View
+  const [selectedSiteId, setSelectedSiteId] = useState("all");
+
+  const selectedSite = useMemo(() => {
+    if (selectedSiteId === "all") return null;
+    return sites.find((s) => String(s.id) === String(selectedSiteId)) || null;
+  }, [sites, selectedSiteId]);
+
   // Pagination states for related tabs
   const [sitePage, setSitePage] = useState(1);
   const [servicePage, setServicePage] = useState(1);
@@ -291,6 +299,7 @@ export default function CustomerDetailView({
   const PAGE_SIZE = 10;
 
   useEffect(() => {
+    setSelectedSiteId("all");
     setSitePage(1);
     setServicePage(1);
     setAmcPage(1);
@@ -299,13 +308,13 @@ export default function CustomerDetailView({
     setReferralPage(1);
   }, [customer?.id]);
 
-  const totalSitesValue = useMemo(() => {
-    return sites.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0);
-  }, [sites]);
-
-  const totalSitesCapacity = useMemo(() => {
-    return sites.reduce((sum, s) => sum + (parseInt(s.capacity_cars, 10) || 0), 0);
-  }, [sites]);
+  useEffect(() => {
+    setSitePage(1);
+    setServicePage(1);
+    setAmcPage(1);
+    setQuotationPage(1);
+    setProjectPage(1);
+  }, [selectedSiteId]);
 
   const filteredSites = useMemo(() => {
     return sites.filter((site) => {
@@ -326,30 +335,96 @@ export default function CustomerDetailView({
     });
   }, [sites, siteSearchQuery, siteStatusFilter]);
 
+  // Site-filtered datasets
+  const visibleSites = useMemo(() => {
+    if (selectedSiteId === "all") return filteredSites;
+    return filteredSites.filter((s) => String(s.id) === String(selectedSiteId));
+  }, [filteredSites, selectedSiteId]);
+
+  const visibleProjects = useMemo(() => {
+    if (selectedSiteId === "all") return projects;
+    return projects.filter((p) => {
+      const siteVal = p.site?.id || p.site || p.site_details?.id;
+      return String(siteVal) === String(selectedSiteId);
+    });
+  }, [projects, selectedSiteId]);
+
+  const visibleAmcContracts = useMemo(() => {
+    if (selectedSiteId === "all") return amcContracts;
+    return amcContracts.filter((c) => {
+      const siteVal =
+        c.site?.id ||
+        c.site ||
+        c.site_details?.id ||
+        c.project_details?.site?.id ||
+        c.project_details?.site ||
+        c.project_details?.site_details?.id;
+      return String(siteVal) === String(selectedSiteId);
+    });
+  }, [amcContracts, selectedSiteId]);
+
+  const visibleServices = useMemo(() => {
+    if (selectedSiteId === "all") return services;
+    return services.filter((s) => {
+      const siteVal =
+        s.site?.id ||
+        s.site ||
+        s.site_details?.id ||
+        s.amc_contract_details?.site?.id ||
+        s.amc_contract_details?.site ||
+        s.amc_contract_details?.site_details?.id ||
+        s.project_details?.site?.id ||
+        s.project_details?.site ||
+        s.project_details?.site_details?.id;
+      return String(siteVal) === String(selectedSiteId);
+    });
+  }, [services, selectedSiteId]);
+
+  const visibleQuotations = useMemo(() => {
+    if (selectedSiteId === "all") return quotations;
+    if (!selectedSite) return quotations;
+    const sName = (selectedSite.name || "").toLowerCase().trim();
+    const sCode = (selectedSite.site_shortcut || "").toLowerCase().trim();
+    return quotations.filter((q) => {
+      const shipTo = (q.ship_to_company_name || q.site_name || q.ship_to_address || "").toLowerCase();
+      if (sName && shipTo.includes(sName)) return true;
+      if (sCode && shipTo.includes(sCode)) return true;
+      return false;
+    });
+  }, [quotations, selectedSiteId, selectedSite]);
+
+  const totalSitesValue = useMemo(() => {
+    return visibleSites.reduce((sum, s) => sum + (parseFloat(s.amount) || 0), 0);
+  }, [visibleSites]);
+
+  const totalSitesCapacity = useMemo(() => {
+    return visibleSites.reduce((sum, s) => sum + (parseInt(s.capacity_cars, 10) || 0), 0);
+  }, [visibleSites]);
+
   const totalSitePages = useMemo(
-    () => Math.max(1, Math.ceil(filteredSites.length / SITE_PAGE_SIZE)),
-    [filteredSites.length]
+    () => Math.max(1, Math.ceil(visibleSites.length / SITE_PAGE_SIZE)),
+    [visibleSites.length]
   );
 
   const pagedSites = useMemo(
-    () => filteredSites.slice((sitePage - 1) * SITE_PAGE_SIZE, sitePage * SITE_PAGE_SIZE),
-    [filteredSites, sitePage]
+    () => visibleSites.slice((sitePage - 1) * SITE_PAGE_SIZE, sitePage * SITE_PAGE_SIZE),
+    [visibleSites, sitePage]
   );
   const pagedServices = useMemo(
-    () => services.slice((servicePage - 1) * PAGE_SIZE, servicePage * PAGE_SIZE),
-    [services, servicePage]
+    () => visibleServices.slice((servicePage - 1) * PAGE_SIZE, servicePage * PAGE_SIZE),
+    [visibleServices, servicePage]
   );
   const pagedAmcContracts = useMemo(
-    () => amcContracts.slice((amcPage - 1) * PAGE_SIZE, amcPage * PAGE_SIZE),
-    [amcContracts, amcPage]
+    () => visibleAmcContracts.slice((amcPage - 1) * PAGE_SIZE, amcPage * PAGE_SIZE),
+    [visibleAmcContracts, amcPage]
   );
   const pagedQuotations = useMemo(
-    () => quotations.slice((quotationPage - 1) * PAGE_SIZE, quotationPage * PAGE_SIZE),
-    [quotations, quotationPage]
+    () => visibleQuotations.slice((quotationPage - 1) * PAGE_SIZE, quotationPage * PAGE_SIZE),
+    [visibleQuotations, quotationPage]
   );
   const pagedProjects = useMemo(
-    () => projects.slice((projectPage - 1) * PAGE_SIZE, projectPage * PAGE_SIZE),
-    [projects, projectPage]
+    () => visibleProjects.slice((projectPage - 1) * PAGE_SIZE, projectPage * PAGE_SIZE),
+    [visibleProjects, projectPage]
   );
   const pagedReferrals = useMemo(
     () => referrals.slice((referralPage - 1) * PAGE_SIZE, referralPage * PAGE_SIZE),
@@ -1074,14 +1149,14 @@ export default function CustomerDetailView({
 
   const statusMeta = getCustomerStatusBadge(customer.customer_status);
 
-  // KPI Calculations
-  const completedServicesCount = services.filter((s) => s.status === "completed").length;
-  const upcomingServicesCount = services.filter((s) => s.status === "scheduled" || s.status === "in_progress").length;
+  // KPI Calculations (Filtered by selected site)
+  const completedServicesCount = visibleServices.filter((s) => s.status === "completed").length;
+  const upcomingServicesCount = visibleServices.filter((s) => s.status === "scheduled" || s.status === "in_progress").length;
 
-  const activeAmcContracts = amcContracts.filter((c) => c.status === "active");
-  const totalAnnualAmc = amcContracts.reduce((sum, c) => sum + parseFloat(c.annual_value || 0), 0);
+  const activeAmcContracts = visibleAmcContracts.filter((c) => c.status === "active");
+  const totalAnnualAmc = visibleAmcContracts.reduce((sum, c) => sum + parseFloat(c.annual_value || 0), 0);
 
-  const totalQuotationValue = quotations.reduce((sum, q) => {
+  const totalQuotationValue = visibleQuotations.reduce((sum, q) => {
     const val = parseFloat(q.latest_version_details?.grand_total || q.total_amount || 0);
     return sum + (isNaN(val) ? 0 : val);
   }, 0);
@@ -1148,7 +1223,28 @@ export default function CustomerDetailView({
           </div>
 
           {/* Right: Status Pill & Communication Actions */}
-          <div className="flex items-center gap-2.5 self-start sm:self-center">
+          <div className="flex items-center gap-2.5 self-start sm:self-center flex-wrap">
+            {/* Site Dropdown Selector */}
+            {sites.length > 0 && (
+              <div className="flex items-center gap-1.5 bg-sky-50/90 hover:bg-sky-100/90 border border-sky-200 hover:border-sky-300 rounded-lg px-2.5 py-1 transition-all shadow-2xs">
+                <MdLocationOn size={15} className="text-sky-600 shrink-0" />
+                <span className="text-[11px] font-bold text-sky-900 whitespace-nowrap hidden sm:inline">Site:</span>
+                <select
+                  value={selectedSiteId}
+                  onChange={(e) => setSelectedSiteId(e.target.value)}
+                  className="bg-transparent text-xs font-bold text-slate-800 pr-1 outline-none cursor-pointer max-w-[170px] truncate"
+                  title="Filter customer data by selected site"
+                >
+                  <option value="all">All Sites ({sites.length})</option>
+                  {sites.map((s) => (
+                    <option key={s.id} value={String(s.id)}>
+                      {s.name} {s.site_shortcut ? `(${s.site_shortcut})` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             {/* Status Pill Badge */}
             <span
               className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium border shadow-2xs whitespace-nowrap ${statusMeta.pill}`}
@@ -1221,6 +1317,58 @@ export default function CustomerDetailView({
           </div>
         </div>
 
+        {/* ACTIVE SITE FILTER BANNER */}
+        {selectedSite && (
+          <div className="flex flex-wrap items-center justify-between gap-2 bg-gradient-to-r from-sky-50 via-sky-50/70 to-slate-50 px-3.5 py-2 rounded-xl border border-sky-200 shadow-2xs animate-fade-in">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
+              <span className="text-xs font-bold text-sky-950">
+                Filtered by Site:
+              </span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-bold bg-white text-sky-900 border border-sky-300 shadow-2xs">
+                <span>📍 {selectedSite.name}</span>
+                {selectedSite.site_shortcut && (
+                  <span className="text-[10px] font-mono text-cyan-700 font-bold ml-1">
+                    ({selectedSite.site_shortcut})
+                  </span>
+                )}
+              </span>
+              {selectedSite.site_type && (
+                <span className="text-[11px] text-slate-500 font-medium">
+                  · {selectedSite.site_type}
+                </span>
+              )}
+              {selectedSite.capacity_cars > 0 && (
+                <span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded-full text-slate-700 font-medium">
+                  🚗 {selectedSite.capacity_cars} Cars
+                </span>
+              )}
+              {selectedSite.amount ? (
+                <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
+                  ₹{parseFloat(selectedSite.amount).toLocaleString("en-IN")}
+                </span>
+              ) : null}
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              {selectedSite.address && (
+                <span className="text-[11px] text-slate-500 truncate max-w-xs hidden lg:inline" title={[selectedSite.address, selectedSite.city, selectedSite.state, selectedSite.pincode].filter(Boolean).join(", ")}>
+                  📍 {[selectedSite.address, selectedSite.city, selectedSite.state].filter(Boolean).join(", ")}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => setSelectedSiteId("all")}
+                className="text-[11px] font-semibold text-rose-600 hover:text-rose-700 bg-white hover:bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-lg transition-colors inline-flex items-center gap-1 cursor-pointer shadow-2xs"
+                title="Reset site filter to view all customer data"
+              >
+                <MdClose size={13} />
+                <span>Show All Sites</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* 3. 6 KPI PULSE CARDS ROW (Exact match with FollowupHistoryView & Figma design) */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 pt-1">
           {/* KPI 0: Sites & Facilities */}
@@ -1236,10 +1384,10 @@ export default function CustomerDetailView({
               Sites & Facilities
             </span>
             <span className="text-xs sm:text-[13px] font-bold text-slate-900 block mt-0.5">
-              {sites.length} {sites.length === 1 ? "site" : "sites"} registered
+              {visibleSites.length} {visibleSites.length === 1 ? "site" : "sites"} {selectedSite ? "selected" : "registered"}
             </span>
             <span className="text-[10px] text-emerald-600 font-medium block mt-0.5 truncate">
-              {sites.reduce((acc, s) => acc + (s.capacity_cars || 0), 0)} cars capacity · View all
+              {visibleSites.reduce((acc, s) => acc + (s.capacity_cars || 0), 0)} cars capacity · View all
             </span>
           </div>
 
@@ -1256,7 +1404,7 @@ export default function CustomerDetailView({
               Services & Visits
             </span>
             <span className="text-xs sm:text-[13px] font-bold text-slate-900 block mt-0.5">
-              {services.length} {services.length === 1 ? "visit" : "visits"} recorded
+              {visibleServices.length} {visibleServices.length === 1 ? "visit" : "visits"} recorded
             </span>
             <span className="text-[10px] text-sky-600 font-medium block mt-0.5 truncate">
               {completedServicesCount} completed · {upcomingServicesCount} upcoming
@@ -1276,7 +1424,7 @@ export default function CustomerDetailView({
               AMC Contracts
             </span>
             <span className="text-xs sm:text-[13px] font-bold text-slate-900 block mt-0.5">
-              {amcContracts.length} {amcContracts.length === 1 ? "contract" : "contracts"}
+              {visibleAmcContracts.length} {visibleAmcContracts.length === 1 ? "contract" : "contracts"}
             </span>
             <span className="text-[10px] text-emerald-600 font-medium block mt-0.5 truncate">
               {activeAmcContracts.length > 0 ? "Active Contract" : "No Active AMC"} · ₹{totalAnnualAmc.toLocaleString("en-IN")}/yr
@@ -1296,7 +1444,7 @@ export default function CustomerDetailView({
               Quotations
             </span>
             <span className="text-xs sm:text-[13px] font-bold text-slate-900 block mt-0.5">
-              {quotations.length} {quotations.length === 1 ? "quotation" : "quotations"}
+              {visibleQuotations.length} {visibleQuotations.length === 1 ? "quotation" : "quotations"}
             </span>
             <span className="text-[10px] text-slate-500 font-normal block mt-0.5 truncate">
               Total ₹{totalQuotationValue.toLocaleString("en-IN")} quoted
@@ -1319,7 +1467,7 @@ export default function CustomerDetailView({
               {customer.project_value ? `₹${parseFloat(customer.project_value).toLocaleString("en-IN")}` : "—"}
             </span>
             <span className="text-[10px] text-slate-500 font-normal block mt-0.5 truncate">
-              {projects.length} project(s) · {customer.payment_terms_display || customer.payment_terms || "Credit"}
+              {visibleProjects.length} project(s) · {customer.payment_terms_display || customer.payment_terms || "Credit"}
             </span>
           </div>
 
@@ -1372,7 +1520,7 @@ export default function CustomerDetailView({
               <MdLocationOn size={15} />
               <span>Sites</span>
               <span className="px-1.5 py-0.2 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-full">
-                {sites.length}
+                {visibleSites.length}
               </span>
             </button>
 
@@ -1388,7 +1536,7 @@ export default function CustomerDetailView({
               <MdOutlineBuild size={15} />
               <span>Services</span>
               <span className="px-1.5 py-0.2 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-full">
-                {services.length}
+                {visibleServices.length}
               </span>
             </button>
 
@@ -1404,7 +1552,7 @@ export default function CustomerDetailView({
               <MdDescription size={15} />
               <span>AMC Contracts</span>
               <span className="px-1.5 py-0.2 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-full">
-                {amcContracts.length}
+                {visibleAmcContracts.length}
               </span>
             </button>
 
@@ -1420,7 +1568,7 @@ export default function CustomerDetailView({
               <MdReceiptLong size={15} />
               <span>Quotations</span>
               <span className="px-1.5 py-0.2 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-full">
-                {quotations.length}
+                {visibleQuotations.length}
               </span>
             </button>
 
@@ -1436,7 +1584,7 @@ export default function CustomerDetailView({
               <MdEngineering size={15} />
               <span>Projects</span>
               <span className="px-1.5 py-0.2 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-full">
-                {projects.length}
+                {visibleProjects.length}
               </span>
             </button>
 
@@ -2299,7 +2447,7 @@ export default function CustomerDetailView({
                 rows={pagedServices}
                 loading={loadingRelated}
                 page={servicePage}
-                totalPages={Math.max(1, Math.ceil(services.length / PAGE_SIZE))}
+                totalPages={Math.max(1, Math.ceil(visibleServices.length / PAGE_SIZE))}
                 onPageChange={setServicePage}
                 pageSize={PAGE_SIZE}
                 actions={(srv) => (
@@ -2313,7 +2461,7 @@ export default function CustomerDetailView({
                     <span>View</span>
                   </button>
                 )}
-                emptyMessage="No service visits recorded for this customer yet."
+                emptyMessage={selectedSite ? `No service visits recorded for site "${selectedSite.name}".` : "No service visits recorded for this customer yet."}
               />
             </div>
           </div>
@@ -2348,7 +2496,7 @@ export default function CustomerDetailView({
                 rows={pagedAmcContracts}
                 loading={loadingRelated}
                 page={amcPage}
-                totalPages={Math.max(1, Math.ceil(amcContracts.length / PAGE_SIZE))}
+                totalPages={Math.max(1, Math.ceil(visibleAmcContracts.length / PAGE_SIZE))}
                 onPageChange={setAmcPage}
                 pageSize={PAGE_SIZE}
                 actions={(c) => (
@@ -2362,7 +2510,7 @@ export default function CustomerDetailView({
                     <span>View</span>
                   </button>
                 )}
-                emptyMessage="No AMC contracts found for this customer."
+                emptyMessage={selectedSite ? `No AMC contracts found for site "${selectedSite.name}".` : "No AMC contracts found for this customer."}
               />
             </div>
           </div>
@@ -2397,7 +2545,7 @@ export default function CustomerDetailView({
                 rows={pagedQuotations}
                 loading={loadingRelated}
                 page={quotationPage}
-                totalPages={Math.max(1, Math.ceil(quotations.length / PAGE_SIZE))}
+                totalPages={Math.max(1, Math.ceil(visibleQuotations.length / PAGE_SIZE))}
                 onPageChange={setQuotationPage}
                 pageSize={PAGE_SIZE}
                 actions={(q) => (
@@ -2411,7 +2559,7 @@ export default function CustomerDetailView({
                     <span>View</span>
                   </button>
                 )}
-                emptyMessage="No quotations generated for this customer yet."
+                emptyMessage={selectedSite ? `No quotations found for site "${selectedSite.name}".` : "No quotations generated for this customer yet."}
               />
             </div>
           </div>
@@ -2446,7 +2594,7 @@ export default function CustomerDetailView({
                 rows={pagedProjects}
                 loading={loadingRelated}
                 page={projectPage}
-                totalPages={Math.max(1, Math.ceil(projects.length / PAGE_SIZE))}
+                totalPages={Math.max(1, Math.ceil(visibleProjects.length / PAGE_SIZE))}
                 onPageChange={setProjectPage}
                 pageSize={PAGE_SIZE}
                 actions={(p) => (
@@ -2460,7 +2608,7 @@ export default function CustomerDetailView({
                     <span>View</span>
                   </button>
                 )}
-                emptyMessage="No projects found for this customer."
+                emptyMessage={selectedSite ? `No projects found for site "${selectedSite.name}".` : "No projects found for this customer."}
               />
             </div>
           </div>

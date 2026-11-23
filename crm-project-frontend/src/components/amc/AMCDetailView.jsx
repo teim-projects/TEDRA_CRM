@@ -126,6 +126,20 @@ export default function AMCDetailView({
     return null;
   }, [safeAmc.site_details, safeAmc.site]);
 
+  const displaySiteName =
+    safeAmc.site_name ||
+    safeAmc.site_details?.name ||
+    (typeof safeAmc.site === "object" && safeAmc.site?.name) ||
+    linkedSite?.name ||
+    "";
+
+  const displaySiteCode =
+    safeAmc.site_shortcut ||
+    safeAmc.site_details?.site_shortcut ||
+    (typeof safeAmc.site === "object" && safeAmc.site?.site_shortcut) ||
+    linkedSite?.site_shortcut ||
+    "";
+
   const siteAddress =
     safeAmc.site_address ||
     (linkedSite ? [linkedSite.address, linkedSite.city, linkedSite.state, linkedSite.pincode].filter(Boolean).join(", ") : "") ||
@@ -200,7 +214,7 @@ export default function AMCDetailView({
         (s) =>
           !usedServiceIds.has(s.id) &&
           (s.visit_index === visitNum ||
-           (s.description && (s.description.includes(`Visit #${formatNumber(visitNum)}`) || s.description.includes(`Visit #${visitNum}`))))
+            (s.description && (s.description.includes(`Visit #${formatNumber(visitNum)}`) || s.description.includes(`Visit #${visitNum}`))))
       );
 
       // If no explicit match, pick the next unused chronological service
@@ -262,10 +276,10 @@ export default function AMCDetailView({
     Array.isArray(nextVisit?.service?.technicians_details) && nextVisit.service.technicians_details.length > 0
       ? nextVisit.service.technicians_details
       : Array.isArray(nextVisit?.service?.assigned_technicians_list) && nextVisit.service.assigned_technicians_list.length > 0
-      ? nextVisit.service.assigned_technicians_list
-      : Array.isArray(nextVisit?.service?.technicians)
-      ? nextVisit.service.technicians
-      : [];
+        ? nextVisit.service.assigned_technicians_list
+        : Array.isArray(nextVisit?.service?.technicians)
+          ? nextVisit.service.technicians
+          : [];
   const nextVisitTech = nextVisitTechList[0];
   const nextVisitTechName = nextVisitTech
     ? typeof nextVisitTech === "string"
@@ -477,7 +491,7 @@ export default function AMCDetailView({
     <div className="w-full space-y-4 font-sans antialiased text-slate-800 pb-10 text-xs">
       {/* THE BIG OUTER BORDERED CONTAINER ENCASING THE WHOLE PAGE (EXACT FollowupHistoryView & ProjectDetailView STRUCTURE) */}
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-6 sm:p-8 space-y-6">
-        
+
         {/* TOP HEADER SECTION (Inside big outer container) */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
@@ -487,41 +501,38 @@ export default function AMCDetailView({
             </div>
 
             {/* Company Title */}
-            <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight mt-0.5">
+            <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight mt-0.5 truncate">
               {customerName}
             </h1>
 
-            {/* Site Name (Displayed below Customer Name) */}
-            {linkedSite ? (
-              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-bold bg-sky-50 text-sky-800 border border-sky-200 shadow-2xs">
-                  <span>📍 {linkedSite.name}</span>
-                  {linkedSite.site_shortcut && (
-                    <span className="text-[10px] font-mono text-cyan-700 font-bold ml-1">
-                      ({linkedSite.site_shortcut})
+            {/* Site Name (Displayed strictly below Customer Name, reduced compact size) */}
+            {displaySiteName && (
+              <div className="mt-0.5">
+                <span
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-sky-50 text-sky-800 border border-sky-200 shadow-2xs max-w-xs truncate"
+                  title={`${displaySiteName}${displaySiteCode ? ` (${displaySiteCode})` : ""}`}
+                >
+                  <span className="text-[10px] shrink-0">📍</span>
+                  <span className="truncate">{displaySiteName}</span>
+                  {displaySiteCode && (
+                    <span className="text-[9px] font-mono text-cyan-700 font-bold ml-0.5 shrink-0">
+                      ({displaySiteCode})
                     </span>
                   )}
                 </span>
-                <span className="text-[11px] text-slate-400 font-normal">
-                  · Annual Maintenance Contract
-                </span>
-              </div>
-            ) : (
-              <div className="text-[11px] text-slate-400 font-normal mt-0.5">
-                Annual Maintenance Contract
               </div>
             )}
 
             {/* Subtitle */}
-            <p className="text-[11px] text-slate-500 font-normal mt-1">
-              {siteAddress} · <span className="text-slate-700 font-medium">{productName}</span>
+            <p className="text-[11px] text-slate-500 font-normal mt-0.5 truncate max-w-md">
+              · Annual Maintenance Contract · {siteAddress} · <span className="text-slate-700 font-medium">{productName}</span>
             </p>
           </div>
 
-          {/* Top Right Controls & Status Pill */}
-          <div className="flex items-center gap-2.5 self-start sm:self-center flex-wrap">
+          {/* Top Right Controls & Status Pill (Strictly in single line matching Image 4) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 self-start sm:self-center shrink-0 flex-nowrap overflow-x-auto max-w-full pb-1 sm:pb-0">
             {/* Status Pill Badge */}
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-100 shadow-2xs">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100 shadow-2xs whitespace-nowrap shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
               {amc.status_display || amc.status || "Active"}
             </span>
@@ -531,9 +542,9 @@ export default function AMCDetailView({
               <button
                 type="button"
                 onClick={() => onRenew(amc)}
-                className="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-[11px] font-semibold flex items-center gap-1.5 shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+                className="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap shrink-0"
               >
-                <MdAutorenew size={14} />
+                <MdAutorenew size={13} />
                 <span>Renew AMC</span>
               </button>
             )}
@@ -549,59 +560,58 @@ export default function AMCDetailView({
                   destinationName: customerName,
                 })
               }
-              className="px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white rounded-lg text-[11px] font-bold flex items-center gap-1.5 shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap shrink-0"
               title="Get live GPS driving route from your current location"
             >
-              <Navigation size={13} className="fill-white" />
+              <Navigation size={12} className="fill-white" />
               <span>Navigate Route</span>
             </button>
 
-            {/* Action Buttons: Allocate, WhatsApp, Email, Edit, Delete, Close (Styled exact to FollowupHistoryView) */}
-            <div className="flex items-center gap-1 text-slate-400">
-
+            {/* Action Buttons: WhatsApp, Email, Edit, Delete, Close */}
+            <div className="flex items-center gap-0.5 text-slate-400 shrink-0">
               <button
                 type="button"
                 onClick={openWhatsAppModal}
-                className="p-1.5 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
+                className="p-1 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors cursor-pointer"
                 title="Open WhatsApp Message"
               >
-                <FaWhatsapp size={15} />
+                <FaWhatsapp size={14} />
               </button>
               <button
                 type="button"
                 onClick={openEmailModal}
-                className="p-1.5 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                className="p-1 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
                 title="Open Email Composer"
               >
-                <MdMail size={15} />
+                <MdMail size={14} />
               </button>
               {canEdit && (
                 <button
                   type="button"
                   onClick={() => onEdit(amc)}
-                  className="p-1.5 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors cursor-pointer"
+                  className="p-1 hover:text-sky-600 hover:bg-sky-50 rounded-md transition-colors cursor-pointer"
                   title="Edit AMC Contract"
                 >
-                  <MdEdit size={15} />
+                  <MdEdit size={14} />
                 </button>
               )}
               {canDelete && (
                 <button
                   type="button"
                   onClick={() => onDelete(amc.id)}
-                  className="p-1.5 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                  className="p-1 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
                   title="Delete AMC Contract"
                 >
-                  <MdDeleteOutline size={16} />
+                  <MdDeleteOutline size={15} />
                 </button>
               )}
               <button
                 type="button"
                 onClick={onBack}
-                className="p-1.5 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer ml-1 border-l border-slate-200 pl-2 text-slate-400"
+                className="p-1 hover:text-slate-800 hover:bg-slate-100 rounded-md transition-colors cursor-pointer ml-0.5 border-l border-slate-200 pl-1.5 text-slate-400"
                 title="Close View"
               >
-                <MdClose size={16} />
+                <MdClose size={15} />
               </button>
             </div>
           </div>
@@ -696,10 +706,10 @@ export default function AMCDetailView({
 
         {/* MAIN TWO-COLUMN WORKSPACE (Matching FollowupHistoryView & ProjectDetailView) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-          
+
           {/* LEFT 2 COLUMNS: Maintenance Visit History */}
           <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 sm:p-6 space-y-4">
-            
+
             {/* Header with Title, Cycle Selector, and Scroll Info */}
             <div className="space-y-2 pb-1 border-b border-slate-100">
               <div className="flex items-center justify-between">
@@ -728,11 +738,10 @@ export default function AMCDetailView({
                   <button
                     type="button"
                     onClick={() => setSelectedCycleId("all")}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                      selectedCycleId === "all"
-                        ? "bg-slate-900 text-white shadow-2xs font-bold"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    }`}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${selectedCycleId === "all"
+                      ? "bg-slate-900 text-white shadow-2xs font-bold"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      }`}
                   >
                     All Cycles ({contractServices.length})
                   </button>
@@ -745,11 +754,10 @@ export default function AMCDetailView({
                         <button
                           type="button"
                           onClick={() => setSelectedCycleId(c.id)}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                            isSelected
-                              ? "bg-purple-600 text-white shadow-2xs font-bold"
-                              : "bg-purple-50 text-purple-700 hover:bg-purple-100"
-                          }`}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${isSelected
+                            ? "bg-purple-600 text-white shadow-2xs font-bold"
+                            : "bg-purple-50 text-purple-700 hover:bg-purple-100"
+                            }`}
                         >
                           {cLabel}
                         </button>
@@ -776,11 +784,10 @@ export default function AMCDetailView({
               </div>
             ) : (
               <div
-                className={`space-y-3 pr-1.5 ${
-                  plannedVisitSlots.length > 5
-                    ? "max-h-[465px] overflow-y-auto slim-scrollbar"
-                    : ""
-                }`}
+                className={`space-y-3 pr-1.5 ${plannedVisitSlots.length > 5
+                  ? "max-h-[465px] overflow-y-auto slim-scrollbar"
+                  : ""
+                  }`}
               >
                 {plannedVisitSlots.map((slot) => {
                   const srv = slot.service;
@@ -791,10 +798,10 @@ export default function AMCDetailView({
                     Array.isArray(srv?.technicians_details) && srv.technicians_details.length > 0
                       ? srv.technicians_details
                       : Array.isArray(srv?.assigned_technicians_list) && srv.assigned_technicians_list.length > 0
-                      ? srv.assigned_technicians_list
-                      : Array.isArray(srv?.technicians)
-                      ? srv.technicians
-                      : [];
+                        ? srv.assigned_technicians_list
+                        : Array.isArray(srv?.technicians)
+                          ? srv.technicians
+                          : [];
                   const techNames = technicians
                     .map((t) =>
                       typeof t === "string"
@@ -804,10 +811,9 @@ export default function AMCDetailView({
                     .filter(Boolean)
                     .join(", ");
 
-                  const visitTitle = `Visit ${formatNumber(slot.visitNumber)} · ${
-                    srv?.service_type_display ||
+                  const visitTitle = `Visit ${formatNumber(slot.visitNumber)} · ${srv?.service_type_display ||
                     (slot.visitNumber % 2 === 1 ? "Preventive maintenance" : "Maintenance + pump inspection")
-                  }`;
+                    }`;
 
                   const signerName =
                     srv?.contact_person ||
@@ -821,14 +827,13 @@ export default function AMCDetailView({
                   return (
                     <div
                       key={slot.visitNumber}
-                      className={`rounded-xl border p-3.5 sm:p-4 shadow-2xs transition-all ${
-                        isCompleted
-                          ? "bg-white border-slate-200/80 hover:bg-slate-50/50"
-                          : "bg-white border-slate-200 hover:border-sky-300"
-                      }`}
+                      className={`rounded-xl border p-3.5 sm:p-4 shadow-2xs transition-all ${isCompleted
+                        ? "bg-white border-slate-200/80 hover:bg-slate-50/50"
+                        : "bg-white border-slate-200 hover:border-sky-300"
+                        }`}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        
+
                         {/* Left: Icon + Title & Details */}
                         <div className="flex items-start gap-3 min-w-0">
                           {/* Circular Number / Check Badge matching FollowupHistoryView timeline items */}
@@ -891,22 +896,20 @@ export default function AMCDetailView({
 
                         {/* Right: Status Badge & Allocate Technician Action */}
                         <div className="flex items-center justify-between sm:justify-end gap-2.5 shrink-0 pl-8 sm:pl-0">
-                          
+
                           {/* Status Badge & Customer Confirmation */}
                           <div className="text-right">
                             <span
-                              className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-medium capitalize ${
-                                isCompleted
-                                  ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                                  : isInProgress
+                              className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-medium capitalize ${isCompleted
+                                ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                                : isInProgress
                                   ? "bg-amber-50 text-amber-700 border border-amber-100"
                                   : "bg-sky-50 text-sky-700 border border-sky-100"
-                              }`}
+                                }`}
                             >
                               <span
-                                className={`w-1.5 h-1.5 rounded-full ${
-                                  isCompleted ? "bg-emerald-500" : isInProgress ? "bg-amber-500" : "bg-sky-500"
-                                }`}
+                                className={`w-1.5 h-1.5 rounded-full ${isCompleted ? "bg-emerald-500" : isInProgress ? "bg-amber-500" : "bg-sky-500"
+                                  }`}
                               ></span>
                               {srv?.status_display || (isCompleted ? "Completed" : "Scheduled")}
                             </span>
@@ -915,8 +918,8 @@ export default function AMCDetailView({
                               {isCompleted
                                 ? `Signed by ${signerName}`
                                 : techNames
-                                ? "Visit planned"
-                                : "Needs technician"}
+                                  ? "Visit planned"
+                                  : "Needs technician"}
                             </span>
                           </div>
 
@@ -937,11 +940,10 @@ export default function AMCDetailView({
                               type="button"
                               onClick={() => handleAssignTechnicianToSlot(slot)}
                               disabled={isCreatingThis}
-                              className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold flex items-center gap-1 transition-all cursor-pointer ${
-                                techNames
-                                  ? "bg-slate-100 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-slate-200"
-                                  : "bg-sky-600 hover:bg-sky-700 text-white shadow-2xs"
-                              }`}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold flex items-center gap-1 transition-all cursor-pointer ${techNames
+                                ? "bg-slate-100 hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-slate-200"
+                                : "bg-sky-600 hover:bg-sky-700 text-white shadow-2xs"
+                                }`}
                               title={techNames ? "Change / Re-allocate technicians" : "Assign field technician for this visit"}
                             >
                               <MdEngineering size={12} />
@@ -958,21 +960,20 @@ export default function AMCDetailView({
                                   type="button"
                                   onClick={() => handleQuickStatusChange(srv.id, isCompleted ? "scheduled" : "completed", slot.date, srv.status)}
                                   disabled={isUpdatingThis || (!isCompleted && !canComplete)}
-                                  className={`p-1 rounded-lg text-xs transition-colors border ${
-                                    isCompleted
-                                      ? "bg-slate-50 hover:bg-amber-50 text-slate-400 hover:text-amber-600 border-slate-200 cursor-pointer"
-                                      : canComplete
+                                  className={`p-1 rounded-lg text-xs transition-colors border ${isCompleted
+                                    ? "bg-slate-50 hover:bg-amber-50 text-slate-400 hover:text-amber-600 border-slate-200 cursor-pointer"
+                                    : canComplete
                                       ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border-emerald-200 cursor-pointer"
                                       : "bg-slate-100 text-slate-300 border-slate-200 cursor-not-allowed opacity-50"
-                                  }`}
+                                    }`}
                                   title={
                                     isCompleted
                                       ? "Mark as Scheduled (Uncomplete)"
                                       : !isDue
-                                      ? `Scheduled for ${formatDisplayDate(slot.date)}. Cannot complete before scheduled date.`
-                                      : !isInProgress
-                                      ? "Start visit first before marking as completed."
-                                      : "Mark Visit as Completed"
+                                        ? `Scheduled for ${formatDisplayDate(slot.date)}. Cannot complete before scheduled date.`
+                                        : !isInProgress
+                                          ? "Start visit first before marking as completed."
+                                          : "Mark Visit as Completed"
                                   }
                                 >
                                   <MdCheck size={12} />
@@ -1005,7 +1006,7 @@ export default function AMCDetailView({
 
           {/* RIGHT 1 COLUMN: Coverage & Site Info */}
           <div className="space-y-4">
-            
+
             {/* CARD 0: Contract Renewal Cycles (All Cycles & Eye Buttons) */}
             {cycles.length > 0 && (
               <div className="bg-white rounded-xl border border-slate-200/80 shadow-2xs p-4 sm:p-5 space-y-3">
@@ -1037,11 +1038,10 @@ export default function AMCDetailView({
                     return (
                       <div
                         key={c.id}
-                        className={`p-3 rounded-lg border text-xs transition-all ${
-                          isCurrentActive
-                            ? "bg-purple-50/40 border-purple-200"
-                            : "bg-slate-50/70 border-slate-200/80"
-                        }`}
+                        className={`p-3 rounded-lg border text-xs transition-all ${isCurrentActive
+                          ? "bg-purple-50/40 border-purple-200"
+                          : "bg-slate-50/70 border-slate-200/80"
+                          }`}
                       >
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-1.5 min-w-0">
@@ -1255,7 +1255,7 @@ export default function AMCDetailView({
         category="amc"
         recordData={messageRecord}
         initialChannel={messageChannel}
-        onSuccess={() => {}}
+        onSuccess={() => { }}
       />
 
       {/* DEDICATED RESCHEDULE & EDIT VISIT MODAL */}
