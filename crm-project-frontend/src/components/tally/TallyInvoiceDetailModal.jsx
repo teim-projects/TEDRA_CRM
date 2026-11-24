@@ -30,27 +30,27 @@ export default function TallyInvoiceDetailModal({ invoice, isOpen, onClose }) {
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-[1000] bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in font-sans antialiased text-slate-800"
+      className="fixed inset-0 z-[1000] bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 animate-fade-in font-sans antialiased text-slate-800"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col relative border border-slate-100 my-auto"
+        className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[96vh] sm:max-h-[90vh] overflow-hidden flex flex-col relative border border-slate-100 my-2 sm:my-auto"
       >
         {/* Header Bar - Identical to AddLeadForm / LeadDetails */}
-        <div className="bg-white px-6 pt-6 pb-3 flex justify-between items-start border-b border-slate-100">
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-xl font-bold text-slate-900">
+        <div className="bg-white px-4 sm:px-6 pt-4 sm:pt-6 pb-3 flex justify-between items-start border-b border-slate-100 gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900 truncate">
                 Invoice {invoice.voucher_number || ""}
               </h3>
-              <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-bold uppercase tracking-wider">
+              <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap shrink-0">
                 {invoice.voucher_type || "Sales"}
               </span>
-              <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase tracking-wider">
+              <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap shrink-0">
                 Tally Source
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-400 mt-0.5 truncate">
               Voucher Date: <span className="font-semibold text-slate-600">{formatDate(invoice.date)}</span>
               {invoice.reference_number && (
                 <span className="ml-3">Ref: <span className="font-semibold text-slate-600">{invoice.reference_number}</span></span>
@@ -60,7 +60,7 @@ export default function TallyInvoiceDetailModal({ invoice, isOpen, onClose }) {
 
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-50 cursor-pointer"
+            className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 rounded-lg hover:bg-slate-50 cursor-pointer shrink-0"
             aria-label="Close"
           >
             <RxCross2 size={20} />
@@ -68,7 +68,7 @@ export default function TallyInvoiceDetailModal({ invoice, isOpen, onClose }) {
         </div>
 
         {/* Modal Main Body */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-5 scrollbar-thin">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-5 scrollbar-thin">
           {/* Party Details Card */}
           <div className="border border-slate-200/80 rounded-lg p-4 bg-white">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
@@ -122,8 +122,8 @@ export default function TallyInvoiceDetailModal({ invoice, isOpen, onClose }) {
               Invoice Line Items ({invoice.items?.length || 0})
             </h4>
 
-            <div className="overflow-x-auto rounded-lg border border-slate-200/80 bg-white">
-              <table className="min-w-full text-xs">
+            <div className="overflow-x-auto rounded-lg border border-slate-200/80 bg-white scrollbar-thin">
+              <table className="min-w-[620px] w-full text-xs">
                 <thead>
                   <tr className="border-b border-slate-200/80 bg-slate-50/70 text-slate-600 font-semibold text-left">
                     <th className="py-2 px-3 text-center w-10">#</th>
@@ -267,11 +267,11 @@ export default function TallyInvoiceDetailModal({ invoice, isOpen, onClose }) {
         </div>
 
         {/* Footer - Consistent with Lead modal footers */}
-        <div className="flex items-center justify-end px-6 py-3 border-t border-slate-100 bg-white">
+        <div className="flex items-center justify-end px-4 sm:px-6 py-3 border-t border-slate-100 bg-white">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
+            className="w-full sm:w-auto px-5 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-xs cursor-pointer text-center"
           >
             Close
           </button>

@@ -60,7 +60,7 @@ export default function AMCServices() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(10);
 
   // Filter drawer
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -143,7 +143,7 @@ export default function AMCServices() {
         const url = new URL(window.location.href);
         url.searchParams.delete("serviceId");
         window.history.replaceState(null, "", url.pathname + (url.search || ""));
-      } catch (e) {
+      } catch {
         // Fallback
       }
       setSearchParams({}, { replace: true });
@@ -461,11 +461,11 @@ export default function AMCServices() {
           return (
             <button
               onClick={() => setAllocatingService(r)}
-              className="text-[10px] text-sky-600 hover:text-sky-800 bg-sky-50 hover:bg-sky-100 border border-sky-200/80 px-2 py-0.5 rounded-full font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+              className="text-[10px] text-sky-600 hover:text-sky-800 bg-sky-50 hover:bg-sky-100 border border-sky-200/80 px-2.5 py-0.5 rounded-full font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors shadow-2xs whitespace-nowrap shrink-0"
               title="Click to allocate technicians"
             >
-              <MdEngineering size={11} />
-              <span>+ Allocate</span>
+              <MdEngineering size={12} className="shrink-0" />
+              <span className="whitespace-nowrap">+ Allocate</span>
             </button>
           );
         }
@@ -479,15 +479,15 @@ export default function AMCServices() {
         return (
           <button
             onClick={() => setAllocatingService(r)}
-            className="text-[10px] text-slate-700 hover:text-sky-700 bg-slate-100 hover:bg-sky-50 border border-slate-200 hover:border-sky-200 px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1 cursor-pointer transition-colors max-w-[140px] truncate"
+            className="text-[10px] text-slate-700 hover:text-sky-700 bg-slate-100 hover:bg-sky-50 border border-slate-200 hover:border-sky-200 px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1 cursor-pointer transition-colors max-w-[140px] truncate whitespace-nowrap shrink-0"
             title={`Allocated: ${allNamesTooltip} (Click to manage)`}
           >
             <MdEngineering size={12} className="text-sky-600 shrink-0" />
-            <span className="truncate">{displayLabel}</span>
+            <span className="truncate whitespace-nowrap">{displayLabel}</span>
           </button>
         );
       },
-      className: "w-36 max-w-[150px]",
+      className: "w-36 min-w-[125px] max-w-[150px] whitespace-nowrap",
     },
     {
       key: "status",

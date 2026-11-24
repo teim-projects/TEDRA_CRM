@@ -821,15 +821,15 @@ export default function Dashboard() {
 
         {/* COMPACT ACTIVE FILTER BANNER (WHEN FILTERS ARE ACTIVE BUT BAR IS COLLAPSED) */}
         {!isFilterOpen && (filterConfig.mode !== "all" || filterConfig.preset !== "all") && (
-          <div className="flex items-center justify-between px-3.5 py-2 bg-emerald-50/90 border border-emerald-200/80 rounded-xl text-xs text-emerald-900 font-medium shadow-2xs">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#377d58]" />
-              <span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-3.5 py-2.5 bg-emerald-50/90 border border-emerald-200/80 rounded-xl text-xs text-emerald-900 font-medium shadow-2xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-2 h-2 rounded-full bg-[#377d58] shrink-0" />
+              <span className="truncate">
                 Filtered by: <strong className="font-bold">{activeFilterSummary}</strong> (
                 {Number(totalFilteredCount).toLocaleString("en-IN")} matching records)
               </span>
             </div>
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-auto">
               <button
                 type="button"
                 onClick={() => setIsFilterOpen(true)}

@@ -107,15 +107,15 @@ export default function QuotationDashboard({ quotations = [], isLoading = false 
     .slice(0, 5);
 
   return (
-    <div className="w-full space-y-5 font-sans antialiased text-slate-800">
+    <div className="w-full space-y-4 sm:space-y-5 font-sans antialiased text-slate-800">
       {/* 1. KEY KPI CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Total Quotations
             </span>
-            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               {isLoading ? <span className="text-base font-medium text-slate-400 animate-pulse">Loading...</span> : totalQuotations.toLocaleString()}
             </h3>
             <p className="text-[11px] font-medium text-blue-600 flex items-center gap-1">
@@ -127,12 +127,12 @@ export default function QuotationDashboard({ quotations = [], isLoading = false 
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Finalized / Won
             </span>
-            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               {isLoading ? <span className="text-base font-medium text-slate-400 animate-pulse">Loading...</span> : finalizedCount.toLocaleString()}
             </h3>
             <p className="text-[11px] font-medium text-emerald-600 flex items-center gap-1">
@@ -144,12 +144,12 @@ export default function QuotationDashboard({ quotations = [], isLoading = false 
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Dropped Quotes
             </span>
-            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               {isLoading ? <span className="text-base font-medium text-slate-400 animate-pulse">Loading...</span> : droppedCount.toLocaleString()}
             </h3>
             <p className="text-[11px] font-medium text-rose-500 flex items-center gap-1">
@@ -161,12 +161,12 @@ export default function QuotationDashboard({ quotations = [], isLoading = false 
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Total Quotation Value
             </span>
-            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               {isLoading ? <span className="text-base font-medium text-slate-400 animate-pulse">Loading...</span> : formatCurrency(totalQuotationValue)}
             </h3>
             <p className="text-[11px] font-medium text-indigo-600 flex items-center gap-1">
@@ -180,9 +180,9 @@ export default function QuotationDashboard({ quotations = [], isLoading = false 
       </div>
 
       {/* 2. VISUAL BREAKDOWN ROW */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
         {/* STATUS BREAKDOWN */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex flex-col justify-between">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-bold text-slate-900">Quotation Status Breakdown</h3>
             <p className="text-xs text-slate-400 mb-4">Pipeline completion status</p>
@@ -226,14 +226,14 @@ export default function QuotationDashboard({ quotations = [], isLoading = false 
             </div>
           </div>
 
-          <div className="mt-5 pt-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
+          <div className="mt-4 sm:mt-5 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 text-xs text-slate-500">
             <span>Total Proposals: <strong>{totalQuotations}</strong></span>
             <span>Avg Revisions: <strong>{avgVersions}</strong></span>
           </div>
         </div>
 
         {/* LOCATION ANALYSIS */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex flex-col justify-between">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-bold text-slate-900">Branch & Location Distribution</h3>
             <p className="text-xs text-slate-400 mb-4">Quotes grouped by target region</p>
@@ -297,14 +297,14 @@ export default function QuotationDashboard({ quotations = [], isLoading = false 
             </div>
           </div>
 
-          <div className="mt-5 pt-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
+          <div className="mt-4 sm:mt-5 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 text-xs text-slate-500">
             <span>CGST+SGST: <strong>{gstMap.CGST_SGST}</strong></span>
             <span>IGST: <strong>{gstMap.IGST}</strong></span>
           </div>
         </div>
 
         {/* PROPOSAL VERSIONING & SPEED */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex flex-col justify-between">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-bold text-slate-900">Proposal Versioning Health</h3>
             <p className="text-xs text-slate-400 mb-4">Negotiation & revision activity</p>

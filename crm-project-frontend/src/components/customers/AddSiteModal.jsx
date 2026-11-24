@@ -332,15 +332,15 @@ export default function AddSiteModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
-      <div className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-2xl w-full mx-auto my-8 relative max-h-[90vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-2 sm:p-4 animate-fade-in">
+      <div className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-2xl w-full mx-auto my-auto sm:my-8 relative max-h-[96vh] sm:max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header Bar matching AddLeadForm */}
-        <div className="bg-white px-6 pt-6 pb-3 flex justify-between items-start border-b border-slate-100">
-          <div>
-            <h3 className="text-xl font-bold text-slate-900">
+        <div className="bg-white px-4 sm:px-6 py-3.5 sm:py-4 flex justify-between items-start border-b border-slate-100 gap-2">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900 truncate">
               {isEditing ? "Edit Site / Facility" : "Add New Site / Facility"}
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
               Customer: <span className="text-slate-800 font-semibold">{customer?.name || "Customer"}</span>
               {customer?.customer_code ? ` (${customer.customer_code})` : ""}
             </p>
@@ -348,14 +348,14 @@ export default function AddSiteModal({
           <button
             onClick={onClose}
             type="button"
-            className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-50 cursor-pointer"
+            className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 rounded-lg hover:bg-slate-50 cursor-pointer shrink-0"
           >
             <RxCross2 size={18} />
           </button>
         </div>
 
         {/* Form Body matching AddLeadForm styling */}
-        <div className="p-6 overflow-y-auto flex-1 scrollbar-thin">
+        <div className="p-3.5 sm:p-6 overflow-y-auto flex-1 scrollbar-thin">
           <form className="space-y-4 text-slate-800" onSubmit={handleSubmit}>
             {errorMsg && (
               <div className="p-3 text-xs rounded-lg bg-rose-50 border border-rose-200 text-rose-700 font-medium">
@@ -596,19 +596,19 @@ export default function AddSiteModal({
             </div>
 
             {/* Modal Footer Buttons matching AddLeadForm */}
-            <div className="flex justify-end gap-2 pt-4 border-t border-slate-100">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-4 border-t border-slate-100">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-colors cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2.5 sm:py-2 border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-colors cursor-pointer text-center"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-5 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm shadow-blue-500/10 cursor-pointer flex items-center gap-1.5"
+                className="w-full sm:w-auto px-5 py-2.5 sm:py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm shadow-blue-500/10 cursor-pointer flex items-center justify-center gap-1.5 text-center"
               >
                 {submitting ? "Saving..." : isEditing ? "Update Site" : "Save Site"}
               </button>

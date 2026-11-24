@@ -335,13 +335,13 @@ export default function ProductDashboard({
   return (
     <div className="w-full space-y-5 font-sans antialiased text-slate-800">
       {/* 1. SALES PERFORMANCE KPI ROW (MATCHING QUOTATION DASHBOARD TYPE) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Total Units Sold
             </span>
-            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               {isLoading ? (
                 <span className="text-base font-medium text-slate-400 animate-pulse">
                   Loading...
@@ -359,12 +359,12 @@ export default function ProductDashboard({
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Projects Active
             </span>
-            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               {isLoading ? (
                 <span className="text-base font-medium text-slate-400 animate-pulse">
                   Loading...
@@ -382,12 +382,12 @@ export default function ProductDashboard({
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Unsold Products
             </span>
-            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               {isLoading ? (
                 <span className="text-base font-medium text-slate-400 animate-pulse">
                   Loading...
@@ -405,12 +405,12 @@ export default function ProductDashboard({
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Total Product Value
             </span>
-            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               {isLoading ? (
                 <span className="text-base font-medium text-slate-400 animate-pulse">
                   Loading...
@@ -430,29 +430,29 @@ export default function ProductDashboard({
       </div>
 
       {/* 2. SALES VOLUME & PROJECT ANALYTICS */}
-      <div className="space-y-5">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="space-y-4 sm:space-y-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
           {/* PIE CHART 1: TOP 3 PRODUCTS SOLD (BY PROJECT) */}
-          <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex flex-col justify-between">
+          <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                    <PieIcon className="w-4 h-4 text-blue-500" />
+              <div className="flex items-start sm:items-center justify-between gap-2.5 mb-2 sm:mb-3">
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-1.5 leading-snug">
+                    <PieIcon className="w-4 h-4 text-blue-500 shrink-0" />
                     Top 3 Products Sold (by Project)
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
                     Distribution of project sales across top 3 best-selling products
                   </p>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full bg-[#EFF6FF] text-[#1E40AF] text-[10px] font-bold border border-[#BFDBFE]">
+                <span className="px-2 sm:px-2.5 py-0.5 rounded-full bg-[#EFF6FF] text-[#1E40AF] text-[10px] sm:text-[11px] font-bold border border-[#BFDBFE] shrink-0 whitespace-nowrap self-start sm:self-auto shadow-2xs">
                   Top 3 Pie Chart
                 </span>
               </div>
 
               {/* Donut / Pie SVG - viewBox 0 0 46 46 prevents any edge clipping */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 my-4">
-                <div className="relative w-44 h-44 flex-shrink-0">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 my-3 sm:my-4">
+                <div className="relative w-40 h-40 sm:w-44 sm:h-44 flex-shrink-0">
                   <svg
                     className="w-full h-full overflow-visible"
                     viewBox="0 0 46 46"
@@ -508,8 +508,8 @@ export default function ProductDashboard({
                       onMouseEnter={() => setHoveredUnitIndex(idx)}
                       onMouseLeave={() => setHoveredUnitIndex(null)}
                       className={`p-2.5 rounded-xl transition-colors flex items-center justify-between text-xs cursor-pointer border ${hoveredUnitIndex === idx
-                          ? "bg-slate-100/90 border-slate-200 shadow-xs"
-                          : "bg-slate-50/50 border-slate-100 hover:bg-slate-50"
+                        ? "bg-slate-100/90 border-slate-200 shadow-xs"
+                        : "bg-slate-50/50 border-slate-100 hover:bg-slate-50"
                         }`}
                     >
                       <div className="flex items-center gap-2 truncate max-w-[170px]">
@@ -553,34 +553,34 @@ export default function ProductDashboard({
               </div>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
-              <span>
-                #1 in Projects: <strong>{topProjectProduct?.name || "-"}</strong>
+            <div className="mt-3.5 sm:mt-4 pt-2.5 sm:pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 text-xs text-slate-500">
+              <span className="truncate">
+                #1 in Projects: <strong className="text-slate-800">{topProjectProduct?.name || "-"}</strong>
               </span>
-              <span>
-                Top 3 Share: <strong>{top3TotalUnits} of {totalProjectUnits} sales ({totalProjectUnits > 0 ? ((top3TotalUnits / totalProjectUnits) * 100).toFixed(0) : 0}%)</strong>
+              <span className="shrink-0 text-[11px] sm:text-xs">
+                Top 3 Share: <strong className="text-slate-800">{top3TotalUnits} of {totalProjectUnits} sales ({totalProjectUnits > 0 ? ((top3TotalUnits / totalProjectUnits) * 100).toFixed(0) : 0}%)</strong>
               </span>
             </div>
           </div>
 
           {/* CHART 2: VERTICAL BAR GRAPH (ALL PRODUCTS - SAME COLOR FOR ALL PRODUCTS, JUDGED BY PROJECT) */}
-          <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex flex-col justify-between">
+          <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex flex-col justify-between">
             <div>
               {/* Header & #1 Top Stat Card */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                    <BarChart3 className="w-4 h-4 text-blue-600" />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 mb-3.5 sm:mb-4">
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-1.5 leading-snug">
+                    <BarChart3 className="w-4 h-4 text-blue-600 shrink-0" />
                     Product-wise Sales by Project
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
                     Total project installations and sales volume per product
                   </p>
                 </div>
 
                 {activeProduct && (
-                  <div className="flex items-center gap-2.5 bg-white border border-slate-200/90 shadow-2xs rounded-xl px-3.5 py-1.5 flex-shrink-0 transition-all duration-150">
-                    <span className="w-3 h-3 rounded-full bg-blue-600 flex-shrink-0"></span>
+                  <div className="flex items-center gap-2.5 bg-white border border-slate-200/90 shadow-2xs rounded-xl px-3 py-1.5 flex-shrink-0 transition-all duration-150 self-start sm:self-auto">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600 flex-shrink-0"></span>
                     <div>
                       <div className="flex items-center gap-1.5">
                         <span className="font-bold text-xs text-slate-900 truncate max-w-[120px]" title={activeProduct.name}>
@@ -615,7 +615,7 @@ export default function ProductDashboard({
                 const barWidth = Math.min(36, Math.max(22, slotWidth - 16));
 
                 return (
-                  <div className="w-full overflow-x-auto overflow-y-hidden pb-1">
+                  <div className="w-full overflow-x-auto overflow-y-hidden pb-1 slim-scrollbar">
                     <svg
                       width={chartWidth}
                       height={svgHeight}
@@ -722,8 +722,8 @@ export default function ProductDashboard({
                               textAnchor="end"
                               transform={`rotate(-90 ${centerX} ${baseline + 12})`}
                               className={`text-[11px] select-none transition-colors ${isSelected
-                                  ? "font-bold fill-blue-600 group-hover:fill-blue-800"
-                                  : "font-semibold fill-slate-700 group-hover:fill-slate-900"
+                                ? "font-bold fill-blue-600 group-hover:fill-blue-800"
+                                : "font-semibold fill-slate-700 group-hover:fill-slate-900"
                                 }`}
                             >
                               {item.name.length > 15 ? item.name.slice(0, 14) + "…" : item.name}
@@ -738,12 +738,12 @@ export default function ProductDashboard({
             </div>
 
             {/* Chart Footer Info */}
-            <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
-              <span>
-                Top Product: <strong>{topProjectProduct?.name || "-"}</strong> ({topProjectProduct?.projectCount || 0} projects)
+            <div className="mt-3.5 sm:mt-4 pt-2.5 sm:pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 text-xs text-slate-500">
+              <span className="truncate">
+                Top Product: <strong className="text-slate-800">{topProjectProduct?.name || "-"}</strong> ({topProjectProduct?.projectCount || 0} projects)
               </span>
-              <span>
-                Total Projects: <strong>{totalProjectsCount}</strong> · Total Sales: <strong>{totalProjectUnits} units</strong>
+              <span className="shrink-0 text-[11px] sm:text-xs">
+                Total Projects: <strong className="text-slate-800">{totalProjectsCount}</strong> · Total Sales: <strong className="text-slate-800">{totalProjectUnits} units</strong>
               </span>
             </div>
           </div>
@@ -807,12 +807,12 @@ export default function ProductDashboard({
                       <td className="py-2.5 px-3">
                         <span
                           className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider ${st === "ACTIVE"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : st === "INACTIVE"
-                                ? "bg-slate-100 text-slate-600"
-                                : st === "DISCONTINUED"
-                                  ? "bg-rose-100 text-rose-700"
-                                  : "bg-amber-100 text-amber-700"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : st === "INACTIVE"
+                              ? "bg-slate-100 text-slate-600"
+                              : st === "DISCONTINUED"
+                                ? "bg-rose-100 text-rose-700"
+                                : "bg-amber-100 text-amber-700"
                             }`}
                         >
                           {st}

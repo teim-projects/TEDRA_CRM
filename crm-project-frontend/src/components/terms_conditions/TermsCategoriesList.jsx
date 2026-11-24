@@ -405,11 +405,11 @@ export default function TermsCategoriesList() {
     <Base title="">
       <div className="w-full space-y-4 font-sans antialiased text-slate-800 pt-1 sm:pt-2 px-1">
         {/* HEADER */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between pb-1 pt-1">
-          <div className="flex items-center gap-3">
-            <span className="w-1.5 h-10 bg-sky-600 rounded-full block"></span>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-tight">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between pb-1 pt-1 gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <span className="w-1.5 h-9 sm:h-10 bg-sky-600 rounded-full block shrink-0"></span>
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 leading-tight">
                 Terms & Conditions Categories
               </h1>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -417,21 +417,21 @@ export default function TermsCategoriesList() {
               </p>
             </div>
           </div>
-          <div className="mt-3 md:mt-0 flex items-center gap-3">
+          <div className="grid grid-cols-2 sm:flex items-center gap-2 sm:gap-2.5 w-full md:w-auto">
             <button
               onClick={() => setIsFilterOpen(true)}
-              className="px-3.5 py-1.5 border border-slate-200 bg-white text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-xs flex items-center gap-1.5"
+              className="col-span-1 w-full sm:w-auto px-2 sm:px-3.5 py-2 sm:py-1.5 border border-slate-200 bg-white text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
             >
-              <MdFilterList className="text-slate-400" />
-              Filter
+              <MdFilterList className="text-slate-400 shrink-0 text-sm" />
+              <span>Filter</span>
             </button>
             {canCreateTerm && (
               <button
                 onClick={() => navigate("/terms/add-category")}
-                className="px-3 sm:px-4 py-1.5 bg-sky-600 text-white text-xs font-semibold rounded-lg hover:bg-sky-700 transition-colors shadow-2xs shadow-sky-500/10 flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+                className="col-span-1 w-full sm:w-auto px-3 sm:px-4 py-2 sm:py-1.5 bg-sky-600 text-white text-xs font-semibold rounded-lg hover:bg-sky-700 transition-colors shadow-2xs shadow-sky-500/10 flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
               >
-                <MdAdd className="text-sm" />
-                Add Category
+                <MdAdd className="text-base sm:text-sm shrink-0" />
+                <span>Add Category</span>
               </button>
             )}
           </div>

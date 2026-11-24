@@ -607,76 +607,80 @@ export default function FollowUp() {
       <div className="w-full space-y-4 font-sans antialiased text-slate-800 pt-1 sm:pt-2 px-1">
         {/* HEADER BLOCK WITH THE BLUE VERTICAL ACCENT LINE */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-1 pt-1">
-          <div className="flex items-center gap-3">
-            <span className="w-1.5 h-10 bg-sky-600 rounded-full block"></span>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-tight">Follow-up Management</h1>
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <span className="w-1.5 h-9 sm:h-10 bg-sky-600 rounded-full block shrink-0"></span>
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 leading-tight">Follow-up Management</h1>
               <p className="text-xs text-slate-500 mt-0.5">
                 {loading ? "Synchronizing pipeline records..." : `${totalCount} leads found`}
               </p>
             </div>
           </div>
           
-          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-            {/* Quick Filter Dropdown */}
-            <div className="relative">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+            {/* Filter & Export Row on Mobile / Inline on Desktop */}
+            <div className="grid grid-cols-3 sm:flex items-center gap-1.5 sm:gap-2.5 w-full sm:w-auto">
+              {/* Quick Filter Dropdown */}
+              <div className="relative col-span-1">
+                <button
+                  onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                  className="w-full sm:w-auto px-2 sm:px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-1 shadow-xs whitespace-nowrap cursor-pointer truncate"
+                >
+                  <MdFilterList className="text-slate-400 shrink-0 text-sm" />
+                  <span className="truncate">{currentFilterLabel}</span>
+                </button>
+                
+                {showFilterDropdown && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-20 cursor-default"
+                      onClick={() => setShowFilterDropdown(false)}
+                    />
+                    <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-30">
+                      {filterOptions.map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => {
+                            setFilterType(option.value);
+                            setShowFilterDropdown(false);
+                            setCurrentPage(1);
+                          }}
+                          className={`w-full text-left px-4 py-2 text-xs hover:bg-slate-50 transition-colors ${
+                            filterType === option.value ? 'bg-blue-50 text-blue-600 font-medium' : 'text-slate-700'
+                          }`}
+                        >
+                          {option.label}
+                          {filterType === option.value && (
+                            <span className="float-right text-blue-600">✓</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Advanced Filter Button */}
               <button
-                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                className="px-2.5 sm:px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-xs whitespace-nowrap cursor-pointer"
+                onClick={() => setIsFilterOpen(true)}
+                className="col-span-1 w-full sm:w-auto px-2 sm:px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-1 shadow-xs whitespace-nowrap cursor-pointer"
               >
-                <MdFilterList className="text-slate-400" />
-                {currentFilterLabel}
+                <MdFilterList className="text-slate-400 shrink-0 text-sm" />
+                <span>Filter</span>
               </button>
-              
-              {showFilterDropdown && (
-                <>
-                  <div
-                    className="fixed inset-0 z-20 cursor-default"
-                    onClick={() => setShowFilterDropdown(false)}
-                  />
-                  <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-30">
-                    {filterOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => {
-                          setFilterType(option.value);
-                          setShowFilterDropdown(false);
-                          setCurrentPage(1);
-                        }}
-                        className={`w-full text-left px-4 py-2 text-xs hover:bg-slate-50 transition-colors ${
-                          filterType === option.value ? 'bg-blue-50 text-blue-600 font-medium' : 'text-slate-700'
-                        }`}
-                      >
-                        {option.label}
-                        {filterType === option.value && (
-                          <span className="float-right text-blue-600">✓</span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
+
+              {/* Export to Excel Button */}
+              <button
+                onClick={handleExportExcel}
+                className="col-span-1 w-full sm:w-auto px-2 sm:px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors flex items-center justify-center gap-1 shadow-xs whitespace-nowrap cursor-pointer"
+                title="Export Follow-ups to Excel"
+              >
+                <MdDownload className="text-emerald-600 text-sm shrink-0" />
+                <span>Export</span>
+              </button>
             </div>
 
-            {/* Advanced Filter Button */}
-            <button
-              onClick={() => setIsFilterOpen(true)}
-              className="px-2.5 sm:px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-xs whitespace-nowrap cursor-pointer"
-            >
-              <MdFilterList className="text-slate-400" />
-              Filter
-            </button>
-
-            {/* Export to Excel Button */}
-            <button
-              onClick={handleExportExcel}
-              className="px-2.5 sm:px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors flex items-center gap-1.5 shadow-xs whitespace-nowrap cursor-pointer"
-              title="Export Follow-ups to Excel"
-            >
-              <MdDownload className="text-emerald-600 text-sm" />
-              Export
-            </button>
-
+            {/* Primary Action Button */}
             {canCreateFollowup && (
               <button
                 onClick={() => {
@@ -684,10 +688,10 @@ export default function FollowUp() {
                   setLeadSearchTerm("");
                   setLeadSearchResults([]);
                 }}
-                className="px-3 sm:px-4 py-1.5 bg-sky-600 text-white text-xs font-semibold rounded-lg hover:bg-sky-700 transition-colors shadow-2xs shadow-sky-500/10 flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+                className="w-full sm:w-auto px-3.5 sm:px-4 py-2 sm:py-1.5 bg-sky-600 text-white text-xs font-semibold rounded-lg hover:bg-sky-700 transition-colors shadow-2xs shadow-sky-500/10 flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
               >
-                <MdAdd className="text-sm" />
-                Add Follow-up
+                <MdAdd className="text-base sm:text-sm" />
+                <span>Add Follow-up</span>
               </button>
             )}
           </div>

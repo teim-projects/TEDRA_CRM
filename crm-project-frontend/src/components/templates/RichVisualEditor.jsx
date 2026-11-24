@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { useState, useRef, useEffect } from "react";
 import {
   MdFormatBold,
@@ -83,7 +84,7 @@ export function htmlToWhatsAppText(html) {
 /**
  * Utility to ensure stored or loaded text is represented visually
  */
-export function normalizeToHtml(content) {
+function normalizeToHtml(content) {
   if (!content) return "";
   const trimmed = content.trim();
 
@@ -136,7 +137,7 @@ export default function RichVisualEditor({
     if (currentHtml !== normalized && document.activeElement !== editorRef.current) {
       editorRef.current.innerHTML = normalized;
     }
-  }, [value]);
+  }, [value, editorRef]);
 
   // Save selection range so toolbar clicks don't lose caret position
   const saveSelection = () => {
@@ -271,14 +272,14 @@ export default function RichVisualEditor({
   return (
     <div className="border border-slate-200 rounded-lg overflow-hidden bg-white shadow-2xs">
       {/* Visual Editor Toolbar */}
-      <div className="flex flex-wrap items-center justify-between px-3 py-2 bg-slate-50 border-b border-slate-200 text-xs gap-2">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-50 border-b border-slate-200 text-xs gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
           {/* Bold Button */}
           <button
             type="button"
             onClick={handleBold}
             title="Make selected text Bold"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-white hover:bg-slate-100 text-slate-800 font-bold border border-slate-200 shadow-2xs transition-all cursor-pointer active:scale-95"
+            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-md bg-white hover:bg-slate-100 text-slate-800 font-bold border border-slate-200 shadow-2xs transition-all cursor-pointer active:scale-95 text-xs shrink-0"
           >
             <MdFormatBold className="text-base text-slate-900" />
             <span>Bold</span>
@@ -289,10 +290,11 @@ export default function RichVisualEditor({
             type="button"
             onClick={openTableDialog}
             title="Ask rows & columns and insert table"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold border border-blue-200 shadow-2xs transition-all cursor-pointer active:scale-95"
+            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold border border-blue-200 shadow-2xs transition-all cursor-pointer active:scale-95 text-xs shrink-0"
           >
             <MdTableChart className="text-sm text-blue-600" />
-            <span>Insert Table...</span>
+            <span className="hidden sm:inline">Insert Table...</span>
+            <span className="inline sm:hidden">Table...</span>
           </button>
 
           {/* Quick Row Button */}
@@ -300,14 +302,14 @@ export default function RichVisualEditor({
             type="button"
             onClick={handleAddRow}
             title="Add a row to the active table"
-            className="flex items-center gap-1 px-2 py-1.5 rounded-md bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 shadow-2xs transition-all cursor-pointer text-xs"
+            className="flex items-center gap-1 px-2 py-1 sm:py-1.5 rounded-md bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 shadow-2xs transition-all cursor-pointer text-xs shrink-0"
           >
             <MdAddCircleOutline className="text-sm text-teal-600" />
             <span>+ Row</span>
           </button>
         </div>
 
-        <div className="text-[11px] text-slate-500 font-medium">
+        <div className="text-[10px] sm:text-[11px] text-slate-500 font-medium shrink-0 self-start sm:self-auto">
           {channel === "whatsapp" ? (
             <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
               ● WhatsApp Visual Mode
@@ -344,7 +346,7 @@ export default function RichVisualEditor({
           saveSelection();
           if (onFocus) onFocus(e);
         }}
-        className="w-full min-h-[220px] max-h-[420px] overflow-y-auto p-4 text-sm bg-white focus:outline-hidden leading-relaxed visual-editor-content"
+        className="w-full min-h-[180px] sm:min-h-[220px] max-h-[360px] sm:max-h-[420px] overflow-y-auto p-3 sm:p-4 text-xs sm:text-sm bg-white focus:outline-hidden leading-relaxed visual-editor-content"
         style={{
           outline: "none",
           color: "#000000",
@@ -356,8 +358,8 @@ export default function RichVisualEditor({
 
       {/* Insert Table Dialog Modal */}
       {showTableModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in">
-          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-sm p-5 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-3 sm:p-4 animate-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-sm p-4 sm:p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
                 <MdTableChart className="text-blue-600 text-lg" />

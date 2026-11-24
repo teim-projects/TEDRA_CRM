@@ -367,11 +367,11 @@ export default function Sidebar({ children }) {
       {/* SIDEBAR CONTAINER */}
       <aside
         className={`bg-[#0f172a] text-slate-300 h-full flex flex-col flex-shrink-0 transition-all duration-300 ease-in-out fixed lg:relative inset-y-0 left-0 z-[100] ${isOpen
-            ? "w-64 translate-x-0 opacity-100 shadow-2xl lg:shadow-none"
-            : "-translate-x-full lg:translate-x-0 lg:w-0 lg:opacity-0 pointer-events-none"
+          ? "w-64 translate-x-0 opacity-100 shadow-2xl lg:shadow-none"
+          : "-translate-x-full lg:translate-x-0 lg:w-0 lg:opacity-0 pointer-events-none"
           }`}
       >
-        <div className="flex items-center gap-3 px-4 py-4 border-b border-slate-800/60 min-w-[256px]">
+        <div className="flex items-center gap-2 px-3.5 py-4 border-b border-slate-800/60 min-w-[256px]">
           <button
             onClick={() => setIsOpen(false)}
             className="w-9 h-9 min-w-[36px] min-h-[36px] shrink-0 aspect-square rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 flex flex-col items-center justify-center gap-1 text-white shadow-md shadow-cyan-600/20 hover:from-cyan-500 hover:to-teal-500 transition-colors cursor-pointer"
@@ -383,18 +383,12 @@ export default function Sidebar({ children }) {
             <span className="block w-4 h-0.5 bg-white rounded-full shrink-0"></span>
           </button>
 
-          <Link to="/dashboard" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-cyan-500/25 border border-cyan-400/40 backdrop-blur-md flex items-center justify-center text-cyan-300 shadow-sm shrink-0">
-              <SquareParking className="w-4 h-4 text-cyan-300" />
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-sm font-bold text-white tracking-tight leading-none">
-                TEDRA
-              </span>
-              <span className="text-[9px] font-medium text-cyan-400 tracking-wider uppercase mt-1">
-                Parking Systems
-              </span>
-            </div>
+          <Link to="/dashboard" className="flex-1 flex items-center justify-start min-w-0">
+            <img
+              src="/TEDRA_LOGO.jpeg"
+              alt="TEDRA Logo"
+              className="h-11 sm:h-12 w-auto max-w-[190px] object-contain rounded-lg hover:opacity-95 transition-opacity"
+            />
           </Link>
         </div>
 
@@ -603,11 +597,11 @@ const Navbar = ({
   };
 
   return (
-    <nav className="bg-white border-b border-gray-100 flex-shrink-0 sticky top-0 z-30 w-full px-4 sm:px-6 py-3 flex items-center justify-between shadow-md shadow-gray-200/40">
-      <div className="flex items-center gap-2 sm:gap-3">
+    <nav className="bg-white border-b border-gray-100 flex-shrink-0 sticky top-0 z-30 w-full px-2.5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between shadow-md shadow-gray-200/40">
+      <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-1 mr-1 sm:mr-2">
         <button
           onClick={onMenuClick}
-          className={`w-9 h-9 min-w-[36px] min-h-[36px] shrink-0 aspect-square rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 flex flex-col items-center justify-center gap-1 text-white shadow-md shadow-cyan-600/20 hover:from-cyan-500 hover:to-teal-500 transition-colors mr-1 cursor-pointer ${isSidebarOpen ? "lg:hidden" : "block"
+          className={`w-8 h-8 sm:w-9 sm:h-9 min-w-[32px] sm:min-w-[36px] min-h-[32px] sm:min-h-[36px] shrink-0 aspect-square rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 flex flex-col items-center justify-center gap-0.5 sm:gap-1 text-white shadow-md shadow-cyan-600/20 hover:from-cyan-500 hover:to-teal-500 transition-colors mr-0.5 sm:mr-1 cursor-pointer ${isSidebarOpen ? "lg:hidden" : "block"
             }`}
           title="Toggle Sidebar"
           aria-label="Toggle Sidebar"
@@ -619,24 +613,27 @@ const Navbar = ({
 
         <button
           onClick={handleGoBack}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-cyan-50 text-slate-700 hover:text-cyan-700 hover:border-cyan-200 border border-slate-200/80 text-xs font-semibold transition-all duration-150 shadow-xs cursor-pointer active:scale-95"
+          className="flex items-center gap-1 px-2 py-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-slate-100 hover:bg-cyan-50 text-slate-700 hover:text-cyan-700 hover:border-cyan-200 border border-slate-200/80 text-xs font-semibold transition-all duration-150 shadow-xs cursor-pointer active:scale-95 shrink-0"
           title="Go back to previous page"
         >
           <FontAwesomeIcon icon={faArrowLeft} className="text-xs text-slate-500" />
           <span className="hidden sm:inline">Back</span>
         </button>
 
-        <div className="flex flex-col">
-          <h1 className="text-xs sm:text-sm font-bold text-gray-900 leading-tight">
+        <div className="flex flex-col min-w-0 flex-1">
+          <h1
+            className="text-xs sm:text-sm font-bold text-gray-900 leading-tight truncate"
+            title={pageTitle === "Dashboard" ? "Executive Dashboard" : pageTitle}
+          >
             {pageTitle === "Dashboard" ? "Executive Dashboard" : pageTitle}
           </h1>
-          <span className="text-[10px] sm:text-[11px] text-gray-400 font-medium hidden sm:block">
+          <span className="text-[10px] sm:text-[11px] text-gray-400 font-medium hidden sm:block truncate">
             Real-time business overview
           </span>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-4">
+      <div className="flex items-center gap-0.5 sm:gap-2.5 shrink-0">
         {/* DESKTOP SEARCH BAR */}
         <div ref={searchRef} className="relative hidden md:block">
           <div className="relative">
@@ -696,8 +693,8 @@ const Navbar = ({
                         onClick={() => handleSelectModule(item)}
                         onMouseEnter={() => setSelectedIndex(idx)}
                         className={`px-3.5 py-2.5 flex items-center justify-between cursor-pointer transition-colors ${isSelected
-                            ? "bg-cyan-50/90 text-cyan-950 font-semibold border-l-4 border-cyan-600 pl-2.5"
-                            : "text-slate-700 hover:bg-slate-50"
+                          ? "bg-cyan-50/90 text-cyan-950 font-semibold border-l-4 border-cyan-600 pl-2.5"
+                          : "text-slate-700 hover:bg-slate-50"
                           }`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
@@ -719,8 +716,8 @@ const Navbar = ({
 
                         <span
                           className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider flex-shrink-0 ml-2 ${isSelected
-                              ? "bg-cyan-100 text-cyan-800"
-                              : "bg-slate-100 text-slate-500"
+                            ? "bg-cyan-100 text-cyan-800"
+                            : "bg-slate-100 text-slate-500"
                             }`}
                         >
                           {item.section}
@@ -806,9 +803,9 @@ const Navbar = ({
         {/* AI CHATBOT BUTTON (Beside notification bell) */}
         <button
           onClick={onChatbotClick}
-          className={`p-1.5 sm:p-2 rounded-xl relative transition-all cursor-pointer flex items-center justify-center ${isChatbotOpen
-              ? "bg-cyan-50 text-cyan-600 shadow-xs"
-              : "text-gray-400 hover:text-cyan-600 hover:bg-gray-50"
+          className={`p-1 sm:p-2 rounded-xl relative transition-all cursor-pointer flex items-center justify-center shrink-0 ${isChatbotOpen
+            ? "bg-cyan-50 text-cyan-600 shadow-xs"
+            : "text-gray-400 hover:text-cyan-600 hover:bg-gray-50"
             }`}
           title="AI Assistant (Ask any Lead or CRM doubt)"
         >
@@ -818,7 +815,7 @@ const Navbar = ({
 
         <button
           onClick={onNotificationClick}
-          className="p-1.5 sm:p-2 text-gray-400 hover:text-cyan-600 relative transition-colors cursor-pointer"
+          className="p-1 sm:p-2 text-gray-400 hover:text-cyan-600 relative transition-colors cursor-pointer shrink-0"
           title="Notifications"
         >
           <FontAwesomeIcon icon={faBell} className="text-sm sm:text-base" />
@@ -833,24 +830,24 @@ const Navbar = ({
         </button>
 
         {isAuthenticated ? (
-          <div className="flex items-center gap-1 sm:gap-2 border-l border-gray-100 pl-1.5 sm:pl-2">
+          <div className="flex items-center gap-0.5 sm:gap-2 border-l border-gray-100 pl-1 sm:pl-2 shrink-0">
             <Link
               to="/profile"
-              className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-1 sm:p-2 text-gray-400 hover:text-gray-600 transition-colors shrink-0 flex items-center justify-center"
               title="Profile"
             >
               <FontAwesomeIcon icon={faCircleUser} className="text-base sm:text-lg" />
             </Link>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:text-red-600 hover:bg-red-50/50 transition-all duration-150 cursor-pointer"
+              className="hidden sm:flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:text-red-600 hover:bg-red-50/50 transition-all duration-150 cursor-pointer"
             >
               <FontAwesomeIcon icon={faSignOutAlt} />
-              <span className="hidden sm:inline">Logout</span>
+              <span>Logout</span>
             </button>
           </div>
         ) : (
-          <Link to="/login" className="px-3 py-1.5 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-lg hover:from-cyan-500 hover:to-teal-500 transition-colors duration-150 text-xs font-semibold shadow-sm shadow-cyan-500/10">
+          <Link to="/login" className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-lg hover:from-cyan-500 hover:to-teal-500 transition-colors duration-150 text-xs font-semibold shadow-sm shadow-cyan-500/10 shrink-0">
             Login
           </Link>
         )}

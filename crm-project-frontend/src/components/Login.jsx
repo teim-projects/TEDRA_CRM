@@ -189,9 +189,11 @@ const Login = ({ forceForgot = false }) => {
       <nav className="sticky top-0 z-20 w-full bg-slate-900/40 backdrop-blur-md border-b border-white/15 px-6 md:px-12 py-3.5 flex items-center justify-between transition-all">
         {/* Left: Brand Identity */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-cyan-500/25 border border-cyan-400/40 backdrop-blur-md flex items-center justify-center text-cyan-300 shadow-sm">
-            <SquareParking className="w-5 h-5 text-cyan-300" />
-          </div>
+          <img
+            src="/TEDRA_LOGO.jpeg"
+            alt="TEDRA Logo"
+            className="h-10 w-auto object-contain rounded-lg shadow-xs"
+          />
           <div>
             <div className="flex items-center gap-2">
               <span className="text-lg md:text-xl font-bold text-white tracking-tight leading-none drop-shadow-sm">
@@ -246,6 +248,13 @@ const Login = ({ forceForgot = false }) => {
           {isForgotPassView ? (
             /* FORGOT PASSWORD VIEW */
             <div>
+              <div className="flex justify-center mb-6">
+                <img
+                  src="/TEDRA_LOGO.jpeg"
+                  alt="TEDRA Automotive Solutions"
+                  className="h-13 w-auto max-w-[250px] object-contain rounded-lg"
+                />
+              </div>
               <h2 className="text-2xl font-bold text-slate-900 mb-1.5 tracking-tight">
                 Reset Password
               </h2>
@@ -271,9 +280,8 @@ const Login = ({ forceForgot = false }) => {
                 <button
                   type="submit"
                   disabled={forgotLoading}
-                  className={`w-full h-11 rounded-xl text-white font-semibold text-sm bg-slate-900 hover:bg-slate-800 active:bg-black transition-all shadow-md shadow-slate-900/15 tracking-wide flex items-center justify-center gap-2 cursor-pointer ${
-                    forgotLoading ? "opacity-75 cursor-not-allowed" : ""
-                  }`}
+                  className={`w-full h-11 rounded-xl text-white font-semibold text-sm bg-slate-900 hover:bg-slate-800 active:bg-black transition-all shadow-md shadow-slate-900/15 tracking-wide flex items-center justify-center gap-2 cursor-pointer ${forgotLoading ? "opacity-75 cursor-not-allowed" : ""
+                    }`}
                 >
                   {forgotLoading ? "Verifying Account..." : "Submit Reset Request"}
                 </button>
@@ -281,11 +289,10 @@ const Login = ({ forceForgot = false }) => {
 
               {forgotStatus.message && (
                 <div
-                  className={`mt-4 p-3 rounded-xl border text-xs font-medium leading-relaxed ${
-                    forgotStatus.type === "success"
-                      ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                      : "bg-rose-50 text-rose-800 border-rose-200"
-                  }`}
+                  className={`mt-4 p-3 rounded-xl border text-xs font-medium leading-relaxed ${forgotStatus.type === "success"
+                    ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                    : "bg-rose-50 text-rose-800 border-rose-200"
+                    }`}
                 >
                   {forgotStatus.message}
                 </div>
@@ -308,6 +315,13 @@ const Login = ({ forceForgot = false }) => {
           ) : (
             /* STANDARD SIGN-IN VIEW */
             <div>
+              <div className="flex justify-center mb-6">
+                <img
+                  src="/TEDRA_LOGO.jpeg"
+                  alt="TEDRA Automotive Solutions"
+                  className="h-14 w-auto max-w-[270px] object-contain rounded-lg"
+                />
+              </div>
               <h2 className="text-2xl font-bold text-slate-900 mb-1 tracking-tight">
                 Welcome back
               </h2>
@@ -503,8 +517,12 @@ const Login = ({ forceForgot = false }) => {
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center">
-                <SquareParking className="w-5 h-5" />
+              <div className="px-2.5 py-1 rounded-xl bg-white border border-slate-200 shadow-xs flex items-center justify-center">
+                <img
+                  src="/TEDRA_LOGO.jpeg"
+                  alt="TEDRA Logo"
+                  className="h-8 w-auto object-contain"
+                />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-900">TEDRA CRM Platform</h3>

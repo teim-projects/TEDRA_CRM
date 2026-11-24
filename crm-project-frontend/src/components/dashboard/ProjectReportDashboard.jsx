@@ -129,14 +129,14 @@ export default function ProjectReportDashboard({
   return (
     <div className="w-full space-y-5 font-sans antialiased text-slate-800">
       {/* 1. TOP STATS ROW */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         {/* Total Projects */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Total Projects
             </span>
-            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               {isLoading ? "..." : totalProjects}
             </h3>
             <p className="text-[11px] font-medium text-emerald-600 flex items-center gap-1">
@@ -150,12 +150,12 @@ export default function ProjectReportDashboard({
         </div>
 
         {/* Total Commercial Value */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Total Project Value
             </span>
-            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               {isLoading ? "..." : formatCurrency(totalValue)}
             </h3>
             <p className="text-[11px] font-medium text-indigo-600 flex items-center gap-1">
@@ -168,12 +168,12 @@ export default function ProjectReportDashboard({
         </div>
 
         {/* Go-Live / Completed */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Go-Live & Delivered
             </span>
-            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               {isLoading ? "..." : completedCount}
             </h3>
             <p className="text-[11px] font-medium text-emerald-600 flex items-center gap-1">
@@ -187,12 +187,12 @@ export default function ProjectReportDashboard({
         </div>
 
         {/* Critical & High Priority */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               High Priority & Risks
             </span>
-            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               {isLoading ? "..." : criticalCount}
             </h3>
             <p className="text-[11px] font-medium text-rose-600 flex items-center gap-1">
@@ -206,44 +206,44 @@ export default function ProjectReportDashboard({
       </div>
 
       {/* 2. MIDDLE ROW: STAGE BREAKDOWN & COMMERCIAL REPORT */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
         {/* Project Stage Lifecycle Pipeline */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex flex-col justify-between lg:col-span-2">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex flex-col justify-between lg:col-span-2">
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                  <Layers className="w-4 h-4 text-blue-600" />
+            <div className="flex items-start sm:items-center justify-between gap-2.5 mb-3.5 sm:mb-4">
+              <div className="min-w-0">
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-1.5 leading-snug">
+                  <Layers className="w-4 h-4 text-blue-600 shrink-0" />
                   Project Execution Stage Pipeline
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
                   Real-time milestone progress across project lifecycles
                 </p>
               </div>
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+              <span className="text-[10px] sm:text-xs font-semibold px-2 sm:px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 shrink-0 whitespace-nowrap self-start sm:self-auto shadow-2xs">
                 {inProgressCount} Active in Pipeline
               </span>
             </div>
 
-            <div className="space-y-3 pt-1">
+            <div className="space-y-2.5 sm:space-y-3 pt-1">
               {Object.entries(stageCounts).map(([key, st]) => {
                 const pct =
                   totalProjects > 0 ? Math.round((st.count / totalProjects) * 100) : 0;
                 return (
                   <div key={key} className="space-y-1">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-semibold text-slate-700 flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${st.color}`}></span>
-                        {st.label}
+                      <span className="font-semibold text-slate-700 flex items-center gap-2 truncate pr-2">
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${st.color}`}></span>
+                        <span className="truncate">{st.label}</span>
                       </span>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                         <span className="font-bold text-slate-900">{st.count}</span>
-                        <span className="text-[11px] text-slate-400">({pct}%)</span>
+                        <span className="text-[10px] sm:text-[11px] text-slate-400">({pct}%)</span>
                       </div>
                     </div>
-                    <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                    <div className="w-full bg-slate-100 rounded-full h-1.5 sm:h-2 overflow-hidden">
                       <div
-                        className={`${st.color} h-2 rounded-full transition-all duration-500`}
+                        className={`${st.color} h-1.5 sm:h-2 rounded-full transition-all duration-500`}
                         style={{ width: `${pct}%` }}
                       ></div>
                     </div>
@@ -253,13 +253,13 @@ export default function ProjectReportDashboard({
             </div>
           </div>
 
-          <div className="mt-5 pt-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
+          <div className="mt-4 sm:mt-5 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500">
             <span>
               Delivery Lifecycle: <strong>{completionRate}%</strong> completed / live
             </span>
             <Link
               to="/projects"
-              className="font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+              className="font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 shrink-0 self-start sm:self-auto"
             >
               Open Projects Board <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
@@ -267,15 +267,15 @@ export default function ProjectReportDashboard({
         </div>
 
         {/* Priority & AMC Attachment Summary */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex flex-col justify-between">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                  <Activity className="w-4 h-4 text-indigo-600" />
+            <div className="flex items-start sm:items-center justify-between gap-2 mb-3.5 sm:mb-4">
+              <div className="min-w-0">
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-1.5 leading-snug">
+                  <Activity className="w-4 h-4 text-indigo-600 shrink-0" />
                   Priority & Service Scope
                 </h3>
-                <p className="text-xs text-slate-400">Risk classification and warranties</p>
+                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">Risk classification and warranties</p>
               </div>
             </div>
 
@@ -340,20 +340,20 @@ export default function ProjectReportDashboard({
       </div>
 
       {/* 3. PROJECT DIRECTORY & EXECUTION TABLE */}
-      <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-          <div>
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Briefcase className="w-4 h-4 text-blue-600" />
+      <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-4">
+          <div className="min-w-0">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 leading-snug">
+              <Briefcase className="w-4 h-4 text-blue-600 shrink-0" />
               Recent Project Deliveries & Status Report
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
               Active projects, customer assignments, stage progression, and commercial value
             </p>
           </div>
           <Link
             to="/projects"
-            className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+            className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 shrink-0 self-start sm:self-auto"
           >
             View All Projects ({totalProjects}) <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>

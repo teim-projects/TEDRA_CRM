@@ -228,15 +228,14 @@ export default function ReturnApprovalsView({ onRefreshParentCounts, baseApi }) 
             <div><b>Current Warehouse Stock:</b> ${availStock != null ? `${availStock} ${unit}` : "N/A"}</div>
             <div><b>Requested Qty:</b> ${qty} ${unit}</div>
           </div>
-          ${
-            !isStockSufficient
-              ? `<div class="p-2 rounded bg-amber-50 border border-amber-300 text-amber-800 font-semibold flex items-center gap-1.5">
+          ${!isStockSufficient
+          ? `<div class="p-2 rounded bg-amber-50 border border-amber-300 text-amber-800 font-semibold flex items-center gap-1.5">
                    <span>⚠️ Warning: Available warehouse stock (${availStock}) is less than requested quantity (${qty}).</span>
                  </div>`
-              : `<div class="p-2 rounded bg-emerald-50 border border-emerald-200 text-emerald-800">
+          : `<div class="p-2 rounded bg-emerald-50 border border-emerald-200 text-emerald-800">
                    ✓ Stock will be immediately deducted from Available Warehouse Inventory and marked as Issued.
                  </div>`
-          }
+        }
         </div>
       `;
       confirmBtnText = "Yes, Approve & Issue";
@@ -489,9 +488,8 @@ export default function ReturnApprovalsView({ onRefreshParentCounts, baseApi }) 
         return (
           <div className="text-center">
             <span
-              className={`font-bold text-xs ${
-                isLow ? "text-rose-600" : "text-slate-700"
-              }`}
+              className={`font-bold text-xs ${isLow ? "text-rose-600" : "text-slate-700"
+                }`}
             >
               {avail} <span className="text-[10px] font-normal text-slate-400">{tx.unit || "Nos"}</span>
             </span>
@@ -571,10 +569,10 @@ export default function ReturnApprovalsView({ onRefreshParentCounts, baseApi }) 
         <span className="text-xs text-slate-500 whitespace-nowrap">
           {tx.created_at
             ? new Date(tx.created_at).toLocaleDateString("en-IN", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric"
-              })
+              day: "2-digit",
+              month: "short",
+              year: "numeric"
+            })
             : "—"}
         </span>
       )
@@ -679,16 +677,16 @@ export default function ReturnApprovalsView({ onRefreshParentCounts, baseApi }) 
         </div>
 
         {/* HEADER ACTIONS (QUICK FILTER DROPDOWN, ADVANCED FILTER & REFRESH) */}
-        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+        <div className="grid grid-cols-3 sm:flex items-center gap-2 w-full sm:w-auto">
           {/* Quick Filter Dropdown matching Follow-up Management */}
-          <div className="relative">
+          <div className="relative col-span-1">
             <button
               type="button"
               onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-              className="px-2.5 sm:px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-xs whitespace-nowrap cursor-pointer"
+              className="w-full sm:w-auto px-2 sm:px-3 py-2 sm:py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-1 shadow-xs whitespace-nowrap cursor-pointer truncate"
             >
-              <MdFilterList className="text-slate-400" />
-              <span>{currentFilterLabel}</span>
+              <MdFilterList className="text-slate-400 shrink-0" />
+              <span className="truncate">{currentFilterLabel}</span>
             </button>
 
             {showFilterDropdown && (
@@ -707,11 +705,10 @@ export default function ReturnApprovalsView({ onRefreshParentCounts, baseApi }) 
                         setShowFilterDropdown(false);
                         setCurrentPage(1);
                       }}
-                      className={`w-full text-left px-4 py-2 text-xs hover:bg-slate-50 transition-colors flex items-center justify-between cursor-pointer ${
-                        typeFilter === option.value
+                      className={`w-full text-left px-4 py-2 text-xs hover:bg-slate-50 transition-colors flex items-center justify-between cursor-pointer ${typeFilter === option.value
                           ? "bg-blue-50 text-blue-600 font-medium"
                           : "text-slate-700"
-                      }`}
+                        }`}
                     >
                       <span>{option.label}</span>
                       {typeFilter === option.value && (
@@ -727,13 +724,12 @@ export default function ReturnApprovalsView({ onRefreshParentCounts, baseApi }) 
           <button
             type="button"
             onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer ${
-              isFilterOpen || searchQuery || statusFilter !== "PENDING_APPROVAL"
+            className={`col-span-1 w-full sm:w-auto px-2 sm:px-3 py-2 sm:py-1.5 text-xs font-semibold rounded-lg border transition-colors flex items-center justify-center gap-1 shadow-2xs cursor-pointer ${isFilterOpen || searchQuery || statusFilter !== "PENDING_APPROVAL"
                 ? "bg-sky-50 border-sky-300 text-sky-700"
                 : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-            }`}
+              }`}
           >
-            <Filter className="w-3.5 h-3.5 text-slate-500" />
+            <Filter className="w-3.5 h-3.5 text-slate-500 shrink-0" />
             <span>Filter</span>
           </button>
 
@@ -741,11 +737,11 @@ export default function ReturnApprovalsView({ onRefreshParentCounts, baseApi }) 
             type="button"
             onClick={() => fetchRequests(true)}
             disabled={isLoading}
-            className="px-2.5 sm:px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            className="col-span-1 w-full sm:w-auto px-2 sm:px-3 py-2 sm:py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg transition-colors shadow-2xs flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
             title="Refresh requests list"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${isLoading ? "animate-spin" : ""}`} />
-            <span className="hidden sm:inline">Refresh</span>
+            <RefreshCw className={`w-3.5 h-3.5 text-slate-500 shrink-0 ${isLoading ? "animate-spin" : ""}`} />
+            <span>Refresh</span>
           </button>
         </div>
       </div>
@@ -757,9 +753,8 @@ export default function ReturnApprovalsView({ onRefreshParentCounts, baseApi }) 
             setStatusFilter("PENDING_APPROVAL");
             setCurrentPage(1);
           }}
-          className={`bg-white p-3 sm:p-3.5 rounded-xl border shadow-2xs cursor-pointer transition-all hover:border-amber-300 ${
-            statusFilter === "PENDING_APPROVAL" ? "border-amber-300 ring-1 ring-amber-300" : "border-slate-200/80"
-          }`}
+          className={`bg-white p-3 sm:p-3.5 rounded-xl border shadow-2xs cursor-pointer transition-all hover:border-amber-300 ${statusFilter === "PENDING_APPROVAL" ? "border-amber-300 ring-1 ring-amber-300" : "border-slate-200/80"
+            }`}
           title="Click to view all pending requests"
         >
           <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">
@@ -778,9 +773,8 @@ export default function ReturnApprovalsView({ onRefreshParentCounts, baseApi }) 
             setTypeFilter("RETURN_STOCK");
             setCurrentPage(1);
           }}
-          className={`bg-white p-3 sm:p-3.5 rounded-xl border shadow-2xs cursor-pointer transition-all hover:border-amber-300 ${
-            typeFilter === "RETURN_STOCK" ? "border-amber-400 ring-1 ring-amber-400" : "border-slate-200/80"
-          }`}
+          className={`bg-white p-3 sm:p-3.5 rounded-xl border shadow-2xs cursor-pointer transition-all hover:border-amber-300 ${typeFilter === "RETURN_STOCK" ? "border-amber-400 ring-1 ring-amber-400" : "border-slate-200/80"
+            }`}
           title="Click to filter by Return Stock"
         >
           <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">
@@ -799,9 +793,8 @@ export default function ReturnApprovalsView({ onRefreshParentCounts, baseApi }) 
             setTypeFilter("ISSUE_STOCK");
             setCurrentPage(1);
           }}
-          className={`bg-white p-3 sm:p-3.5 rounded-xl border shadow-2xs cursor-pointer transition-all hover:border-sky-300 ${
-            typeFilter === "ISSUE_STOCK" ? "border-sky-400 ring-1 ring-sky-400" : "border-slate-200/80"
-          }`}
+          className={`bg-white p-3 sm:p-3.5 rounded-xl border shadow-2xs cursor-pointer transition-all hover:border-sky-300 ${typeFilter === "ISSUE_STOCK" ? "border-sky-400 ring-1 ring-sky-400" : "border-slate-200/80"
+            }`}
           title="Click to filter by Request Stock"
         >
           <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">
@@ -820,9 +813,8 @@ export default function ReturnApprovalsView({ onRefreshParentCounts, baseApi }) 
             setStatusFilter("APPROVED");
             setCurrentPage(1);
           }}
-          className={`bg-white p-3 sm:p-3.5 rounded-xl border shadow-2xs cursor-pointer transition-all hover:border-emerald-300 ${
-            statusFilter === "APPROVED" ? "border-emerald-400 ring-1 ring-emerald-400" : "border-slate-200/80"
-          }`}
+          className={`bg-white p-3 sm:p-3.5 rounded-xl border shadow-2xs cursor-pointer transition-all hover:border-emerald-300 ${statusFilter === "APPROVED" ? "border-emerald-400 ring-1 ring-emerald-400" : "border-slate-200/80"
+            }`}
           title="Click to view fulfilled / approved requests"
         >
           <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">
@@ -868,11 +860,10 @@ export default function ReturnApprovalsView({ onRefreshParentCounts, baseApi }) 
                     setTypeFilter(tp.id);
                     setCurrentPage(1);
                   }}
-                  className={`px-2.5 py-1 rounded text-[11px] transition-all cursor-pointer ${
-                    typeFilter === tp.id
+                  className={`px-2.5 py-1 rounded text-[11px] transition-all cursor-pointer ${typeFilter === tp.id
                       ? "bg-white text-sky-700 shadow-xs font-bold"
                       : "text-slate-500 hover:text-slate-700"
-                  }`}
+                    }`}
                 >
                   {tp.label}
                 </button>
@@ -893,11 +884,10 @@ export default function ReturnApprovalsView({ onRefreshParentCounts, baseApi }) 
                     setStatusFilter(st.id);
                     setCurrentPage(1);
                   }}
-                  className={`px-2.5 py-1 rounded text-[11px] transition-all cursor-pointer ${
-                    statusFilter === st.id
+                  className={`px-2.5 py-1 rounded text-[11px] transition-all cursor-pointer ${statusFilter === st.id
                       ? "bg-white text-sky-700 shadow-xs font-bold"
                       : "text-slate-500 hover:text-slate-700"
-                  }`}
+                    }`}
                 >
                   {st.label}
                   {st.id === "PENDING_APPROVAL" && stats.pendingTotal > 0 && (
@@ -1111,21 +1101,20 @@ export default function ReturnApprovalsView({ onRefreshParentCounts, baseApi }) 
                         Stock After Issue
                       </span>
                       <span
-                        className={`text-base font-black block mt-0.5 ${
-                          viewingRequest.available_stock != null &&
-                          parseFloat(viewingRequest.available_stock) < parseFloat(viewingRequest.quantity || 0)
+                        className={`text-base font-black block mt-0.5 ${viewingRequest.available_stock != null &&
+                            parseFloat(viewingRequest.available_stock) < parseFloat(viewingRequest.quantity || 0)
                             ? "text-rose-600"
                             : "text-slate-800"
-                        }`}
+                          }`}
                       >
                         {viewingRequest.available_stock != null
                           ? `${Math.max(
-                              0,
-                              parseFloat(viewingRequest.available_stock || 0) -
-                                (viewingRequest.status === "PENDING_APPROVAL"
-                                  ? parseFloat(viewingRequest.quantity || 0)
-                                  : 0)
-                            )} ${viewingRequest.unit || "Nos"}`
+                            0,
+                            parseFloat(viewingRequest.available_stock || 0) -
+                            (viewingRequest.status === "PENDING_APPROVAL"
+                              ? parseFloat(viewingRequest.quantity || 0)
+                              : 0)
+                          )} ${viewingRequest.unit || "Nos"}`
                           : "—"}
                       </span>
                       <span className="text-[9px] text-slate-400 block mt-0.5">
@@ -1217,12 +1206,12 @@ export default function ReturnApprovalsView({ onRefreshParentCounts, baseApi }) 
                     <span className="text-xs font-medium text-slate-700">
                       {viewingRequest.created_at
                         ? new Date(viewingRequest.created_at).toLocaleString("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit"
-                          })
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit"
+                        })
                         : "—"}
                     </span>
                   </div>

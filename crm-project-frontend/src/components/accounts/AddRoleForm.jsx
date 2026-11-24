@@ -12,10 +12,17 @@ import { RxCross2 } from "react-icons/rx";
  * - initialName: optional string (for edit)
  * - roleId: optional id (for edit) — when provided, form does PUT /roles/{id}/
  */
-export default function AddRoleForm({ open, onClose, onSuccess, baseApi, initialName = "", roleId = null }) {
+export default function AddRoleForm({
+  open = false,
+  onClose = () => {},
+  onSuccess = () => {},
+  baseApi = "",
+  initialName = "",
+  roleId = null,
+}) {
   const [name, setName] = useState(initialName);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
 
   const BASE_API = baseApi ?? "http://127.0.0.1:8000";
 
@@ -32,14 +39,14 @@ export default function AddRoleForm({ open, onClose, onSuccess, baseApi, initial
   // sync initialName when editing different roles
   useEffect(() => {
     setName(initialName ?? "");
-    setError(null);
+    setError("");
   }, [initialName, open]);
 
   if (!open) return null;
 
   const handleSubmit = async (e) => {
-    e && e.preventDefault();
-    setError(null);
+    if (e && e.preventDefault) e.preventDefault();
+    setError("");
     if (!name.trim()) {
       setError("Role name is required");
       return;
@@ -69,15 +76,15 @@ export default function AddRoleForm({ open, onClose, onSuccess, baseApi, initial
       onClose && onClose();
       setName("");
     } catch (err) {
-      setError(err.message || "Failed to save role");
+      setError(err instanceof Error ? err.message : String(err) || "Failed to save role");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 overflow-y-auto p-4 animate-fade-in">
-      <div className="bg-white rounded-xl shadow-xl border border-slate-100 p-6 max-w-md w-full mx-auto relative space-y-4">
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 overflow-y-auto p-3 sm:p-4 animate-fade-in">
+      <div className="bg-white rounded-xl shadow-xl border border-slate-100 p-4 sm:p-6 max-w-md w-full mx-auto relative space-y-4">
         
         {/* Close Button */}
         <button

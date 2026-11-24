@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { RxCross2 } from "react-icons/rx";
 import RichVisualEditor from "./RichVisualEditor";
 
-export const CATEGORY_OPTIONS = [
+const CATEGORY_OPTIONS = [
   { value: "lead", label: "Leads / Enquiries" },
   { value: "customer", label: "Customers" },
   { value: "followup", label: "Follow-up Management" },
@@ -11,7 +11,7 @@ export const CATEGORY_OPTIONS = [
   { value: "amc", label: "AMC Contracts" },
 ];
 
-export const CHANNEL_OPTIONS = [
+const CHANNEL_OPTIONS = [
   { value: "email", label: "Email" },
   { value: "whatsapp", label: "WhatsApp" },
 ];
@@ -31,7 +31,7 @@ const AVAILABLE_TAGS = [
   { tag: "{date}", label: "Today's Date" },
 ];
 
-export function renderLivePreview(rawText, channel) {
+function _renderLivePreview(rawText, channel) {
   if (!rawText || !rawText.trim()) {
     return "<div class='text-slate-400 italic text-center py-8'>Type or insert content in Write mode to see live preview...</div>";
   }
@@ -205,22 +205,22 @@ export default function CreateTemplateModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
-      <div className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-2xl w-full mx-auto my-8 relative max-h-[90vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-2 sm:p-4 animate-fade-in">
+      <div className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-2xl w-full mx-auto my-2 sm:my-8 relative max-h-[96vh] sm:max-h-[90vh] flex flex-col overflow-hidden">
         
         {/* Header Bar */}
-        <div className="bg-white px-6 pt-6 pb-2 flex justify-between items-start">
-          <div>
-            <h3 className="text-xl font-bold text-slate-900">
+        <div className="bg-white px-4 sm:px-6 pt-4 sm:pt-6 pb-2 flex justify-between items-start gap-2">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900 truncate">
               {initialData ? "Edit Template" : "Add New Template"}
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-400 mt-0.5 truncate">
               Manage template details and dynamic placeholders
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-50 cursor-pointer"
+            className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 rounded-lg hover:bg-slate-50 cursor-pointer shrink-0"
             title="Close"
           >
             <RxCross2 size={18} />
@@ -228,7 +228,7 @@ export default function CreateTemplateModal({
         </div>
 
         {/* Form Main Body */}
-        <div className="p-6 overflow-y-auto flex-1 scrollbar-thin">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 scrollbar-thin">
           <form className="space-y-4 text-slate-800" onSubmit={handleSubmit}>
             
             {/* Template Name */}
@@ -248,7 +248,7 @@ export default function CreateTemplateModal({
             </div>
 
             {/* Channel & Category Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-1">
                 <label className="block text-xs font-semibold text-slate-600">
                   Channel *
@@ -257,7 +257,7 @@ export default function CreateTemplateModal({
                   name="channel"
                   value={formData.channel}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white cursor-pointer"
                 >
                   {CHANNEL_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -275,7 +275,7 @@ export default function CreateTemplateModal({
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white cursor-pointer"
                 >
                   {CATEGORY_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -287,15 +287,15 @@ export default function CreateTemplateModal({
             </div>
 
             {/* SINGLE COMMON DYNAMIC TAGS SECTION FOR BOTH SUBJECT & BODY */}
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
+            <div className="p-2.5 sm:p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                <div className="flex flex-wrap items-center gap-1.5">
                   <span className="text-xs font-bold text-slate-700">Dynamic Tags:</span>
-                  <span className="text-[11px] text-slate-500">
-                    Click any tag to insert at your active cursor
+                  <span className="text-[10px] sm:text-[11px] text-slate-500">
+                    Click tag to insert at cursor
                   </span>
                 </div>
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                <span className="text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 self-start sm:self-auto shrink-0">
                   Target: {activeField === "subject" && formData.channel === "email" ? "Subject Line" : "Message Body"}
                 </span>
               </div>
@@ -306,7 +306,7 @@ export default function CreateTemplateModal({
                     key={item.tag}
                     type="button"
                     onClick={() => handleTagInsert(item.tag)}
-                    className="px-2.5 py-1 rounded-md bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-600 text-xs font-medium border border-slate-200 hover:border-blue-300 transition-all cursor-pointer shadow-2xs hover:scale-[1.02] active:scale-95"
+                    className="px-2 py-1 rounded-md bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-600 text-[11px] sm:text-xs font-medium border border-slate-200 hover:border-blue-300 transition-all cursor-pointer shadow-2xs hover:scale-[1.02] active:scale-95"
                     title={`Click to insert ${item.tag} at cursor`}
                   >
                     + {item.tag}
@@ -347,11 +347,11 @@ export default function CreateTemplateModal({
 
             {/* Message Body with Visual Rich Editor */}
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-0.5 sm:gap-2">
                 <label className="block text-xs font-semibold text-slate-600">
                   Message Body *
                 </label>
-                <span className="text-[11px] text-slate-400 font-normal">
+                <span className="text-[10px] sm:text-[11px] text-slate-400 font-normal">
                   Visual editor: Click Bold or Insert Table to create directly
                 </span>
               </div>
@@ -366,20 +366,20 @@ export default function CreateTemplateModal({
               />
             </div>
 
-            {/* Footer Buttons - Matching AddLeadForm.jsx */}
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-4">
+            {/* Footer Buttons - Responsive full-width on mobile */}
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-4 border-t border-slate-100 mt-4">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="px-4 py-2 text-xs font-semibold text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 border border-slate-200 sm:border-transparent rounded-lg transition-colors cursor-pointer text-center"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-5 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors shadow-sm shadow-blue-500/10 cursor-pointer disabled:opacity-50"
+                className="w-full sm:w-auto px-5 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors shadow-sm shadow-blue-500/10 cursor-pointer disabled:opacity-50 text-center"
               >
                 {isSubmitting
                   ? "Saving..."

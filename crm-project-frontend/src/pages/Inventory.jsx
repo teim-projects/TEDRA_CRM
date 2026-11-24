@@ -117,14 +117,14 @@ export default function Inventory() {
   return (
     <div className="w-full max-w-7xl mx-auto space-y-3.5">
       {/* COMPACT TOP HORIZONTAL TABS BAR */}
-      <div className="flex items-center gap-1 p-1 bg-slate-200/70 rounded-xl w-fit shadow-xs flex-wrap">
+      <div className="flex items-center gap-1 p-1 bg-slate-200/70 rounded-xl w-full sm:w-fit shadow-xs overflow-x-auto scrollbar-none flex-nowrap shrink-0">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 ${
                 isActive
                   ? "bg-slate-900 text-white shadow-xs"
                   : tab.highlight

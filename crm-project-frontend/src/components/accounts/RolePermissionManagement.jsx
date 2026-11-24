@@ -1,7 +1,8 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Swal from "sweetalert2";
 import AddRoleForm from "./AddRoleForm";
-import { MdCheck, MdAdd, MdDelete, MdShield } from "react-icons/md";
+import { MdCheck, MdAdd, MdDelete } from "react-icons/md";
 
 // Default System Modules Definition
 export const SYSTEM_MODULES = [
@@ -98,7 +99,7 @@ const getDefaultPermissionsForRole = (roleName = "") => {
   return permissions;
 };
 
-export default function RolePermissionManagement({ baseApi }) {
+export default function RolePermissionManagement({ baseApi = "" }) {
   const DEFAULT_API = "http://127.0.0.1:8000";
   const BASE_API = baseApi ?? import.meta.env.VITE_BASE_API_URL ?? DEFAULT_API;
 
@@ -350,11 +351,11 @@ export default function RolePermissionManagement({ baseApi }) {
     <div className="w-full space-y-4 font-sans antialiased text-slate-800 pt-1 sm:pt-2 px-1">
 
       {/* HEADER BLOCK MATCHING LEAD.JSX */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between pb-1 pt-1">
-        <div className="flex items-center gap-3">
-          <span className="w-1.5 h-10 bg-sky-600 rounded-full block"></span>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between pb-1 pt-1 gap-2.5 sm:gap-3">
+        <div className="flex items-start sm:items-center gap-2.5 sm:gap-3">
+          <span className="w-1.5 h-9 sm:h-10 bg-sky-600 rounded-full block shrink-0 mt-0.5 sm:mt-0"></span>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-tight">
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 leading-tight">
               Role & Access Control Management
             </h1>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -363,10 +364,10 @@ export default function RolePermissionManagement({ baseApi }) {
           </div>
         </div>
 
-        <div className="mt-3 md:mt-0 flex flex-wrap items-center gap-2 sm:gap-2.5">
+        <div className="mt-2 sm:mt-3 md:mt-0 flex items-center w-full md:w-auto">
           <button
             onClick={() => setShowAddRoleModal(true)}
-            className="px-3 sm:px-4 py-1.5 bg-sky-600 text-white text-xs font-semibold rounded-lg hover:bg-sky-700 transition-colors shadow-2xs shadow-sky-500/10 flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+            className="w-full sm:w-auto px-4 py-2 sm:py-1.5 bg-sky-600 text-white text-xs font-semibold rounded-lg hover:bg-sky-700 transition-colors shadow-2xs shadow-sky-500/10 flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
           >
             <MdAdd className="text-base" />
             <span>Create New Role</span>
@@ -375,7 +376,7 @@ export default function RolePermissionManagement({ baseApi }) {
       </div>
 
       {/* SELECT ROLE SELECTION CARD */}
-      <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm space-y-2">
+      <div className="bg-white rounded-xl p-3.5 sm:p-4 border border-slate-200/80 shadow-sm space-y-2">
         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
           SELECT ROLE TO CONFIGURE
         </span>
@@ -383,15 +384,15 @@ export default function RolePermissionManagement({ baseApi }) {
         {loading ? (
           <div className="text-xs text-slate-400 py-1">Loading system roles...</div>
         ) : (
-          <div className="flex flex-wrap items-center gap-2 pt-0.5">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none sm:flex-wrap">
             {roles.map((r) => {
               const isSelected = selectedRole?.id === r.id || selectedRole?.name === r.name;
               const isFixed = r.name?.toLowerCase() === "technician" || r.name?.toLowerCase() === "admin";
               return (
-                <div key={r.id || r.name} className="flex items-center gap-1">
+                <div key={r.id || r.name} className="flex items-center gap-1 shrink-0">
                   <button
                     onClick={() => setSelectedRole(r)}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 flex items-center gap-2 cursor-pointer ${
+                    className={`px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 flex items-center gap-2 cursor-pointer whitespace-nowrap ${
                       isSelected
                         ? "bg-slate-900 text-white shadow-xs"
                         : "bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80"
@@ -432,7 +433,7 @@ export default function RolePermissionManagement({ baseApi }) {
         <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
 
           {/* Matrix Header & Action Buttons */}
-          <div className="p-4 border-b border-slate-200/80 flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-slate-50/50">
+          <div className="p-3 sm:p-4 border-b border-slate-200/80 flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-slate-50/50">
             <div>
               <h2 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
                 Permission Matrix for <span className="text-blue-600 capitalize">{selectedRole.name}</span>
@@ -442,24 +443,24 @@ export default function RolePermissionManagement({ baseApi }) {
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full md:w-auto">
               <button
                 onClick={handleGrantFullAccess}
-                className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer whitespace-nowrap shrink-0"
+                className="w-full sm:w-auto px-2.5 sm:px-3 py-2 sm:py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer whitespace-nowrap flex items-center justify-center text-center"
               >
                 Grant Full Access
               </button>
 
               <button
                 onClick={handleReadOnlyAccess}
-                className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer whitespace-nowrap shrink-0"
+                className="w-full sm:w-auto px-2.5 sm:px-3 py-2 sm:py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer whitespace-nowrap flex items-center justify-center text-center"
               >
                 Read Only Access
               </button>
 
               <button
                 onClick={handleClearAllAccess}
-                className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer whitespace-nowrap shrink-0"
+                className="w-full sm:w-auto px-2.5 sm:px-3 py-2 sm:py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer whitespace-nowrap flex items-center justify-center text-center"
               >
                 Clear All Access
               </button>
@@ -467,7 +468,7 @@ export default function RolePermissionManagement({ baseApi }) {
               <button
                 onClick={handleSavePermissions}
                 disabled={saving}
-                className="px-4 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-2xs shadow-sky-500/10 flex items-center gap-1.5 cursor-pointer disabled:opacity-50 whitespace-nowrap shrink-0"
+                className="w-full sm:w-auto px-3 sm:px-4 py-2 sm:py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-2xs shadow-sky-500/10 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 whitespace-nowrap"
               >
                 <MdCheck className="text-base" />
                 <span>{saving ? "Saving..." : "Save Permissions"}</span>
@@ -476,16 +477,16 @@ export default function RolePermissionManagement({ baseApi }) {
           </div>
 
           {/* Table View */}
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-xs border-collapse">
+          <div className="overflow-x-auto scrollbar-thin">
+            <table className="min-w-[560px] w-full text-xs border-collapse">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50/70 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
-                  <th className="py-3 px-5 text-left">SYSTEM MODULE</th>
-                  <th className="py-3 px-4 text-center">VIEW ACCESS</th>
-                  <th className="py-3 px-4 text-center">CREATE ACCESS</th>
-                  <th className="py-3 px-4 text-center">EDIT ACCESS</th>
-                  <th className="py-3 px-4 text-center">DELETE ACCESS</th>
-                  <th className="py-3 px-4 text-right">QUICK SELECT</th>
+                  <th className="py-2.5 sm:py-3 px-3 sm:px-5 text-left min-w-[160px]">SYSTEM MODULE</th>
+                  <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-center whitespace-nowrap">VIEW ACCESS</th>
+                  <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-center whitespace-nowrap">CREATE ACCESS</th>
+                  <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-center whitespace-nowrap">EDIT ACCESS</th>
+                  <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-center whitespace-nowrap">DELETE ACCESS</th>
+                  <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-right whitespace-nowrap">QUICK SELECT</th>
                 </tr>
               </thead>
 
@@ -497,17 +498,17 @@ export default function RolePermissionManagement({ baseApi }) {
                   return (
                     <tr key={mod.key} className="hover:bg-slate-50/60 transition-colors duration-150">
                       {/* Module Info */}
-                      <td className="py-3 px-5">
+                      <td className="py-2.5 sm:py-3 px-3 sm:px-5">
                         <div className="font-semibold text-slate-900 text-xs">
                           {mod.name}
                         </div>
-                        <div className="text-[11px] text-slate-400 mt-0.5">
+                        <div className="text-[11px] text-slate-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
                           {mod.description}
                         </div>
                       </td>
 
                       {/* View Access - Pastel Emerald */}
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-center">
                         <ToggleSwitch
                           active={perm.view}
                           onToggle={() => togglePermission(mod.key, "view")}
@@ -516,7 +517,7 @@ export default function RolePermissionManagement({ baseApi }) {
                       </td>
 
                       {/* Create Access - Pastel Blue */}
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-center">
                         <ToggleSwitch
                           active={perm.create}
                           onToggle={() => togglePermission(mod.key, "create")}
@@ -525,7 +526,7 @@ export default function RolePermissionManagement({ baseApi }) {
                       </td>
 
                       {/* Edit Access - Pastel Amber */}
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-center">
                         <ToggleSwitch
                           active={perm.edit}
                           onToggle={() => togglePermission(mod.key, "edit")}
@@ -534,7 +535,7 @@ export default function RolePermissionManagement({ baseApi }) {
                       </td>
 
                       {/* Delete Access - Pastel Rose */}
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-center">
                         <ToggleSwitch
                           active={perm.delete}
                           onToggle={() => togglePermission(mod.key, "delete")}
@@ -543,7 +544,7 @@ export default function RolePermissionManagement({ baseApi }) {
                       </td>
 
                       {/* Quick Select Actions */}
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-right whitespace-nowrap">
                         {isAllActive ? (
                           <button
                             onClick={() => handleClearModule(mod.key)}
@@ -584,7 +585,7 @@ export default function RolePermissionManagement({ baseApi }) {
 }
 
 // Compact & Clean Toggle Switch Component
-function ToggleSwitch({ active, onToggle, activeColor = "bg-sky-600" }) {
+function ToggleSwitch({ active = false, onToggle = () => {}, activeColor = "bg-sky-600" }) {
   return (
     <button
       type="button"

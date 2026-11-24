@@ -81,15 +81,15 @@ export default function AMCDashboard({ contracts = [], isLoading = false }) {
     .slice(0, 5);
 
   return (
-    <div className="w-full space-y-5 font-sans antialiased text-slate-800">
+    <div className="w-full space-y-4 sm:space-y-5 font-sans antialiased text-slate-800">
       {/* 1. KEY KPI CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Total AMC Contracts
             </span>
-            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               {isLoading ? <span className="text-base font-medium text-slate-400 animate-pulse">Loading...</span> : totalContracts.toLocaleString()}
             </h3>
             <p className="text-[11px] font-medium text-emerald-600 flex items-center gap-1">
@@ -101,12 +101,12 @@ export default function AMCDashboard({ contracts = [], isLoading = false }) {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Expiring Soon
             </span>
-            <h3 className="text-3xl font-extrabold text-amber-600 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-amber-600 tracking-tight">
               {isLoading ? <span className="text-base font-medium text-slate-400 animate-pulse">Loading...</span> : expiringSoonCount.toLocaleString()}
             </h3>
             <p className="text-[11px] font-medium text-amber-600 flex items-center gap-1">
@@ -118,12 +118,12 @@ export default function AMCDashboard({ contracts = [], isLoading = false }) {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Expired Contracts
             </span>
-            <h3 className="text-3xl font-extrabold text-rose-600 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-rose-600 tracking-tight">
               {isLoading ? <span className="text-base font-medium text-slate-400 animate-pulse">Loading...</span> : expiredCount.toLocaleString()}
             </h3>
             <p className="text-[11px] font-medium text-slate-500 flex items-center gap-1">
@@ -135,12 +135,12 @@ export default function AMCDashboard({ contracts = [], isLoading = false }) {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Annual Contract Value
             </span>
-            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               {isLoading ? <span className="text-base font-medium text-slate-400 animate-pulse">Loading...</span> : formatCurrency(totalAnnualValue)}
             </h3>
             <p className="text-[11px] font-medium text-indigo-600 flex items-center gap-1">
@@ -154,9 +154,9 @@ export default function AMCDashboard({ contracts = [], isLoading = false }) {
       </div>
 
       {/* 2. VISUAL BREAKDOWN ROW */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
         {/* CONTRACT STATUS PROGRESS */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex flex-col justify-between">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-bold text-slate-900">AMC Lifecycle Breakdown</h3>
             <p className="text-xs text-slate-400 mb-4">Contract health distribution</p>
@@ -217,30 +217,30 @@ export default function AMCDashboard({ contracts = [], isLoading = false }) {
             </div>
           </div>
 
-          <div className="mt-5 pt-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
+          <div className="mt-4 sm:mt-5 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 text-xs text-slate-500">
             <span>Active Ratio: <strong>{activePercent}%</strong></span>
             <span>At Risk: <strong>{expiringSoonCount + expiredCount}</strong></span>
           </div>
         </div>
 
         {/* AMC TYPE BREAKDOWN */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex flex-col justify-between">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-bold text-slate-900">Contract Scope & Type</h3>
             <p className="text-xs text-slate-400 mb-4">Comprehensive vs Non-Comprehensive</p>
 
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+              <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs shrink-0">
                     CMP
                   </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900">Comprehensive AMC</h4>
+                  <div className="min-w-0">
+                    <h4 className="text-xs font-bold text-slate-900 truncate">Comprehensive AMC</h4>
                     <p className="text-[10px] text-slate-400">Includes labor + replacement parts</p>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right shrink-0">
                   <span className="text-base font-bold text-slate-900">{typeMap.comprehensive}</span>
                   <p className="text-[10px] text-slate-500">
                     {totalContracts > 0 ? ((typeMap.comprehensive / totalContracts) * 100).toFixed(0) : 0}% share
@@ -248,17 +248,17 @@ export default function AMCDashboard({ contracts = [], isLoading = false }) {
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+              <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
+                  <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shrink-0">
                     NCMP
                   </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900">Non-Comprehensive AMC</h4>
+                  <div className="min-w-0">
+                    <h4 className="text-xs font-bold text-slate-900 truncate">Non-Comprehensive AMC</h4>
                     <p className="text-[10px] text-slate-400">Labor only · Parts billed separately</p>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right shrink-0">
                   <span className="text-base font-bold text-slate-900">{typeMap.non_comprehensive}</span>
                   <p className="text-[10px] text-slate-500">
                     {totalContracts > 0 ? ((typeMap.non_comprehensive / totalContracts) * 100).toFixed(0) : 0}% share
@@ -268,14 +268,14 @@ export default function AMCDashboard({ contracts = [], isLoading = false }) {
             </div>
           </div>
 
-          <div className="mt-5 pt-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
+          <div className="mt-4 sm:mt-5 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 text-xs text-slate-500">
             <span>High Coverage: <strong>{typeMap.comprehensive}</strong></span>
             <span>Standard: <strong>{typeMap.non_comprehensive}</strong></span>
           </div>
         </div>
 
         {/* PAYMENT FREQUENCY */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex flex-col justify-between">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-bold text-slate-900">Billing Cycles</h3>
             <p className="text-xs text-slate-400 mb-4">Payment schedule frequency</p>

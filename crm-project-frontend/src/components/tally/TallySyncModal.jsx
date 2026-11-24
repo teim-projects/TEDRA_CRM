@@ -63,29 +63,29 @@ export default function TallySyncModal({ isOpen, onClose, onConfirmSync, isSynci
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-[1000] bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in font-sans antialiased text-slate-800"
+      className="fixed inset-0 z-[1000] bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 animate-fade-in font-sans antialiased text-slate-800"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-xl shadow-xl max-w-lg w-full mx-auto my-8 relative max-h-[90vh] flex flex-col overflow-hidden border border-slate-100"
+        className="bg-white rounded-xl shadow-xl max-w-lg w-full mx-auto my-2 sm:my-8 relative max-h-[96vh] sm:max-h-[90vh] flex flex-col overflow-hidden border border-slate-100"
       >
         {/* Header */}
-        <div className="bg-white px-6 pt-6 pb-3 flex justify-between items-start border-b border-slate-100">
-          <div>
+        <div className="bg-white px-4 sm:px-6 pt-4 sm:pt-6 pb-3 flex justify-between items-start border-b border-slate-100 gap-2">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-lg">
+              <span className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-lg shrink-0">
                 <MdSync className={isSyncing ? "animate-spin" : ""} />
               </span>
-              <h3 className="text-xl font-bold text-slate-900">Sync Tally Invoices</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900 truncate">Sync Tally Invoices</h3>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5 ml-10">
+            <p className="text-xs text-slate-400 mt-0.5 ml-10 truncate">
               Fetch sales vouchers from TallyPrime to CRM
             </p>
           </div>
           <button
             onClick={onClose}
             disabled={isSyncing}
-            className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-50 cursor-pointer disabled:opacity-50"
+            className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 rounded-lg hover:bg-slate-50 cursor-pointer disabled:opacity-50 shrink-0"
             aria-label="Close"
           >
             <RxCross2 size={20} />
@@ -93,7 +93,7 @@ export default function TallySyncModal({ isOpen, onClose, onConfirmSync, isSynci
         </div>
 
         {/* Content Body */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto flex-1 space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
           {/* Mode Selection Cards */}
           <div className="space-y-3">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
@@ -267,12 +267,12 @@ export default function TallySyncModal({ isOpen, onClose, onConfirmSync, isSynci
         </form>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-2.5 px-6 py-3 border-t border-slate-100 bg-white">
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-2.5 px-4 sm:px-6 py-3 border-t border-slate-100 bg-white">
           <button
             type="button"
             onClick={onClose}
             disabled={isSyncing}
-            className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+            className="w-full sm:w-auto px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-xs cursor-pointer disabled:opacity-50 text-center"
           >
             Cancel
           </button>
@@ -280,7 +280,7 @@ export default function TallySyncModal({ isOpen, onClose, onConfirmSync, isSynci
             type="button"
             onClick={handleSubmit}
             disabled={isSyncing}
-            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm shadow-blue-500/10 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            className="w-full sm:w-auto px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm shadow-blue-500/10 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 text-center"
           >
             <MdSync className={`text-sm ${isSyncing ? "animate-spin" : ""}`} />
             <span>{isSyncing ? "Queuing Sync..." : "Start Sync"}</span>

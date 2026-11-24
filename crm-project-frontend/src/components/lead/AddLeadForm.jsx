@@ -1112,12 +1112,12 @@ export default function AddLeadForm({
           }
         `}
       </style>
-      <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
-        <div className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-3xl w-full mx-auto my-6 relative max-h-[92vh] flex flex-col overflow-hidden">
+      <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-2 sm:p-4 animate-fade-in">
+        <div className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-3xl w-full mx-auto my-auto sm:my-6 relative max-h-[96vh] sm:max-h-[92vh] flex flex-col overflow-hidden">
           {/* Header Bar */}
-          <div className="bg-white px-6 pt-5 pb-3 flex justify-between items-start border-b border-slate-100">
+          <div className="bg-white px-4 sm:px-6 pt-4 sm:pt-5 pb-3 flex justify-between items-start border-b border-slate-100">
             <div>
-              <h3 className="text-xl font-bold text-slate-900">
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900">
                 {lead ? "Edit Lead" : "Add New Lead"}
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
@@ -1134,12 +1134,12 @@ export default function AddLeadForm({
           </div>
 
           {/* Stepper Header Navigation */}
-          <div className="px-6 py-2.5 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="px-3 sm:px-6 py-2 sm:py-2.5 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between text-xs overflow-x-auto scrollbar-none">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap shrink-0">
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-full font-medium transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full font-medium transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   step === 1
                     ? "bg-blue-600 text-white shadow-xs"
                     : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
@@ -1150,13 +1150,13 @@ export default function AddLeadForm({
                 </span>
                 <span>Basic Details</span>
               </button>
-              <span className="text-slate-300">›</span>
+              <span className="text-slate-300 shrink-0">›</span>
               <button
                 type="button"
                 onClick={() => {
                   if (validateStep1()) setStep(2);
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-full font-medium transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full font-medium transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   step === 2
                     ? "bg-blue-600 text-white shadow-xs"
                     : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
@@ -1168,13 +1168,13 @@ export default function AddLeadForm({
                 <span>Sites & Products</span>
                 <span className="text-[10px] opacity-80">(Optional)</span>
               </button>
-              <span className="text-slate-300">›</span>
+              <span className="text-slate-300 shrink-0">›</span>
               <button
                 type="button"
                 onClick={() => {
                   if (validateStep1()) setStep(3);
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-full font-medium transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full font-medium transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                   step === 3
                     ? "bg-blue-600 text-white shadow-xs"
                     : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
@@ -1188,7 +1188,7 @@ export default function AddLeadForm({
             </div>
 
             {sitesList.length > 0 && (
-              <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0 ml-2">
                 {sitesList.length} Site{sitesList.length > 1 ? "s" : ""} (₹
                 {totalSitesAmount.toLocaleString("en-IN")})
               </span>
@@ -1196,7 +1196,7 @@ export default function AddLeadForm({
           </div>
 
           {/* Form Main Body */}
-          <div className="p-6 overflow-y-auto flex-1 scrollbar-thin">
+          <div className="p-3.5 sm:p-6 overflow-y-auto flex-1 scrollbar-thin">
             <form className="space-y-4 text-slate-800" onSubmit={handleSubmit}>
               {/* ================= STEP 1: BASIC INFORMATION (WITHOUT PRODUCT / AMOUNT) ================= */}
               {step === 1 && (
@@ -1920,7 +1920,7 @@ export default function AddLeadForm({
                       <p className="text-xs text-slate-400 max-w-md mx-auto mt-1">
                         Adding sites is completely optional. If this client has multiple parking locations or facilities, add them now with product requirements and amounts.
                       </p>
-                      <div className="flex items-center justify-center gap-2 mt-4">
+                      <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mt-4 max-w-md mx-auto w-full">
                         <button
                           type="button"
                           onClick={() => {
@@ -1928,15 +1928,15 @@ export default function AddLeadForm({
                             setEditingSiteIndex(null);
                             setShowSiteForm(true);
                           }}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors shadow-2xs cursor-pointer flex items-center gap-1.5"
+                          className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors shadow-2xs cursor-pointer flex items-center justify-center gap-1.5"
                         >
                           <MdAdd size={16} />
-                          <span>+ Add First Site</span>
+                          <span>Add First Site</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => setStep(3)}
-                          className="px-4 py-2 border border-slate-200 bg-white text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
+                          className="w-full sm:w-auto px-4 py-2 border border-slate-200 bg-white text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer text-center"
                         >
                           Skip to Pipeline Info →
                         </button>
@@ -2163,33 +2163,34 @@ export default function AddLeadForm({
               )}
 
               {/* ================= ACTION BUTTONS PANEL ================= */}
-              <div className="flex items-center justify-between pt-3 border-t border-slate-100 mt-6">
-                {step > 1 ? (
-                  <button
-                    type="button"
-                    onClick={() => setStep(step - 1)}
-                    className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
-                  >
-                    Back
-                  </button>
-                ) : (
-                  <div />
-                )}
-
-                <div className="flex items-center gap-2">
+              <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-2.5 pt-3 border-t border-slate-100 mt-6">
+                <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
+                  {step > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => setStep(step - 1)}
+                      className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-xs cursor-pointer justify-center text-center"
+                    >
+                      Back
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={onClose}
-                    className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
+                    className={`px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-xs cursor-pointer justify-center text-center ${
+                      step === 1 ? "col-span-2 sm:col-span-1" : ""
+                    }`}
                   >
                     Cancel
                   </button>
+                </div>
 
+                <div className="w-full sm:w-auto flex flex-col sm:flex-row items-center gap-2">
                   {lead && !lead.is_converted && step === 3 && (
                     <button
                       type="button"
                       onClick={handleConvertToCustomer}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg text-xs font-semibold hover:bg-green-700 transition-colors shadow-sm shadow-green-500/10 cursor-pointer"
+                      className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg text-xs font-semibold hover:bg-green-700 transition-colors shadow-sm shadow-green-500/10 cursor-pointer justify-center text-center"
                       disabled={convertingToCustomer}
                     >
                       {convertingToCustomer ? "Converting..." : "Convert to Customer"}
@@ -2200,7 +2201,7 @@ export default function AddLeadForm({
                     <button
                       type="button"
                       onClick={handleNextFromStep1}
-                      className="px-5 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors shadow-sm shadow-blue-500/10 cursor-pointer"
+                      className="w-full sm:w-auto px-5 py-2.5 sm:py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors shadow-sm shadow-blue-500/10 cursor-pointer justify-center text-center whitespace-nowrap"
                     >
                       Next: Sites & Products →
                     </button>
@@ -2210,7 +2211,7 @@ export default function AddLeadForm({
                     <button
                       type="button"
                       onClick={handleNextFromStep2}
-                      className="px-5 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors shadow-sm shadow-blue-500/10 cursor-pointer"
+                      className="w-full sm:w-auto px-5 py-2.5 sm:py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors shadow-sm shadow-blue-500/10 cursor-pointer justify-center text-center whitespace-nowrap"
                     >
                       {sitesList.length > 0 ? "Next: Pipeline Info →" : "Skip & Next: Pipeline Info →"}
                     </button>
@@ -2220,7 +2221,7 @@ export default function AddLeadForm({
                     <button
                       type="submit"
                       disabled={loading}
-                      className="px-5 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm shadow-blue-500/10 cursor-pointer"
+                      className="w-full sm:w-auto px-5 py-2.5 sm:py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm shadow-blue-500/10 cursor-pointer justify-center text-center whitespace-nowrap"
                     >
                       {loading
                         ? lead

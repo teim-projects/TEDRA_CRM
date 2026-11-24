@@ -818,11 +818,11 @@ export default function FieldMap() {
 
         {/* HEADER BLOCK WITH SKY VERTICAL ACCENT LINE (Exact match to other pages) */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-1 pt-1">
-          <div className="flex items-center gap-3">
-            <span className="w-1.5 h-10 bg-sky-600 rounded-full block"></span>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-tight">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <span className="w-1.5 h-9 sm:h-10 bg-sky-600 rounded-full block shrink-0"></span>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 leading-tight">
                   Field Route Map
                 </h1>
                 <span className="bg-sky-50 border border-sky-200 text-sky-700 text-[11px] px-2 py-0.5 rounded-full font-bold">
@@ -838,81 +838,91 @@ export default function FieldMap() {
           </div>
 
           {/* Action Toolbar */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-            {/* Quick Shift buttons */}
-            <div className="inline-flex items-center bg-white rounded-lg border border-slate-200 p-0.5 shadow-2xs">
-              <button
-                onClick={() => shiftDate(-1)}
-                className="p-1 hover:bg-slate-100 text-slate-600 rounded cursor-pointer transition"
-                title="Previous Day"
-              >
-                <MdChevronLeft className="text-lg" />
-              </button>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+            {/* Row 1 on mobile: Quick Shift & Date Input */}
+            <div className="grid grid-cols-2 sm:flex items-center gap-1.5 sm:gap-2.5 w-full sm:w-auto">
+              {/* Quick Shift buttons */}
+              <div className="col-span-1 inline-flex items-center justify-between bg-white rounded-lg border border-slate-200 p-0.5 shadow-2xs w-full sm:w-auto">
+                <button
+                  onClick={() => shiftDate(-1)}
+                  className="p-1 hover:bg-slate-100 text-slate-600 rounded cursor-pointer transition flex-1 flex items-center justify-center"
+                  title="Previous Day"
+                >
+                  <MdChevronLeft className="text-lg" />
+                </button>
 
-              <button
-                onClick={() => setSelectedDate(getTodayStr())}
-                className={`px-2.5 py-1 text-xs font-semibold rounded cursor-pointer transition ${
-                  isTodaySelected
-                    ? "bg-sky-600 text-white shadow-2xs"
-                    : "text-slate-700 hover:bg-slate-100"
-                }`}
-              >
-                Today
-              </button>
+                <button
+                  onClick={() => setSelectedDate(getTodayStr())}
+                  className={`px-2.5 py-1 text-xs font-semibold rounded cursor-pointer transition flex-1 text-center ${
+                    isTodaySelected
+                      ? "bg-sky-600 text-white shadow-2xs"
+                      : "text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  Today
+                </button>
 
-              <button
-                onClick={() => shiftDate(1)}
-                className="p-1 hover:bg-slate-100 text-slate-600 rounded cursor-pointer transition"
-                title="Next Day"
-              >
-                <MdChevronRight className="text-lg" />
-              </button>
+                <button
+                  onClick={() => shiftDate(1)}
+                  className="p-1 hover:bg-slate-100 text-slate-600 rounded cursor-pointer transition flex-1 flex items-center justify-center"
+                  title="Next Day"
+                >
+                  <MdChevronRight className="text-lg" />
+                </button>
+              </div>
+
+              {/* Date Input */}
+              <div className="col-span-1 relative flex items-center w-full sm:w-auto">
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full sm:w-auto px-2.5 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500"
+                />
+              </div>
             </div>
 
-            {/* Date Input */}
-            <div className="relative flex items-center">
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="px-2.5 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500"
-              />
+            {/* Row 2 on mobile: Technician Selector and Work Desk + Refresh */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2.5 w-full sm:w-auto">
+              {isAdminOrManager && (
+                <div className="w-full sm:w-auto">
+                  <select
+                    value={selectedTechnicianId}
+                    onChange={(e) => setSelectedTechnicianId(e.target.value)}
+                    className="w-full sm:w-auto px-2.5 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 truncate"
+                  >
+                    <option value="all">All Technicians ({mapData.all_technicians?.length || 0})</option>
+                    {(mapData.all_technicians || []).map((tech) => (
+                      <option key={tech.id} value={tech.id}>
+                        {tech.name} {tech.count_for_day ? `(${tech.count_for_day} sites)` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 sm:flex items-center gap-1.5 sm:gap-2.5 w-full sm:w-auto">
+                {/* Switch to Work Desk */}
+                <button
+                  onClick={() => navigate("/technician/work-desk")}
+                  className="col-span-1 w-full sm:w-auto px-2.5 sm:px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+                >
+                  <MdEngineering className="text-slate-500 text-sm shrink-0" />
+                  <span>Work Desk</span>
+                </button>
+
+                {/* Refresh */}
+                <button
+                  onClick={() => fetchFieldMapData(false)}
+                  disabled={loading || refreshing}
+                  className="col-span-1 w-full sm:w-auto px-2 sm:px-2.5 py-1.5 sm:p-1.5 bg-white border border-slate-200 text-slate-600 hover:text-sky-600 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer flex items-center justify-center gap-1"
+                  title="Refresh Map"
+                >
+                  <MdRefresh className={`text-base shrink-0 ${refreshing || loading ? "animate-spin text-sky-600" : ""}`} />
+                  <span className="sm:hidden">Refresh</span>
+                </button>
+              </div>
             </div>
-
-            {/* Technician Selector for Admin */}
-            {isAdminOrManager && (
-              <select
-                value={selectedTechnicianId}
-                onChange={(e) => setSelectedTechnicianId(e.target.value)}
-                className="px-2.5 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500"
-              >
-                <option value="all">All Technicians ({mapData.all_technicians?.length || 0})</option>
-                {(mapData.all_technicians || []).map((tech) => (
-                  <option key={tech.id} value={tech.id}>
-                    {tech.name} {tech.count_for_day ? `(${tech.count_for_day} sites)` : ""}
-                  </option>
-                ))}
-              </select>
-            )}
-
-            {/* Switch to Work Desk */}
-            <button
-              onClick={() => navigate("/technician/work-desk")}
-              className="px-2.5 sm:px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
-            >
-              <MdEngineering className="text-slate-500 text-sm" />
-              <span>Work Desk</span>
-            </button>
-
-            {/* Refresh */}
-            <button
-              onClick={() => fetchFieldMapData(false)}
-              disabled={loading || refreshing}
-              className="p-1.5 bg-white border border-slate-200 text-slate-600 hover:text-sky-600 rounded-lg hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
-              title="Refresh Map"
-            >
-              <MdRefresh className={`text-base ${refreshing || loading ? "animate-spin text-sky-600" : ""}`} />
-            </button>
           </div>
         </div>
 
@@ -996,28 +1006,32 @@ export default function FieldMap() {
                 setSelectedStatus("all");
               }
             }}
-            className={`bg-white p-3.5 sm:p-4 rounded-xl border transition-all cursor-pointer ${
+            className={`col-span-2 sm:col-span-2 lg:col-span-1 bg-white p-3.5 sm:p-4 rounded-xl border transition-all cursor-pointer ${
               selectedStatus === "missing_pin"
                 ? "border-rose-500 ring-2 ring-rose-100 shadow-sm"
                 : "border-slate-200/80 shadow-2xs hover:border-slate-300"
             }`}
           >
-            <span className="text-[10px] text-slate-500 font-medium block uppercase tracking-wider flex items-center gap-1">
-              <MdLocationOn className="text-emerald-600 text-xs" />
-              GPS Coordinates
-            </span>
-            <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span className="text-xs sm:text-[13px] font-bold text-slate-900">
-                {mapData.kpis.pinned_sites}/{mapData.kpis.total_sites} Pinned
+            <div className="flex sm:block justify-between items-center">
+              <div>
+                <span className="text-[10px] text-slate-500 font-medium block uppercase tracking-wider flex items-center gap-1">
+                  <MdLocationOn className="text-emerald-600 text-xs" />
+                  GPS Coordinates
+                </span>
+                <div className="flex items-baseline gap-1.5 mt-0.5">
+                  <span className="text-xs sm:text-[13px] font-bold text-slate-900">
+                    {mapData.kpis.pinned_sites}/{mapData.kpis.total_sites} Pinned
+                  </span>
+                </div>
+              </div>
+              <span className="text-[10px] text-slate-400 font-normal block sm:mt-0.5 text-right sm:text-left">
+                {mapData.kpis.missing_pins_count > 0 ? (
+                  <span className="text-amber-600 font-semibold">{mapData.kpis.missing_pins_count} Missing Pin (Click)</span>
+                ) : (
+                  <span className="text-emerald-600 font-medium">100% Locations Pinned</span>
+                )}
               </span>
             </div>
-            <span className="text-[10px] text-slate-400 font-normal block mt-0.5">
-              {mapData.kpis.missing_pins_count > 0 ? (
-                <span className="text-amber-600 font-semibold">{mapData.kpis.missing_pins_count} Missing Pin (Click)</span>
-              ) : (
-                <span className="text-emerald-600 font-medium">100% Locations Pinned</span>
-              )}
-            </span>
           </div>
         </div>
 

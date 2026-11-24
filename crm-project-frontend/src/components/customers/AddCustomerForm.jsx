@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Swal from "sweetalert2";
 import { RxCross2 } from "react-icons/rx";
 import { CitySelect, StateSelect, GetState, GetCity } from "react-country-state-city";
@@ -730,7 +730,7 @@ export default function AddCustomerForm({
       let data;
       try {
         data = await res.json();
-      } catch (e) {
+      } catch {
         data = {};
       }
 
@@ -874,15 +874,15 @@ export default function AddCustomerForm({
 
   return (
     <>
-      <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 overflow-y-auto p-4 animate-fade-in">
-        <div className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-4xl w-full mx-auto my-8 relative max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 overflow-y-auto p-2 sm:p-4 animate-fade-in">
+        <div className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-4xl w-full mx-auto my-auto sm:my-8 relative max-h-[96vh] sm:max-h-[90vh] flex flex-col overflow-hidden">
           {/* HEADER */}
-          <div className="sticky top-0 bg-white z-10 border-b border-slate-100 px-6 py-4 flex justify-between items-center">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">
+          <div className="sticky top-0 bg-white z-10 border-b border-slate-100 px-4 sm:px-6 py-3.5 sm:py-4 flex justify-between items-start sm:items-center gap-2">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate">
                 {customer ? "Edit Customer" : "Add New Customer"}
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-400 mt-0.5 line-clamp-2 sm:line-clamp-none">
                 {customer
                   ? `Code: ${customer.customer_code || "N/A"}`
                   : "Create new customer record with multi-location parking sites and installed products"}
@@ -890,18 +890,18 @@ export default function AddCustomerForm({
             </div>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+              className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer shrink-0"
             >
               <RxCross2 size={18} />
             </button>
           </div>
 
           {/* FORM BODY */}
-          <div className="p-6 overflow-y-auto flex-1 text-slate-800 scrollbar-thin">
+          <div className="p-3.5 sm:p-6 overflow-y-auto flex-1 text-slate-800 scrollbar-thin">
             <form className="space-y-6" onSubmit={handleSubmit}>
               {/* Lead Lookup Section */}
               {!customer && (
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-200">
                   <label className="block text-xs font-semibold text-blue-700 mb-2">
                     Lookup Lead
                   </label>
@@ -911,13 +911,13 @@ export default function AddCustomerForm({
                       value={leadLookup}
                       onChange={(e) => setLeadLookup(e.target.value)}
                       placeholder="Enter Lead ID or Mobile Number"
-                      className="flex-1 px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white"
+                      className="flex-1 min-w-0 px-3 py-2 text-xs sm:text-sm border border-blue-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white"
                     />
                     <button
                       type="button"
                       onClick={handleLeadLookup}
                       disabled={loadingLead}
-                      className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer"
+                      className="px-3.5 sm:px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer shrink-0 whitespace-nowrap"
                     >
                       {loadingLead ? "Searching..." : "Search"}
                     </button>
@@ -1198,10 +1198,10 @@ export default function AddCustomerForm({
 
               {/* CUSTOMER SITES & PARKING FACILITIES SECTION */}
               <div className="space-y-3 pt-1">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-200">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-slate-200">
                   <div>
                     <h4 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
-                      <MdApartment className="text-blue-600" size={17} />
+                      <MdApartment className="text-blue-600 shrink-0" size={17} />
                       <span>CUSTOMER SITES &amp; PARKING FACILITIES</span>
                     </h4>
                     <p className="text-[11px] text-slate-400 mt-0.5">
@@ -1209,9 +1209,9 @@ export default function AddCustomerForm({
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-2 flex-wrap justify-between sm:justify-end">
                     {sitesList.length > 0 && (
-                      <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-2xs">
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 shadow-2xs flex-wrap">
                         <span>{sitesList.length} Site{sitesList.length !== 1 ? "s" : ""}</span>
                         <span className="text-slate-300">|</span>
                         <span className="text-amber-700">🚗 {totalSitesCapacity} Cars</span>
@@ -1228,7 +1228,7 @@ export default function AddCustomerForm({
                           setEditingSiteIndex(null);
                           setShowSiteForm(true);
                         }}
-                        className="px-3.5 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors shadow-2xs flex items-center gap-1 cursor-pointer"
+                        className="px-3.5 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors shadow-2xs flex items-center gap-1 cursor-pointer ml-auto sm:ml-0"
                       >
                         <MdAdd size={16} />
                         <span>Add Site</span>
@@ -1708,17 +1708,17 @@ export default function AddCustomerForm({
               </div>
 
               {/* Actions Footer */}
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 mt-4">
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-slate-100 mt-4">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="w-full sm:w-auto px-4 py-2.5 sm:py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors cursor-pointer text-center"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm cursor-pointer"
+                  className="w-full sm:w-auto px-5 py-2.5 sm:py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm cursor-pointer text-center"
                   disabled={loading}
                 >
                   {loading

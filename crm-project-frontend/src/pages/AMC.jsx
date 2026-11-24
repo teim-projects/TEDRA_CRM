@@ -891,174 +891,174 @@ export default function AMC() {
           />
         ) : (
           <>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-1 pt-1">
-          <div className="flex items-center gap-3">
-            <span className="w-1.5 h-10 bg-sky-600 rounded-full block"></span>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-tight">
-                AMC Contracts
-              </h1>
-              <p className="text-xs text-slate-500 mt-0.5">
-                {loading
-                  ? "Synchronizing AMC records..."
-                  : `Total ${totalCount} contracts active`}
-              </p>
-            </div>
-          </div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-1 pt-1">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <span className="w-1.5 h-9 sm:h-10 bg-sky-600 rounded-full block shrink-0"></span>
+                <div className="min-w-0">
+                  <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 leading-tight">
+                    AMC Contracts
+                  </h1>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {loading
+                      ? "Synchronizing AMC records..."
+                      : `Total ${totalCount} contracts active`}
+                  </p>
+                </div>
+              </div>
 
-          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-            <div className="relative">
-              <button
-                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                className="px-2.5 sm:px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-xs flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
-              >
-                <MdFilterList className="text-slate-400 text-sm" />
-                <span>{currentFilterLabel}</span>
-              </button>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+                {/* Filter & View Mode Rows */}
+                <div className="grid grid-cols-2 sm:flex items-center gap-1.5 sm:gap-2.5 w-full sm:w-auto">
+                  <div className="relative col-span-1">
+                    <button
+                      onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                      className="w-full sm:w-auto px-2.5 sm:px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer shadow-xs truncate"
+                    >
+                      <MdFilterList className="text-slate-400 text-sm shrink-0" />
+                      <span className="truncate">{currentFilterLabel}</span>
+                    </button>
 
-              {showFilterDropdown && (
-                <>
-                  <div
-                    className="fixed inset-0 z-20 cursor-default"
-                    onClick={() => setShowFilterDropdown(false)}
-                  />
-                  <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl z-30 py-1 text-xs animate-in fade-in zoom-in-95 duration-150">
-                    {filterOptions.map((opt) => (
-                      <button
-                        key={opt.value}
-                        onClick={() => {
-                          setFilterType(opt.value);
-                          setShowFilterDropdown(false);
-                        }}
-                        className={`w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center justify-between transition-colors cursor-pointer ${
-                          filterType === opt.value ? "font-medium text-blue-600 bg-blue-50" : "text-slate-700"
-                        }`}
-                      >
-                        <span>{opt.label}</span>
-                        {filterType === opt.value && (
-                          <span className="text-blue-600 font-bold">✓</span>
-                        )}
-                      </button>
-                    ))}
+                    {showFilterDropdown && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-20 cursor-default"
+                          onClick={() => setShowFilterDropdown(false)}
+                        />
+                        <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-xl z-30 py-1 text-xs animate-in fade-in zoom-in-95 duration-150">
+                          {filterOptions.map((opt) => (
+                            <button
+                              key={opt.value}
+                              onClick={() => {
+                                setFilterType(opt.value);
+                                setShowFilterDropdown(false);
+                              }}
+                              className={`w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center justify-between transition-colors cursor-pointer ${filterType === opt.value ? "font-medium text-blue-600 bg-blue-50" : "text-slate-700"
+                                }`}
+                            >
+                              <span>{opt.label}</span>
+                              {filterType === opt.value && (
+                                <span className="text-blue-600 font-bold">✓</span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
-                </>
-              )}
+
+                  <button
+                    onClick={() => setIsFilterOpen(true)}
+                    className="col-span-1 w-full sm:w-auto px-2.5 sm:px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-xs flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+                  >
+                    <MdFilterList className="text-slate-400 text-sm shrink-0" />
+                    <span>Filter</span>
+                  </button>
+                </div>
+
+                {/* Calendar View Toggle */}
+                <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 w-full sm:w-auto">
+                  <button
+                    onClick={() => setViewMode("table")}
+                    className={`flex-1 sm:flex-initial px-2.5 py-1 text-xs font-semibold rounded-md transition-all flex items-center justify-center gap-1.5 cursor-pointer ${viewMode === "table"
+                      ? "bg-white text-slate-800 shadow-xs"
+                      : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    title="Table View"
+                  >
+                    <MdViewList className="text-sm" />
+                    <span>Table</span>
+                  </button>
+                  <button
+                    onClick={() => setViewMode("calendar")}
+                    className={`flex-1 sm:flex-initial px-2.5 py-1 text-xs font-semibold rounded-md transition-all flex items-center justify-center gap-1.5 cursor-pointer ${viewMode === "calendar"
+                      ? "bg-sky-600 text-white shadow-xs font-bold"
+                      : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    title="Calendar View"
+                  >
+                    <MdCalendarMonth className="text-sm" />
+                    <span>Calendar</span>
+                  </button>
+                </div>
+
+                {canCreateAMC && (
+                  <button
+                    onClick={() => {
+                      setEditingAMC(null);
+                      setShowForm(true);
+                    }}
+                    className="w-full sm:w-auto px-3.5 sm:px-4 py-2 sm:py-1.5 bg-sky-600 text-white text-xs font-semibold rounded-lg hover:bg-sky-700 transition-colors shadow-2xs shadow-sky-500/10 flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+                  >
+                    <MdAdd className="text-base sm:text-sm" />
+                    <span>Add AMC Contract</span>
+                  </button>
+                )}
+              </div>
             </div>
 
-            <button
-              onClick={() => setIsFilterOpen(true)}
-              className="px-2.5 sm:px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-xs flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
-            >
-              <MdFilterList className="text-slate-400 text-sm" />
-              Filter
-            </button>
+            {/* 4 SUMMARY STAT CARDS (Styled matching Services page KPI blocks) */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs">
+                <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">Total Contracts</span>
+                <span className="text-xs sm:text-[13px] font-bold text-slate-900 block mt-0.5">{formatNumber(stats.total)} contracts</span>
+                <span className="text-[10px] text-slate-400 font-normal block mt-0.5">All AMC agreements</span>
+              </div>
 
-            {/* Calendar View Toggle placed directly beside Filter */}
-            <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 shrink-0">
-              <button
-                onClick={() => setViewMode("table")}
-                className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 cursor-pointer ${
-                  viewMode === "table"
-                    ? "bg-white text-slate-800 shadow-xs"
-                    : "text-slate-500 hover:text-slate-800"
-                }`}
-                title="Table View"
-              >
-                <MdViewList className="text-sm" />
-                <span>Table</span>
-              </button>
-              <button
-                onClick={() => setViewMode("calendar")}
-                className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 cursor-pointer ${
-                  viewMode === "calendar"
-                    ? "bg-sky-600 text-white shadow-xs font-bold"
-                    : "text-slate-500 hover:text-slate-800"
-                }`}
-                title="Calendar View"
-              >
-                <MdCalendarMonth className="text-sm" />
-                <span>Calendar</span>
-              </button>
+              <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs">
+                <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">Active Contracts</span>
+                <span className="text-xs sm:text-[13px] font-bold text-sky-700 block mt-0.5">
+                  {formatNumber(stats.active)} active <span className="text-slate-400 font-normal">· {formatNumber(stats.inactive)} inactive</span>
+                </span>
+                <span className="text-[10px] text-sky-600 font-medium block mt-0.5">Ongoing service agreements</span>
+              </div>
+
+              <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs">
+                <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">Expiring / Expired</span>
+                <span className="text-xs sm:text-[13px] font-bold text-amber-700 block mt-0.5">
+                  {formatNumber(stats.expiringSoon)} soon <span className="text-slate-400 font-normal">· {formatNumber(stats.expired)} expired</span>
+                </span>
+                <span className="text-[10px] text-amber-600 font-medium block mt-0.5">Needs renewal attention</span>
+              </div>
+
+              <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs">
+                <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">Renewed</span>
+                <span className="text-xs sm:text-[13px] font-bold text-emerald-700 block mt-0.5">{formatNumber(stats.renewed)} renewed</span>
+                <span className="text-[10px] text-emerald-600 font-medium block mt-0.5">Successfully extended</span>
+              </div>
             </div>
 
-            {canCreateAMC && (
-              <button
-                onClick={() => {
-                  setEditingAMC(null);
-                  setShowForm(true);
+            {viewMode === "calendar" ? (
+              <AMCCalendarView
+                contracts={allRows}
+                onViewRecord={(r) => {
+                  setSelectedRecord(r);
+                  setRecordViewerOpen(true);
                 }}
-                className="px-3 sm:px-4 py-1.5 bg-sky-600 text-white text-xs font-semibold rounded-lg hover:bg-sky-700 transition-colors shadow-2xs shadow-sky-500/10 flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
-              >
-                <MdAdd className="text-sm" />
-                Add AMC Contract
-              </button>
+                onViewDetails={(r) => setViewingAMC(r)}
+                onRenewRecord={(r) => {
+                  setRenewingAMC(r);
+                  setShowRenewModal(true);
+                }}
+                formatDate={formatDate}
+              />
+            ) : (
+              <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
+                <TableView
+                  columns={columns}
+                  rows={getCurrentPageData()}
+                  loading={loading}
+                  error={error}
+                  page={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={(p) => setCurrentPage(p)}
+                  pageSize={itemsPerPage}
+                  actions={actionsRenderer}
+                  rowClassName={getRowClassName}
+                  renderExpandedRow={renderExpandedRow}
+                  emptyMessage="No AMC contracts matched the active criteria"
+                />
+              </div>
             )}
-          </div>
-        </div>
-
-        {/* 4 SUMMARY STAT CARDS (Styled matching Services page KPI blocks) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs">
-            <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">Total Contracts</span>
-            <span className="text-xs sm:text-[13px] font-bold text-slate-900 block mt-0.5">{formatNumber(stats.total)} contracts</span>
-            <span className="text-[10px] text-slate-400 font-normal block mt-0.5">All AMC agreements</span>
-          </div>
-
-          <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs">
-            <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">Active Contracts</span>
-            <span className="text-xs sm:text-[13px] font-bold text-sky-700 block mt-0.5">
-              {formatNumber(stats.active)} active <span className="text-slate-400 font-normal">· {formatNumber(stats.inactive)} inactive</span>
-            </span>
-            <span className="text-[10px] text-sky-600 font-medium block mt-0.5">Ongoing service agreements</span>
-          </div>
-
-          <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs">
-            <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">Expiring / Expired</span>
-            <span className="text-xs sm:text-[13px] font-bold text-amber-700 block mt-0.5">
-              {formatNumber(stats.expiringSoon)} soon <span className="text-slate-400 font-normal">· {formatNumber(stats.expired)} expired</span>
-            </span>
-            <span className="text-[10px] text-amber-600 font-medium block mt-0.5">Needs renewal attention</span>
-          </div>
-
-          <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs">
-            <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">Renewed</span>
-            <span className="text-xs sm:text-[13px] font-bold text-emerald-700 block mt-0.5">{formatNumber(stats.renewed)} renewed</span>
-            <span className="text-[10px] text-emerald-600 font-medium block mt-0.5">Successfully extended</span>
-          </div>
-        </div>
-
-        {viewMode === "calendar" ? (
-          <AMCCalendarView
-            contracts={allRows}
-            onViewRecord={(r) => {
-              setSelectedRecord(r);
-              setRecordViewerOpen(true);
-            }}
-            onViewDetails={(r) => setViewingAMC(r)}
-            onRenewRecord={(r) => {
-              setRenewingAMC(r);
-              setShowRenewModal(true);
-            }}
-            formatDate={formatDate}
-          />
-        ) : (
-          <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
-            <TableView
-              columns={columns}
-              rows={getCurrentPageData()}
-              loading={loading}
-              error={error}
-              page={currentPage}
-              totalPages={totalPages}
-              onPageChange={(p) => setCurrentPage(p)}
-              pageSize={itemsPerPage}
-              actions={actionsRenderer}
-              rowClassName={getRowClassName}
-              renderExpandedRow={renderExpandedRow}
-              emptyMessage="No AMC contracts matched the active criteria"
-            />
-          </div>
-        )}
           </>
         )}
       </div>
@@ -1075,9 +1075,8 @@ export default function AMC() {
             )}
 
             <div
-              className={`fixed top-0 right-0 h-screen w-full max-w-[380px] sm:w-[380px] bg-white shadow-2xl z-[10000] flex flex-col transition-transform duration-300 ease-in-out ${
-                isFilterOpen ? "translate-x-0" : "translate-x-full"
-              }`}
+              className={`fixed top-0 right-0 h-screen w-full max-w-[380px] sm:w-[380px] bg-white shadow-2xl z-[10000] flex flex-col transition-transform duration-300 ease-in-out ${isFilterOpen ? "translate-x-0" : "translate-x-full"
+                }`}
             >
               <div className="flex items-center justify-between p-5 border-b border-slate-200 flex-shrink-0">
                 <h3 className="text-lg font-bold text-slate-900">Filters</h3>
@@ -1101,96 +1100,96 @@ export default function AMC() {
           document.body
         )}
 
-        <AddAMCContractForm
-          open={showForm}
-          onClose={() => {
-            setShowForm(false);
-            setEditingAMC(null);
-          }}
-          onSuccess={() => fetchData()}
-          amcContract={editingAMC}
-          token={token}
-          baseUrl={BASE_API}
-        />
+      <AddAMCContractForm
+        open={showForm}
+        onClose={() => {
+          setShowForm(false);
+          setEditingAMC(null);
+        }}
+        onSuccess={() => fetchData()}
+        amcContract={editingAMC}
+        token={token}
+        baseUrl={BASE_API}
+      />
 
-        <RecordViewer
-          isOpen={recordViewerOpen}
-          onClose={() => {
-            setRecordViewerOpen(false);
-            setSelectedRecord(null);
-          }}
-          record={selectedRecord}
-          title="AMC Contract Details"
-        />
+      <RecordViewer
+        isOpen={recordViewerOpen}
+        onClose={() => {
+          setRecordViewerOpen(false);
+          setSelectedRecord(null);
+        }}
+        record={selectedRecord}
+        title="AMC Contract Details"
+      />
 
-        {/* Add/Edit AMC Service Modal */}
-        <AddServiceForm
-          open={showAddServiceModal}
-          onClose={() => {
-            setShowAddServiceModal(false);
-            setEditingContractService(null);
-          }}
-          service={editingContractService}
-          initialContract={viewingAMC}
-          initialCategory="amc_service"
+      {/* Add/Edit AMC Service Modal */}
+      <AddServiceForm
+        open={showAddServiceModal}
+        onClose={() => {
+          setShowAddServiceModal(false);
+          setEditingContractService(null);
+        }}
+        service={editingContractService}
+        initialContract={viewingAMC}
+        initialCategory="amc_service"
+        baseApi={BASE_API}
+        token={token}
+        onSuccess={() => {
+          if (viewingAMC?.id) fetchContractServices(viewingAMC.id);
+        }}
+      />
+
+      {/* Allocate Technicians for AMC Service */}
+      {allocatingContractService && (
+        <AllocateTechniciansModal
+          open={!!allocatingContractService}
+          onClose={() => setAllocatingContractService(null)}
+          entity={allocatingContractService}
+          endpoint={`${BASE_API}/amc/visits/${allocatingContractService.id}/allocate-technicians/`}
+          title={`Allocate Technicians — ${allocatingContractService.visit_number || allocatingContractService.service_number || `#VIS-${allocatingContractService.id}`}`}
           baseApi={BASE_API}
           token={token}
           onSuccess={() => {
             if (viewingAMC?.id) fetchContractServices(viewingAMC.id);
+            setAllocatingContractService(null);
           }}
         />
+      )}
 
-        {/* Allocate Technicians for AMC Service */}
-        {allocatingContractService && (
-          <AllocateTechniciansModal
-            open={!!allocatingContractService}
-            onClose={() => setAllocatingContractService(null)}
-            entity={allocatingContractService}
-            endpoint={`${BASE_API}/amc/visits/${allocatingContractService.id}/allocate-technicians/`}
-            title={`Allocate Technicians — ${allocatingContractService.visit_number || allocatingContractService.service_number || `#VIS-${allocatingContractService.id}`}`}
-            baseApi={BASE_API}
-            token={token}
-            onSuccess={() => {
-              if (viewingAMC?.id) fetchContractServices(viewingAMC.id);
-              setAllocatingContractService(null);
-            }}
-          />
-        )}
+      <RenewAMCModal
+        open={showRenewModal}
+        onClose={() => {
+          setShowRenewModal(false);
+          setRenewingAMC(null);
+        }}
+        onSuccess={() => fetchData()}
+        amcContract={renewingAMC}
+        token={token}
+        baseUrl={BASE_API}
+      />
 
-        <RenewAMCModal
-          open={showRenewModal}
-          onClose={() => {
-            setShowRenewModal(false);
-            setRenewingAMC(null);
-          }}
-          onSuccess={() => fetchData()}
-          amcContract={renewingAMC}
-          token={token}
-          baseUrl={BASE_API}
-        />
+      {/* Dedicated Cycle Visits Modal */}
+      <CycleVisitsModal
+        open={!!viewingCycleVisits}
+        onClose={() => setViewingCycleVisits(null)}
+        cycle={viewingCycleVisits?.cycle}
+        amcContract={viewingCycleVisits?.amc}
+        baseApi={BASE_API}
+        token={token}
+        formatDate={formatDate}
+      />
 
-        {/* Dedicated Cycle Visits Modal */}
-        <CycleVisitsModal
-          open={!!viewingCycleVisits}
-          onClose={() => setViewingCycleVisits(null)}
-          cycle={viewingCycleVisits?.cycle}
-          amcContract={viewingCycleVisits?.amc}
-          baseApi={BASE_API}
-          token={token}
-          formatDate={formatDate}
-        />
-
-        {/* Send Message Modal */}
-        <SendMessageModal
-          isOpen={sendMessageModalOpen}
-          onClose={() => {
-            setSendMessageModalOpen(false);
-            setSelectedMessageRecord(null);
-          }}
-          category="amc"
-          recordData={selectedMessageRecord}
-          onSuccess={() => {}}
-        />
+      {/* Send Message Modal */}
+      <SendMessageModal
+        isOpen={sendMessageModalOpen}
+        onClose={() => {
+          setSendMessageModalOpen(false);
+          setSelectedMessageRecord(null);
+        }}
+        category="amc"
+        recordData={selectedMessageRecord}
+        onSuccess={() => { }}
+      />
     </Base>
   );
 }

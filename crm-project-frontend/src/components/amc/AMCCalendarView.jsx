@@ -315,56 +315,58 @@ export default function AMCCalendarView({
   return (
     <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden transition-all duration-200">
       {/* 1. TOP HEADER & NAVIGATION TOOLBAR */}
-      <div className="p-4 sm:p-5 border-b border-slate-100 bg-gradient-to-b from-white to-slate-50/50">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          {/* Month / Year Navigator */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <div className="p-2.5 bg-blue-600 text-white rounded-xl shadow-sm shadow-blue-500/20 flex items-center justify-center">
-              <MdEvent className="text-xl" />
+      <div className="p-3 sm:p-5 border-b border-slate-100 bg-gradient-to-b from-white to-slate-50/50">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
+          {/* Top Row on mobile / Left section on desktop: Month/Year Navigator & Nav buttons */}
+          <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3">
+            <div className="flex items-center gap-2">
+              <div className="p-2 sm:p-2.5 bg-blue-600 text-white rounded-xl shadow-sm shadow-blue-500/20 flex items-center justify-center shrink-0">
+                <MdEvent className="text-lg sm:text-xl" />
+              </div>
+
+              <div className="flex items-center gap-1">
+                {/* Month Dropdown */}
+                <select
+                  value={currentMonth}
+                  onChange={handleMonthChange}
+                  aria-label="Select month"
+                  className="font-bold text-base sm:text-lg text-slate-900 bg-transparent border-none hover:bg-slate-100/80 rounded-lg px-1.5 sm:px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                >
+                  {monthNames.map((m, idx) => (
+                    <option key={idx} value={idx}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Year Dropdown */}
+                <select
+                  value={currentYear}
+                  onChange={handleYearChange}
+                  aria-label="Select year"
+                  className="font-bold text-base sm:text-lg text-slate-600 bg-transparent border-none hover:bg-slate-100/80 rounded-lg px-1.5 sm:px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                >
+                  {yearOptions.map((yr) => (
+                    <option key={yr} value={yr}>
+                      {yr}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            <div className="flex items-center gap-1.5">
-              {/* Month Dropdown */}
-              <select
-                value={currentMonth}
-                onChange={handleMonthChange}
-                aria-label="Select month"
-                className="font-bold text-base sm:text-lg text-slate-900 bg-transparent border-none hover:bg-slate-100/80 rounded-lg px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              >
-                {monthNames.map((m, idx) => (
-                  <option key={idx} value={idx}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-
-              {/* Year Dropdown */}
-              <select
-                value={currentYear}
-                onChange={handleYearChange}
-                aria-label="Select year"
-                className="font-bold text-base sm:text-lg text-slate-600 bg-transparent border-none hover:bg-slate-100/80 rounded-lg px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              >
-                {yearOptions.map((yr) => (
-                  <option key={yr} value={yr}>
-                    {yr}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Prev / Next & Today Navigation */}
-            <div className="flex items-center gap-1 ml-auto sm:ml-2">
+            {/* Desktop Prev / Next & Today Navigation */}
+            <div className="hidden sm:flex items-center gap-1 ml-auto sm:ml-2">
               <button
                 onClick={handlePrevMonth}
-                className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-white border border-slate-200 rounded-lg transition-colors cursor-pointer shadow-xs"
+                className="p-1 sm:p-1.5 text-slate-600 hover:text-slate-900 hover:bg-white border border-slate-200 rounded-lg transition-colors cursor-pointer shadow-xs"
                 title="Previous Month"
               >
-                <MdChevronLeft className="text-xl" />
+                <MdChevronLeft className="text-lg sm:text-xl" />
               </button>
               <button
                 onClick={handleToday}
-                className="px-2.5 py-1 text-xs font-semibold text-slate-700 hover:text-blue-600 hover:bg-white border border-slate-200 rounded-lg transition-colors cursor-pointer shadow-xs flex items-center gap-1"
+                className="px-2 sm:px-2.5 py-1 text-xs font-semibold text-slate-700 hover:text-blue-600 hover:bg-white border border-slate-200 rounded-lg transition-colors cursor-pointer shadow-xs flex items-center gap-1"
                 title="Jump to Current Month"
               >
                 <MdToday className="text-sm text-blue-600" />
@@ -372,18 +374,75 @@ export default function AMCCalendarView({
               </button>
               <button
                 onClick={handleNextMonth}
-                className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-white border border-slate-200 rounded-lg transition-colors cursor-pointer shadow-xs"
+                className="p-1 sm:p-1.5 text-slate-600 hover:text-slate-900 hover:bg-white border border-slate-200 rounded-lg transition-colors cursor-pointer shadow-xs"
                 title="Next Month"
               >
-                <MdChevronRight className="text-xl" />
+                <MdChevronRight className="text-lg sm:text-xl" />
               </button>
             </div>
           </div>
 
-          {/* Right Toolbar: Search & View Mode Switcher */}
-          <div className="flex flex-wrap items-center gap-2.5">
+          {/* Controls: Search, Navigation (mobile only), and View Mode Switcher */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+            {/* Mobile Controls Row: Navigation (< Today >) and Mode Switcher (Grid/Agenda) */}
+            <div className="flex flex-wrap sm:hidden items-center justify-between gap-1.5">
+              {/* Prev / Today / Next Navigation for Mobile */}
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  onClick={handlePrevMonth}
+                  className="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white border border-slate-200 rounded-lg transition-colors cursor-pointer shadow-xs shrink-0"
+                  title="Previous Month"
+                >
+                  <MdChevronLeft className="text-base" />
+                </button>
+                <button
+                  onClick={handleToday}
+                  className="px-2 py-1 text-[11px] font-semibold text-slate-700 hover:text-blue-600 hover:bg-white border border-slate-200 rounded-lg transition-colors cursor-pointer shadow-xs flex items-center gap-1 shrink-0"
+                  title="Jump to Current Month"
+                >
+                  <MdToday className="text-xs text-blue-600" />
+                  <span>Today</span>
+                </button>
+                <button
+                  onClick={handleNextMonth}
+                  className="w-7 h-7 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white border border-slate-200 rounded-lg transition-colors cursor-pointer shadow-xs shrink-0"
+                  title="Next Month"
+                >
+                  <MdChevronRight className="text-base" />
+                </button>
+              </div>
+
+              {/* Mode Switch for Mobile */}
+              <div className="flex items-center bg-slate-100/90 p-0.5 rounded-lg border border-slate-200 shrink-0">
+                <button
+                  onClick={() => setCalendarMode("grid")}
+                  className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all flex items-center gap-1 cursor-pointer shrink-0 ${
+                    calendarMode === "grid"
+                      ? "bg-white text-blue-600 shadow-xs font-bold"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                  title="Grid View"
+                >
+                  <MdCalendarViewMonth className="text-xs" />
+                  <span>Grid</span>
+                </button>
+                <button
+                  onClick={() => setCalendarMode("agenda")}
+                  className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all flex items-center gap-1 cursor-pointer shrink-0 ${
+                    calendarMode === "agenda"
+                      ? "bg-white text-blue-600 shadow-xs font-bold"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                  title="Agenda List View"
+                >
+                  <MdViewAgenda className="text-xs" />
+                  <span>Agenda</span>
+                </button>
+              </div>
+            </div>
+
             {/* Inline Search Bar */}
-            <div className="relative flex-1 sm:w-60">
+            <div className="relative w-full sm:w-60">
               <MdSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-base" />
               <input
                 type="text"
@@ -402,8 +461,8 @@ export default function AMCCalendarView({
               )}
             </div>
 
-            {/* Mode Switch: Month Grid vs Agenda List */}
-            <div className="flex items-center bg-slate-100/90 p-0.5 rounded-lg border border-slate-200">
+            {/* Mode Switch: Month Grid vs Agenda List (Desktop only) */}
+            <div className="hidden sm:flex items-center bg-slate-100/90 p-0.5 rounded-lg border border-slate-200">
               <button
                 onClick={() => setCalendarMode("grid")}
                 className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 cursor-pointer ${
@@ -433,16 +492,16 @@ export default function AMCCalendarView({
         </div>
 
         {/* 2. MONTH AT A GLANCE MINI-KPI & FILTER PILLS */}
-        <div className="mt-4 pt-3.5 border-t border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div className="mt-3 sm:mt-4 pt-3 sm:pt-3.5 border-t border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-2.5 sm:gap-3">
           {/* Filter Pills */}
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[11px] font-semibold text-slate-400 mr-1 uppercase tracking-wider">
+            <span className="text-[11px] font-semibold text-slate-400 mr-1 uppercase tracking-wider shrink-0">
               Filter:
             </span>
 
             <button
               onClick={() => setStatusFilter("all")}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border ${
+              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer border shrink-0 ${
                 statusFilter === "all"
                   ? "bg-slate-900 text-white border-slate-900 shadow-xs"
                   : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
@@ -453,7 +512,7 @@ export default function AMCCalendarView({
 
             <button
               onClick={() => setStatusFilter(statusFilter === "expiring" ? "all" : "expiring")}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 border ${
+              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 border shrink-0 ${
                 statusFilter === "expiring"
                   ? "bg-amber-500 text-white border-amber-500 shadow-xs font-bold"
                   : "bg-amber-50/80 text-amber-800 border-amber-200/80 hover:bg-amber-100"
@@ -465,7 +524,7 @@ export default function AMCCalendarView({
 
             <button
               onClick={() => setStatusFilter(statusFilter === "expired" ? "all" : "expired")}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 border ${
+              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 border shrink-0 ${
                 statusFilter === "expired"
                   ? "bg-rose-600 text-white border-rose-600 shadow-xs font-bold"
                   : "bg-rose-50/80 text-rose-800 border-rose-200/80 hover:bg-rose-100"
@@ -477,7 +536,7 @@ export default function AMCCalendarView({
 
             <button
               onClick={() => setStatusFilter(statusFilter === "scheduled" ? "all" : "scheduled")}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 border ${
+              className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 border shrink-0 ${
                 statusFilter === "scheduled"
                   ? "bg-sky-600 text-white border-sky-600 shadow-xs font-bold"
                   : "bg-sky-50/80 text-sky-800 border-sky-200/80 hover:bg-sky-100"
@@ -490,8 +549,8 @@ export default function AMCCalendarView({
 
           {/* Quick Value Badge */}
           {monthlyStats.expiring > 0 && (
-            <div className="flex items-center gap-1.5 text-xs text-amber-800 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200/70">
-              <MdWarningAmber className="text-amber-600 text-sm" />
+            <div className="flex items-center gap-1.5 text-xs text-amber-800 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200/70 shrink-0 self-start sm:self-auto">
+              <MdWarningAmber className="text-amber-600 text-sm shrink-0" />
               <span>
                 Expiring Value: <strong className="font-bold">₹{monthlyStats.expiringValue.toLocaleString("en-IN")}</strong>
               </span>
@@ -502,137 +561,139 @@ export default function AMCCalendarView({
 
       {/* 3. CALENDAR CONTENT: GRID MODE OR AGENDA MODE */}
       {calendarMode === "grid" ? (
-        <div>
-          {/* WEEKDAY HEADER (SUN - SAT) */}
-          <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-100/70 text-center text-xs font-bold text-slate-600 uppercase tracking-wider">
-            {weekDays.map((w, idx) => (
-              <div
-                key={idx}
-                className={`py-3 px-1 border-r last:border-r-0 border-slate-200 ${
-                  idx === 0 || idx === 6 ? "bg-slate-200/40 text-slate-400" : ""
-                }`}
-              >
-                <span>{w}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* CALENDAR DAYS 7-COLUMN GRID */}
-          <div className="grid grid-cols-7 divide-x divide-y divide-slate-100 bg-slate-50/30">
-            {calendarDays.map((day, idx) => {
-              const dayEvents =
-                statusFilter === "all"
-                  ? day.events
-                  : day.events.filter((e) => e.type === statusFilter);
-
-              const visibleEvents = dayEvents.filter(matchesSearch);
-              const hasEvents = visibleEvents.length > 0;
-              const isWeekend = idx % 7 === 0 || idx % 7 === 6;
-
-              return (
+        <div className="overflow-x-auto scrollbar-thin">
+          <div className="min-w-[620px] sm:min-w-0">
+            {/* WEEKDAY HEADER (SUN - SAT) */}
+            <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-100/70 text-center text-xs font-bold text-slate-600 uppercase tracking-wider">
+              {weekDays.map((w, idx) => (
                 <div
                   key={idx}
-                  onClick={() => {
-                    if (hasEvents || day.isCurrentMonth) {
-                      setSelectedDate(day.dateKey);
-                    }
-                  }}
-                  className={`min-h-[110px] sm:min-h-[125px] p-1.5 sm:p-2 flex flex-col transition-all cursor-pointer relative group ${
-                    day.isCurrentMonth
-                      ? isWeekend
-                        ? "bg-slate-50/40 hover:bg-blue-50/40"
-                        : "bg-white hover:bg-blue-50/40"
-                      : "bg-slate-100/30 text-slate-300 hover:bg-slate-100/60"
-                  } ${
-                    day.isToday
-                      ? "ring-2 ring-inset ring-blue-500 bg-blue-50/25 shadow-inner"
-                      : ""
-                  } ${
-                    selectedDate === day.dateKey
-                      ? "!bg-blue-50/90 ring-2 ring-blue-600 z-10 shadow-md"
-                      : ""
+                  className={`py-3 px-1 border-r last:border-r-0 border-slate-200 ${
+                    idx === 0 || idx === 6 ? "bg-slate-200/40 text-slate-400" : ""
                   }`}
                 >
-                  {/* Day Number Header */}
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-1">
-                      <span
-                        className={`text-xs font-semibold inline-flex items-center justify-center rounded-full transition-all ${
-                          day.isToday
-                            ? "w-6 h-6 bg-blue-600 text-white font-bold shadow-sm shadow-blue-500/30 ring-2 ring-blue-300"
-                            : day.isCurrentMonth
-                            ? "text-slate-700 w-6 h-6 group-hover:text-blue-600"
-                            : "text-slate-400 w-6 h-6"
-                        }`}
-                      >
-                        {day.dayNumber}
-                      </span>
-                      {day.isToday && (
-                        <span className="hidden sm:inline-block text-[9px] font-bold text-blue-600 bg-blue-100/80 px-1.5 py-0.2 rounded-full uppercase tracking-wider">
-                          Today
+                  <span>{w}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* CALENDAR DAYS 7-COLUMN GRID */}
+            <div className="grid grid-cols-7 divide-x divide-y divide-slate-100 bg-slate-50/30">
+              {calendarDays.map((day, idx) => {
+                const dayEvents =
+                  statusFilter === "all"
+                    ? day.events
+                    : day.events.filter((e) => e.type === statusFilter);
+
+                const visibleEvents = dayEvents.filter(matchesSearch);
+                const hasEvents = visibleEvents.length > 0;
+                const isWeekend = idx % 7 === 0 || idx % 7 === 6;
+
+                return (
+                  <div
+                    key={idx}
+                    onClick={() => {
+                      if (hasEvents || day.isCurrentMonth) {
+                        setSelectedDate(day.dateKey);
+                      }
+                    }}
+                    className={`min-h-[100px] sm:min-h-[125px] p-1.5 sm:p-2 flex flex-col transition-all cursor-pointer relative group ${
+                      day.isCurrentMonth
+                        ? isWeekend
+                          ? "bg-slate-50/40 hover:bg-blue-50/40"
+                          : "bg-white hover:bg-blue-50/40"
+                        : "bg-slate-100/30 text-slate-300 hover:bg-slate-100/60"
+                    } ${
+                      day.isToday
+                        ? "ring-2 ring-inset ring-blue-500 bg-blue-50/25 shadow-inner"
+                        : ""
+                    } ${
+                      selectedDate === day.dateKey
+                        ? "!bg-blue-50/90 ring-2 ring-blue-600 z-10 shadow-md"
+                        : ""
+                    }`}
+                  >
+                    {/* Day Number Header */}
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-1">
+                        <span
+                          className={`text-xs font-semibold inline-flex items-center justify-center rounded-full transition-all ${
+                            day.isToday
+                              ? "w-6 h-6 bg-blue-600 text-white font-bold shadow-sm shadow-blue-500/30 ring-2 ring-blue-300"
+                              : day.isCurrentMonth
+                              ? "text-slate-700 w-6 h-6 group-hover:text-blue-600"
+                              : "text-slate-400 w-6 h-6"
+                          }`}
+                        >
+                          {day.dayNumber}
+                        </span>
+                        {day.isToday && (
+                          <span className="hidden sm:inline-block text-[9px] font-bold text-blue-600 bg-blue-100/80 px-1.5 py-0.2 rounded-full uppercase tracking-wider">
+                            Today
+                          </span>
+                        )}
+                      </div>
+
+                      {hasEvents && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                          {visibleEvents.length}
                         </span>
                       )}
                     </div>
 
-                    {hasEvents && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                        {visibleEvents.length}
-                      </span>
-                    )}
+                    {/* Day Events List (Small Badges Written Directly on the Date) */}
+                    <div className="flex-1 flex flex-col gap-1 overflow-hidden">
+                      {visibleEvents.slice(0, 2).map((ev, evIdx) => {
+                        let badgeStyle = "bg-slate-100 text-slate-700 border-slate-200";
+                        let dotColor = "bg-slate-400";
+                        let iconEmoji = "📄";
+                        let prefix = ev.label;
+
+                        if (ev.type === "expiring") {
+                          badgeStyle =
+                            "bg-amber-50 text-amber-900 border-amber-200/90 hover:bg-amber-100 shadow-2xs";
+                          dotColor = "bg-amber-500";
+                          iconEmoji = "⏳";
+                        } else if (ev.type === "expired") {
+                          badgeStyle =
+                            "bg-rose-50 text-rose-900 border-rose-200/90 hover:bg-rose-100 shadow-2xs";
+                          dotColor = "bg-rose-500";
+                          iconEmoji = "✕";
+                        } else if (ev.type === "scheduled") {
+                          badgeStyle =
+                            "bg-sky-50 text-sky-900 border-sky-200/90 hover:bg-sky-100 shadow-2xs";
+                          dotColor = "bg-sky-500";
+                          iconEmoji = "📅";
+                        }
+
+                        return (
+                          <div
+                            key={evIdx}
+                            className={`text-[10px] leading-tight px-1.5 py-0.5 rounded-md border transition-all flex items-center gap-1 truncate ${badgeStyle}`}
+                            title={`${prefix}: ${ev.customerName} (${ev.contractId})`}
+                          >
+                            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColor}`}></span>
+                            <span className="font-bold text-[9px]">{iconEmoji} {prefix}:</span>
+                            <span className="truncate font-medium">{ev.customerName}</span>
+                          </div>
+                        );
+                      })}
+
+                      {visibleEvents.length > 2 && (
+                        <span className="text-[9px] font-bold text-slate-500 hover:text-blue-600 pl-1 mt-auto flex items-center gap-0.5">
+                          <span>+{visibleEvents.length - 2} more</span>
+                        </span>
+                      )}
+                    </div>
                   </div>
-
-                  {/* Day Events List (Small Badges Written Directly on the Date) */}
-                  <div className="flex-1 flex flex-col gap-1 overflow-hidden">
-                    {visibleEvents.slice(0, 2).map((ev, evIdx) => {
-                      let badgeStyle = "bg-slate-100 text-slate-700 border-slate-200";
-                      let dotColor = "bg-slate-400";
-                      let iconEmoji = "📄";
-                      let prefix = ev.label;
-
-                      if (ev.type === "expiring") {
-                        badgeStyle =
-                          "bg-amber-50 text-amber-900 border-amber-200/90 hover:bg-amber-100 shadow-2xs";
-                        dotColor = "bg-amber-500";
-                        iconEmoji = "⏳";
-                      } else if (ev.type === "expired") {
-                        badgeStyle =
-                          "bg-rose-50 text-rose-900 border-rose-200/90 hover:bg-rose-100 shadow-2xs";
-                        dotColor = "bg-rose-500";
-                        iconEmoji = "✕";
-                      } else if (ev.type === "scheduled") {
-                        badgeStyle =
-                          "bg-sky-50 text-sky-900 border-sky-200/90 hover:bg-sky-100 shadow-2xs";
-                        dotColor = "bg-sky-500";
-                        iconEmoji = "📅";
-                      }
-
-                      return (
-                        <div
-                          key={evIdx}
-                          className={`text-[10px] leading-tight px-1.5 py-0.5 rounded-md border transition-all flex items-center gap-1 truncate ${badgeStyle}`}
-                          title={`${prefix}: ${ev.customerName} (${ev.contractId})`}
-                        >
-                          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColor}`}></span>
-                          <span className="font-bold text-[9px]">{iconEmoji} {prefix}:</span>
-                          <span className="truncate font-medium">{ev.customerName}</span>
-                        </div>
-                      );
-                    })}
-
-                    {visibleEvents.length > 2 && (
-                      <span className="text-[9px] font-bold text-slate-500 hover:text-blue-600 pl-1 mt-auto flex items-center gap-0.5">
-                        <span>+{visibleEvents.length - 2} more</span>
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       ) : (
         /* AGENDA LIST VIEW MODE */
-        <div className="p-4 sm:p-6 divide-y divide-slate-100">
+        <div className="p-3 sm:p-6 divide-y divide-slate-100">
           {agendaEvents.length === 0 ? (
             <div className="text-center py-12 text-slate-400">
               <MdEvent className="text-4xl mx-auto mb-2 text-slate-300" />
@@ -642,7 +703,7 @@ export default function AMCCalendarView({
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {agendaEvents.map((ev, idx) => {
                 const c = ev.contract;
                 const isExpiring = ev.type === "expiring";
@@ -665,30 +726,30 @@ export default function AMCCalendarView({
                 return (
                   <div
                     key={idx}
-                    className="p-4 rounded-xl border border-slate-200/80 hover:border-blue-300 bg-white hover:bg-slate-50/50 transition-all flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-xs"
+                    className="p-3.5 sm:p-4 rounded-xl border border-slate-200/80 hover:border-blue-300 bg-white hover:bg-slate-50/50 transition-all flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-xs"
                   >
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-3 min-w-0">
                       {/* Date Badge */}
-                      <div className="flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 font-bold flex-shrink-0">
-                        <span className="text-base leading-none">{ev.dayNumber}</span>
+                      <div className="flex flex-col items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 font-bold flex-shrink-0">
+                        <span className="text-sm sm:text-base leading-none">{ev.dayNumber}</span>
                         <span className="text-[9px] uppercase font-semibold text-blue-500">
                           {monthNames[currentMonth].slice(0, 3)}
                         </span>
                       </div>
 
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-bold text-sm text-slate-900">{ev.customerName}</h4>
-                          <span className="font-mono text-xs text-blue-600 font-semibold px-2 py-0.5 bg-blue-50 rounded">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                          <h4 className="font-bold text-sm text-slate-900 truncate">{ev.customerName}</h4>
+                          <span className="font-mono text-xs text-blue-600 font-semibold px-2 py-0.5 bg-blue-50 rounded shrink-0">
                             {ev.contractId}
                           </span>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1 ${pillColor}`}>
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1 shrink-0 ${pillColor}`}>
                             {icon}
                             <span>{ev.label}</span>
                           </span>
                         </div>
 
-                        <p className="text-xs text-slate-500 mt-1">
+                        <p className="text-xs text-slate-500 mt-1 break-words">
                           Product: <span className="font-medium text-slate-700">{c.product || "-"}</span> ·
                           Period: <span className="font-medium text-slate-700">{formatDate(c.start_date)} to {formatDate(c.end_date)}</span> ·
                           Value: <span className="font-bold text-emerald-600">₹{parseFloat(c.annual_value || 0).toLocaleString("en-IN")}</span>
@@ -696,10 +757,10 @@ export default function AMCCalendarView({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 self-end md:self-center">
+                    <div className="flex items-center gap-2 self-stretch md:self-center shrink-0">
                       <button
                         onClick={() => setSelectedDate(ev.dateKey)}
-                        className="px-3 py-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                        className="w-full md:w-auto justify-center px-3 py-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 border border-blue-200 md:border-transparent rounded-lg transition-colors cursor-pointer flex items-center"
                       >
                         View Event
                       </button>
@@ -715,24 +776,24 @@ export default function AMCCalendarView({
       {/* 4. INTERACTIVE DATE POPUP MODAL */}
       {selectedDate && (
         <div
-          className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200"
           onClick={() => setSelectedDate(null)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[85vh] flex flex-col border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-150"
+            className="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[92vh] sm:max-h-[85vh] flex flex-col border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-150"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-blue-50/40">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-blue-600 text-white rounded-xl shadow-xs">
-                  <MdDateRange className="text-xl" />
+            <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-blue-50/40">
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div className="p-2 sm:p-2.5 bg-blue-600 text-white rounded-xl shadow-xs shrink-0">
+                  <MdDateRange className="text-lg sm:text-xl" />
                 </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-bold text-slate-900 truncate">
                     {formatDisplayDate(selectedDate)}
                   </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-500 mt-0.5 truncate">
                     {selectedDateEvents.length} AMC event{selectedDateEvents.length !== 1 ? "s" : ""} on this date
                   </p>
                 </div>
@@ -740,7 +801,7 @@ export default function AMCCalendarView({
 
               <button
                 onClick={() => setSelectedDate(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer shrink-0 ml-2"
                 title="Close"
               >
                 <MdClose className="text-lg" />
@@ -748,7 +809,7 @@ export default function AMCCalendarView({
             </div>
 
             {/* Modal Body: Events List */}
-            <div className="p-5 overflow-y-auto flex-1 space-y-3.5 slim-scrollbar">
+            <div className="p-3.5 sm:p-5 overflow-y-auto flex-1 space-y-3 sm:space-y-3.5 slim-scrollbar">
               {selectedDateEvents.length === 0 ? (
                 <div className="text-center py-10 text-slate-400">
                   <MdEvent className="text-4xl mx-auto mb-2 text-slate-300" />
@@ -804,42 +865,42 @@ export default function AMCCalendarView({
                   return (
                     <div
                       key={idx}
-                      className={`rounded-xl border p-4 bg-white transition-all shadow-xs ${cardBorder}`}
+                      className={`rounded-xl border p-3.5 sm:p-4 bg-white transition-all shadow-xs ${cardBorder}`}
                     >
                       {/* Top Row: Customer & Badge */}
-                      <div className="flex items-start justify-between gap-2.5 pb-3 border-b border-slate-100">
-                        <div className="flex items-center gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2.5 pb-3 border-b border-slate-100">
+                        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                           {/* Client Initials Avatar */}
                           <div
-                            className={`w-10 h-10 rounded-xl bg-gradient-to-br ${avatarGradient} text-white flex items-center justify-center font-bold text-xs shadow-xs flex-shrink-0`}
+                            className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br ${avatarGradient} text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0`}
                           >
                             {getInitials(custName)}
                           </div>
 
-                          <div>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h4 className="font-bold text-sm text-slate-900">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                              <h4 className="font-bold text-sm text-slate-900 truncate">
                                 {custName}
                               </h4>
-                              <span className="font-mono text-xs text-blue-600 font-semibold px-2 py-0.5 bg-blue-50 rounded">
+                              <span className="font-mono text-xs text-blue-600 font-semibold px-2 py-0.5 bg-blue-50 rounded shrink-0">
                                 {c.contract_id || `#${c.id}`}
                               </span>
                             </div>
-                            <p className="text-xs text-slate-500 mt-0.5">
+                            <p className="text-xs text-slate-500 mt-0.5 break-words">
                               Project: <span className="font-mono font-medium text-slate-700">{projCode}</span> · Product:{" "}
                               <span className="font-medium text-slate-700">{c.product || "-"}</span>
                             </p>
                           </div>
                         </div>
 
-                        <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold border flex items-center gap-1 flex-shrink-0 ${headerBadge}`}>
+                        <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold border flex items-center gap-1 shrink-0 self-start sm:self-auto ${headerBadge}`}>
                           {statusIcon}
                           <span className="uppercase tracking-wider">{statusTitle}</span>
                         </div>
                       </div>
 
                       {/* Info Grid */}
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs pt-3 text-slate-600">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 text-xs pt-3 text-slate-600">
                         <div>
                           <span className="text-[10px] text-slate-400 block font-medium uppercase tracking-wider">
                             Contract Period
@@ -869,14 +930,14 @@ export default function AMCCalendarView({
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex items-center justify-end gap-2 pt-3 mt-3 border-t border-slate-100 flex-wrap">
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 mt-3 border-t border-slate-100">
                         {onViewRecord && (
                           <button
                             onClick={() => {
                               setSelectedDate(null);
                               onViewRecord(c);
                             }}
-                            className="px-3 py-1.5 bg-slate-50 hover:bg-purple-50 text-slate-700 hover:text-purple-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+                            className="w-full sm:w-auto justify-center px-3 py-1.5 bg-slate-50 hover:bg-purple-50 text-slate-700 hover:text-purple-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer"
                           >
                             <MdZoomIn className="text-sm" />
                             <span>View Full Record</span>
@@ -889,7 +950,7 @@ export default function AMCCalendarView({
                               setSelectedDate(null);
                               onViewDetails(c);
                             }}
-                            className="px-3 py-1.5 bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+                            className="w-full sm:w-auto justify-center px-3 py-1.5 bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 cursor-pointer"
                           >
                             <MdOutlineRemoveRedEye className="text-sm" />
                             <span>View Details</span>
@@ -902,7 +963,7 @@ export default function AMCCalendarView({
                               setSelectedDate(null);
                               onRenewRecord(c);
                             }}
-                            className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer shadow-xs shadow-emerald-600/20"
+                            className="w-full sm:w-auto justify-center px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-all flex items-center gap-1 cursor-pointer shadow-xs shadow-emerald-600/20"
                           >
                             <MdAutorenew className="text-sm" />
                             <span>Renew Contract</span>
@@ -916,10 +977,10 @@ export default function AMCCalendarView({
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-3 border-t border-slate-100 bg-slate-50/50 flex justify-end">
+            <div className="px-4 sm:px-6 py-3 border-t border-slate-100 bg-slate-50/50 flex justify-end">
               <button
                 onClick={() => setSelectedDate(null)}
-                className="px-4 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold rounded-lg transition-colors cursor-pointer shadow-xs"
+                className="w-full sm:w-auto px-4 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold rounded-lg transition-colors cursor-pointer shadow-xs"
               >
                 Close
               </button>

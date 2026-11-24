@@ -117,13 +117,13 @@ export default function LeadDashboard({
   return (
     <div className="w-full space-y-5 font-sans antialiased text-slate-800">
       {/* 1. DYNAMIC KPI BLOCK */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Total Leads
             </span>
-            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               {isLoading ? (
                 <span className="text-base font-medium text-slate-400 animate-pulse">
                   Loading...
@@ -154,12 +154,12 @@ export default function LeadDashboard({
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Customers
             </span>
-            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               {isLoading ? (
                 <span className="text-base font-medium text-slate-400 animate-pulse">
                   Loading...
@@ -191,12 +191,12 @@ export default function LeadDashboard({
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Conversion Rate
             </span>
-            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               {isLoading ? (
                 <span className="text-base font-medium text-slate-400 animate-pulse">
                   Loading...
@@ -229,12 +229,12 @@ export default function LeadDashboard({
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex items-center justify-between transition hover:shadow-md">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex items-center justify-between transition hover:shadow-md">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Avg Response Time
             </span>
-            <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               14m
             </h3>
             <p className="text-[11px] font-medium text-amber-600 flex items-center gap-1">
@@ -261,9 +261,9 @@ export default function LeadDashboard({
       </div>
 
       {/* 2. TOP ROW: LEAD SOURCE ANALYSIS, EXECUTIVE PERFORMANCE & FOLLOW-UP OVERVIEW */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
         {/* LEAD SOURCE ANALYSIS WITH DONUT CHART */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 lg:col-span-1 flex flex-col justify-between">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 lg:col-span-1 flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-bold text-slate-900">
               Lead Source Analysis
@@ -315,7 +315,7 @@ export default function LeadDashboard({
         </div>
 
         {/* EXECUTIVE PERFORMANCE BLOCK */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 lg:col-span-1 flex flex-col justify-between">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 lg:col-span-1 flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-bold text-slate-900">
               Executive Performance
@@ -358,7 +358,7 @@ export default function LeadDashboard({
         </div>
 
         {/* FOLLOW-UP OVERVIEW */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 lg:col-span-1 flex flex-col justify-between">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 lg:col-span-1 flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-bold text-slate-900 mb-4">
               Follow-up Overview
@@ -417,33 +417,33 @@ export default function LeadDashboard({
       </div>
 
       {/* 3. SECOND ROW: REVENUE TREND & MONTHLY LEAD TREND */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
         {/* REVENUE TREND (SOURCED FROM PROJECTS MODULE) */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex flex-col justify-between">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex flex-col justify-between">
           <div>
-            <div className="mb-2 flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900">
+            <div className="mb-2 flex items-start sm:items-center justify-between gap-2">
+              <div className="min-w-0">
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">
                   Revenue Trend
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
                   Monthly project price / value · {new Date().getFullYear()}
                 </p>
               </div>
-              <span className="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full">
+              <span className="text-[10px] sm:text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 sm:px-2.5 py-0.5 rounded-full shrink-0 whitespace-nowrap self-start sm:self-auto shadow-2xs">
                 Projects Module
               </span>
             </div>
 
             <div className="relative h-48 w-full pt-4">
               {/* Y-AXIS LABELS (DYNAMICALLY REFLECTS PROJECTS REVENUE TICKS) */}
-              <div className="absolute left-0 top-0 bottom-6 flex flex-col justify-between text-[10px] text-slate-400">
+              <div className="absolute left-0 top-0 bottom-6 flex flex-col justify-between text-[9px] sm:text-[10px] text-slate-400 w-8 sm:w-9 text-right pr-1">
                 {(projectRevenueTrend.yTicks || stats.revenueYTicks || ["40L", "30L", "20L", "10L", "0L"]).map((tick, tIdx) => (
-                  <span key={tIdx}>{String(tick).replace("₹", "")}</span>
+                  <span key={tIdx} className="truncate">{String(tick).replace("₹", "")}</span>
                 ))}
               </div>
 
-              <div className="ml-8 h-full flex flex-col justify-between">
+              <div className="ml-8 sm:ml-10 h-full flex flex-col justify-between">
                 <div className="relative h-36 w-full border-b border-slate-100">
                   {/* INTERACTIVE HOVER OVERLAY */}
                   <div className="absolute inset-0 flex justify-between z-20">
@@ -488,10 +488,13 @@ export default function LeadDashboard({
                 </div>
 
                 {/* X-AXIS LABELS */}
-                <div className="flex justify-between text-[10px] text-slate-400 pt-1">
+                <div className="flex justify-between text-[9px] sm:text-[10px] text-slate-400 pt-1">
                   {(projectRevenueTrend.trend || stats.revenueTrend || []).map((item, idx) => (
                     <span key={idx} className="flex-1 text-center">
-                      {item.month}
+                      <span className="hidden sm:inline">{item.month}</span>
+                      <span className="sm:hidden font-medium">
+                        {idx % 2 === 0 ? item.month : "·"}
+                      </span>
                     </span>
                   ))}
                 </div>
@@ -499,29 +502,29 @@ export default function LeadDashboard({
             </div>
           </div>
 
-          <div className="flex justify-center gap-6 mt-3 text-xs">
+          <div className="flex justify-center gap-4 sm:gap-6 mt-3 text-xs">
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-              <span className="text-slate-600 font-medium">Project Revenue</span>
+              <span className="text-slate-600 font-medium text-[11px] sm:text-xs">Project Revenue</span>
             </div>
           </div>
         </div>
 
         {/* MONTHLY LEAD TREND */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3 sm:p-5 flex flex-col justify-between overflow-hidden">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex flex-col justify-between overflow-hidden">
           <div>
             <div className="mb-2">
-              <h3 className="text-sm font-bold text-slate-900">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">
                 Monthly Lead Trend
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
                 Leads vs Conversions · {new Date().getFullYear()}
               </p>
             </div>
 
             <div className="relative h-48 w-full pt-4">
               {/* Y-AXIS LABELS */}
-              <div className="absolute left-0 top-0 bottom-6 flex flex-col justify-between text-[9px] sm:text-[10px] text-slate-400 z-10 bg-white/80 pr-1">
+              <div className="absolute left-0 top-0 bottom-6 flex flex-col justify-between text-[9px] sm:text-[10px] text-slate-400 z-10 bg-white/80 w-7 sm:w-8 text-right pr-1">
                 <span>160</span>
                 <span>120</span>
                 <span>80</span>
@@ -529,8 +532,8 @@ export default function LeadDashboard({
                 <span>0</span>
               </div>
 
-              <div className="ml-7 sm:ml-8 h-full flex flex-col justify-between overflow-x-auto thin-scrollbar">
-                <div className="relative h-36 w-full min-w-[280px] border-b border-slate-100 flex items-end justify-between px-0.5 sm:px-1">
+              <div className="ml-7 sm:ml-9 h-full flex flex-col justify-between">
+                <div className="relative h-36 w-full border-b border-slate-100 flex items-end justify-between px-0.5 sm:px-1">
                   {(stats.monthlyTrend || []).map((bar, idx) => (
                     <div
                       key={idx}
@@ -561,10 +564,13 @@ export default function LeadDashboard({
                 </div>
 
                 {/* X-AXIS LABELS */}
-                <div className="flex justify-between text-[8px] sm:text-[10px] text-slate-400 pt-1 min-w-[280px]">
+                <div className="flex justify-between text-[9px] sm:text-[10px] text-slate-400 pt-1">
                   {(stats.monthlyTrend || []).map((item, idx) => (
-                    <span key={idx} className="flex-1 text-center truncate">
-                      {item.month}
+                    <span key={idx} className="flex-1 text-center">
+                      <span className="hidden sm:inline">{item.month}</span>
+                      <span className="sm:hidden font-medium">
+                        {idx % 2 === 0 ? item.month : "·"}
+                      </span>
                     </span>
                   ))}
                 </div>
@@ -590,9 +596,9 @@ export default function LeadDashboard({
       </div>
 
       {/* 4. BOTTOM ROW: LEAD STATUS, PIPELINE STAGES & RECENT ACTIVITIES */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
         {/* LEAD STATUS BREAKDOWN */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 lg:col-span-1 flex flex-col justify-between">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 lg:col-span-1 flex flex-col justify-between">
           <div>
             <h3 className="text-xs font-bold text-slate-900 mb-4 tracking-wide uppercase">
               Lead Status Breakdown
@@ -625,7 +631,7 @@ export default function LeadDashboard({
         </div>
 
         {/* PIPELINE STAGES */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 lg:col-span-2 flex flex-col justify-between">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 lg:col-span-2 flex flex-col justify-between">
           <div>
             <h3 className="text-xs font-bold text-slate-900 mb-4 tracking-wide uppercase">
               Pipeline Stages
@@ -661,7 +667,7 @@ export default function LeadDashboard({
       </div>
 
       {/* RECENT ACTIVITIES LOG */}
-      <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5">
+      <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
           <div>
             <h3 className="text-xs font-bold text-slate-900 tracking-wide uppercase">

@@ -48,9 +48,7 @@ import { isServiceDue, formatDisplayDate } from "../../utils/serviceDateUtils";
 export default function ServiceDetailView({
   service,
   onBack,
-  onEdit,
   onDelete,
-  onAllocate,
   onRefresh,
   formatDate,
   token,
@@ -110,7 +108,7 @@ export default function ServiceDetailView({
   const { userRole, userInfo, hasPermission } = useUserRole(BASE_API);
   const isSuperUser = Boolean(userInfo?.is_superuser);
   const roleName = (userRole?.name || userInfo?.role_name || userInfo?.role?.name || "").toLowerCase();
-  const isTechnician = roleName === "technician" || roleName.includes("technician") || Boolean(userInfo?.is_technician);
+  const _isTechnician = roleName === "technician" || roleName.includes("technician") || Boolean(userInfo?.is_technician);
   const canDirectIssue = isSuperUser || roleName === "admin" || roleName === "superuser" || hasPermission("inventory", "create") || hasPermission("inventory", "edit");
 
   // Load and manage tasks for this service from localStorage
@@ -360,27 +358,27 @@ export default function ServiceDetailView({
 
     const payload = isVisit
       ? {
-          equipment: editDetailsForm.equipment,
-          visit_type: editDetailsForm.service_type,
-          description: editDetailsForm.description,
-          diagnosis: editDetailsForm.diagnosis,
-          resolution_notes: editDetailsForm.resolution_notes,
-          visit_address: editDetailsForm.service_address,
-          latitude: editDetailsForm.latitude ? parseFloat(editDetailsForm.latitude) : null,
-          longitude: editDetailsForm.longitude ? parseFloat(editDetailsForm.longitude) : null,
-          location_url: editDetailsForm.location_url || "",
-        }
+        equipment: editDetailsForm.equipment,
+        visit_type: editDetailsForm.service_type,
+        description: editDetailsForm.description,
+        diagnosis: editDetailsForm.diagnosis,
+        resolution_notes: editDetailsForm.resolution_notes,
+        visit_address: editDetailsForm.service_address,
+        latitude: editDetailsForm.latitude ? parseFloat(editDetailsForm.latitude) : null,
+        longitude: editDetailsForm.longitude ? parseFloat(editDetailsForm.longitude) : null,
+        location_url: editDetailsForm.location_url || "",
+      }
       : {
-          equipment: editDetailsForm.equipment,
-          service_type: editDetailsForm.service_type,
-          description: editDetailsForm.description,
-          diagnosis: editDetailsForm.diagnosis,
-          resolution_notes: editDetailsForm.resolution_notes,
-          service_address: editDetailsForm.service_address,
-          latitude: editDetailsForm.latitude ? parseFloat(editDetailsForm.latitude) : null,
-          longitude: editDetailsForm.longitude ? parseFloat(editDetailsForm.longitude) : null,
-          location_url: editDetailsForm.location_url || "",
-        };
+        equipment: editDetailsForm.equipment,
+        service_type: editDetailsForm.service_type,
+        description: editDetailsForm.description,
+        diagnosis: editDetailsForm.diagnosis,
+        resolution_notes: editDetailsForm.resolution_notes,
+        service_address: editDetailsForm.service_address,
+        latitude: editDetailsForm.latitude ? parseFloat(editDetailsForm.latitude) : null,
+        longitude: editDetailsForm.longitude ? parseFloat(editDetailsForm.longitude) : null,
+        location_url: editDetailsForm.location_url || "",
+      };
 
     try {
       const res = await fetch(endpoint, {
@@ -458,10 +456,10 @@ export default function ServiceDetailView({
         ? `${safeService.description.substring(0, 50)}...`
         : safeService.description
       : safeService.service_type_display ||
-        safeService.visit_type_display ||
-        (safeService.service_type ? safeService.service_type.replace(/_/g, " ") : "") ||
-        (safeService.visit_type ? safeService.visit_type.replace(/_/g, " ") : "") ||
-        (safeService.service_number || safeService.visit_number || "Service");
+      safeService.visit_type_display ||
+      (safeService.service_type ? safeService.service_type.replace(/_/g, " ") : "") ||
+      (safeService.visit_type ? safeService.visit_type.replace(/_/g, " ") : "") ||
+      (safeService.service_number || safeService.visit_number || "Service");
 
   const equipmentName =
     safeService.equipment ||
@@ -469,7 +467,7 @@ export default function ServiceDetailView({
     safeService.project_details?.product ||
     "";
 
-  const serialNumber =
+  const _serialNumber =
     safeService.serial_number ||
     safeService.project_details?.project_code ||
     "";
@@ -527,7 +525,7 @@ export default function ServiceDetailView({
 
   const primaryTech = techniciansList[0] || currentService.service_engineer_details || null;
   const primaryTechName = primaryTech ? getTechName(primaryTech) : null;
-  const primaryTechInitials = primaryTech ? getTechInitials(primaryTech) : "T";
+  const _primaryTechInitials = primaryTech ? getTechInitials(primaryTech) : "T";
 
   const serviceCost = parseFloat(currentService.service_cost || 2500);
   const taxes = Math.round(serviceCost * 0.18);
@@ -538,9 +536,9 @@ export default function ServiceDetailView({
 
   // Stepper milestones calculations
   const isStarted = currentService.status === "in_progress" || currentService.status === "completed";
-  const isDiagnosed = Boolean(currentService.diagnosis) || isStarted;
+  const _isDiagnosed = Boolean(currentService.diagnosis) || isStarted;
   const isRepairDone = currentService.status === "completed";
-  const isSigned = currentService.status === "completed";
+  const _isSigned = currentService.status === "completed";
 
   // Extract field GPS route milestones:
   // 1) From where technician navigated (journey_started)
@@ -642,7 +640,9 @@ export default function ServiceDetailView({
     let coords = null;
     try {
       coords = await getCurrentCoordinates().catch(() => null);
-    } catch (_) {}
+    } catch {
+      // ignore
+    }
 
     // 3. Log departure milestone to backend
     try {
@@ -836,21 +836,21 @@ export default function ServiceDetailView({
   return (
     <div className="w-full space-y-4 font-sans antialiased text-slate-800 pb-10 text-xs">
       {/* BIG OUTER CONTAINER MATCHING AMC DETAIL VIEW */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-6 sm:p-8 space-y-6">
-        
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-3.5 sm:p-6 md:p-8 space-y-5 sm:space-y-6">
+
         {/* TOP ROW: Back button & Breadcrumb Navigation (Matching Follow-up History UI) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+        <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-100">
           <button
             type="button"
             onClick={onBack}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-xs cursor-pointer transition-all active:scale-95 w-fit"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-xs cursor-pointer transition-all active:scale-95 shrink-0"
             title="Return to Work Desk"
           >
             <MdArrowBack size={15} className="text-slate-500" />
             <span>Back to Work Desk</span>
           </button>
 
-          <div className="flex items-center gap-1.5 text-xs text-slate-400">
+          <div className="flex items-center gap-1.5 text-xs text-slate-400 shrink-0">
             <button
               onClick={onBack}
               className="hover:text-sky-600 transition-colors cursor-pointer"
@@ -910,26 +910,24 @@ export default function ServiceDetailView({
             </div>
           </div>
 
-          {/* Top Right Controls & Action Buttons (Strictly in single line matching Image 4) */}
-          <div className="flex items-center gap-1.5 sm:gap-2 self-start sm:self-center shrink-0 flex-nowrap overflow-x-auto max-w-full pb-1 sm:pb-0">
+          {/* Top Right Controls & Action Buttons */}
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 self-start sm:self-center">
             {/* Status Pill Badge */}
             <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold border shadow-2xs capitalize whitespace-nowrap shrink-0 ${
-                currentService.status === "completed"
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                  : currentService.status === "in_progress"
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold border shadow-2xs capitalize whitespace-nowrap shrink-0 ${currentService.status === "completed"
+                ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                : currentService.status === "in_progress"
                   ? "bg-sky-50 text-sky-700 border-sky-100"
                   : "bg-amber-50 text-amber-700 border-amber-100"
-              }`}
+                }`}
             >
               <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  currentService.status === "completed"
-                    ? "bg-emerald-500"
-                    : currentService.status === "in_progress"
+                className={`w-1.5 h-1.5 rounded-full ${currentService.status === "completed"
+                  ? "bg-emerald-500"
+                  : currentService.status === "in_progress"
                     ? "bg-sky-500"
                     : "bg-amber-500"
-                }`}
+                  }`}
               ></span>
               {currentService.status_display || currentService.status?.replace(/_/g, " ") || "In Progress"}
             </span>
@@ -965,7 +963,7 @@ export default function ServiceDetailView({
               title="Navigate live turn-by-turn route to site via GPS"
             >
               <MdNavigation size={13} />
-              <span>Navigate Route</span>
+              <span>Route</span>
             </button>
 
             {/* + Add Task Button (Explicitly requested by user) */}
@@ -986,7 +984,7 @@ export default function ServiceDetailView({
               title="Upload breakdown/before photos, after photos, or service PDF documents"
             >
               <MdUploadFile size={14} className="text-sky-600" />
-              <span>Upload Photos / PDF</span>
+              <span>Upload Files</span>
             </button>
 
             {/* Action Buttons: Allocate, Note, WhatsApp, Email, Edit, Delete, Close */}
@@ -1062,66 +1060,64 @@ export default function ServiceDetailView({
         </div>
 
         {/* 4 KPI PULSE CARDS ROW (Exact match with Figma Screenshot & AMCDetailView) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
           {/* KPI 1: Coverage (Dynamic for AMC visits, single services, chargeable & warranty) */}
-          <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">
+          <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs">
+            <div className="flex items-start justify-between gap-1">
+              <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider shrink-0">
                 Coverage
               </span>
               <span
-                className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
-                  isAMCVisit
-                    ? "bg-teal-50 text-teal-700 border border-teal-200"
-                    : parseFloat(currentService.service_cost || 0) > 0
+                className={`text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 truncate max-w-[65%] ${isAMCVisit
+                  ? "bg-teal-50 text-teal-700 border border-teal-200"
+                  : parseFloat(currentService.service_cost || 0) > 0
                     ? "bg-sky-50 text-sky-700 border border-sky-200"
                     : "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                }`}
+                  }`}
               >
                 {isAMCVisit ? "AMC Contract" : parseFloat(currentService.service_cost || 0) > 0 ? "Billable" : "Warranty"}
               </span>
             </div>
-            <span className="text-xs sm:text-[13px] font-bold text-slate-900 block mt-1">
+            <span className="text-xs sm:text-[13px] font-bold text-slate-900 block mt-1 truncate">
               {isAMCVisit
-                ? "AMC Contract Covered"
+                ? "AMC Covered"
                 : parseFloat(currentService.service_cost || 0) > 0
-                ? "Chargeable Service"
-                : "Warranty / Included"}
+                  ? "Chargeable"
+                  : "Warranty / Included"}
             </span>
             <span className="text-[10px] text-slate-500 font-normal block mt-0.5 truncate">
               {isAMCVisit
                 ? currentService.contract_id
-                  ? `Covered under AMC (${currentService.contract_id}) · Scheduled Visit`
-                  : "Contract covered · Scheduled AMC visit"
+                  ? `AMC (${currentService.contract_id})`
+                  : "Contract covered"
                 : parseFloat(currentService.service_cost || 0) > 0
-                ? `Standard on-demand billing · ₹${parseFloat(currentService.service_cost).toLocaleString("en-IN")}`
-                : "Warranty covered · Complimentary"}
+                  ? `Standard · ₹${parseFloat(currentService.service_cost).toLocaleString("en-IN")}`
+                  : "Warranty covered"}
             </span>
           </div>
 
           {/* KPI 2: Assigned technician */}
           <div
             onClick={() => setAllocateModalOpen(true)}
-            className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs cursor-pointer hover:border-cyan-400 transition-all group"
+            className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs cursor-pointer hover:border-cyan-400 transition-all group"
           >
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">
-                Assigned technician
+            <div className="flex items-start justify-between gap-1">
+              <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider truncate">
+                Assigned Tech
               </span>
               {techniciansList.length === 0 ? (
-                <span className="text-[10px] bg-amber-50 text-amber-700 font-bold px-1.5 py-0.5 rounded border border-amber-200">
+                <span className="text-[9px] bg-amber-50 text-amber-700 font-bold px-1.5 py-0.5 rounded border border-amber-200 shrink-0">
                   Unallocated
                 </span>
               ) : (
-                <span className="text-[10px] text-cyan-600 font-semibold group-hover:underline">
+                <span className="text-[10px] text-cyan-600 font-semibold group-hover:underline shrink-0">
                   Change
                 </span>
               )}
             </div>
             <span
-              className={`text-xs sm:text-[13px] font-bold block mt-1 truncate ${
-                primaryTechName ? "text-slate-900" : "text-amber-600"
-              }`}
+              className={`text-xs sm:text-[13px] font-bold block mt-1 truncate ${primaryTechName ? "text-slate-900" : "text-amber-600"
+                }`}
               title={
                 techniciansList.length > 1
                   ? techniciansList.map(getTechName).join(", ")
@@ -1129,7 +1125,7 @@ export default function ServiceDetailView({
               }
             >
               {techniciansList.length > 1
-                ? `${primaryTechName} (+${techniciansList.length - 1} more)`
+                ? `${primaryTechName} (+${techniciansList.length - 1})`
                 : primaryTechName || "Unassigned"}
             </span>
             <div className="mt-1 flex items-center justify-between">
@@ -1137,15 +1133,15 @@ export default function ServiceDetailView({
                 {primaryTech ? (primaryTech.email || getTechRole(primaryTech)) : "No staff allocated"}
               </span>
               {techniciansList.length === 0 && (
-                <span className="text-[10px] text-cyan-600 font-bold underline">
-                  Allocate Work
+                <span className="text-[10px] text-cyan-600 font-bold underline shrink-0">
+                  Allocate
                 </span>
               )}
             </div>
           </div>
 
           {/* KPI 3: Visit schedule */}
-          <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs">
+          <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs">
             <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">
               Visit schedule
             </span>
@@ -1158,7 +1154,7 @@ export default function ServiceDetailView({
           </div>
 
           {/* KPI 4: Time spent / Duration */}
-          <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs">
+          <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200/80 shadow-2xs">
             <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">
               Time spent
             </span>
@@ -1169,20 +1165,20 @@ export default function ServiceDetailView({
               {currentService.status === "completed"
                 ? "On-site execution"
                 : currentService.status === "in_progress"
-                ? "Underway on-site"
-                : "Planned standard visit"}
+                  ? "Underway on-site"
+                  : "Planned standard visit"}
             </span>
           </div>
         </div>
 
         {/* MAIN TWO-COLUMN WORKSPACE */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-          
+
           {/* LEFT 2 COLUMNS: Service Details and Tasks Checklist */}
           <div className="lg:col-span-2 space-y-6">
-            
+
             {/* CARD 1: Service details (Key-Value Table from Figma) */}
-            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 sm:p-6 space-y-4">
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-3.5 sm:p-6 space-y-4">
               <div className="flex items-center justify-between pb-1 border-b border-slate-100">
                 <div>
                   <h2 className="text-xs sm:text-[13px] font-bold text-slate-900 leading-tight">
@@ -1205,14 +1201,14 @@ export default function ServiceDetailView({
               </div>
 
               <div className="divide-y divide-slate-100 text-xs">
-                <div className="py-2.5 grid grid-cols-3 gap-2">
-                  <span className="text-slate-400 font-medium">Equipment</span>
-                  <span className="col-span-2 font-semibold text-slate-900">{equipmentName || "—"}</span>
+                <div className="py-2.5 flex flex-col sm:grid sm:grid-cols-3 gap-0.5 sm:gap-2">
+                  <span className="text-slate-400 font-medium text-[11px] sm:text-xs">Equipment</span>
+                  <span className="sm:col-span-2 font-semibold text-slate-900 text-xs break-words">{equipmentName || "—"}</span>
                 </div>
 
-                <div className="py-2.5 grid grid-cols-3 gap-2">
-                  <span className="text-slate-400 font-medium">Issue category</span>
-                  <span className="col-span-2 font-semibold text-slate-900 capitalize">
+                <div className="py-2.5 flex flex-col sm:grid sm:grid-cols-3 gap-0.5 sm:gap-2">
+                  <span className="text-slate-400 font-medium text-[11px] sm:text-xs">Issue category</span>
+                  <span className="sm:col-span-2 font-semibold text-slate-900 capitalize text-xs break-words">
                     {currentService.service_type_display ||
                       currentService.visit_type_display ||
                       (currentService.service_type ? currentService.service_type.replace(/_/g, " ") : "") ||
@@ -1221,35 +1217,35 @@ export default function ServiceDetailView({
                   </span>
                 </div>
 
-                <div className="py-2.5 grid grid-cols-3 gap-2">
-                  <span className="text-slate-400 font-medium">Problem reported</span>
-                  <span className="col-span-2 text-slate-700 leading-relaxed">
+                <div className="py-2.5 flex flex-col sm:grid sm:grid-cols-3 gap-0.5 sm:gap-2">
+                  <span className="text-slate-400 font-medium text-[11px] sm:text-xs">Problem reported</span>
+                  <span className="sm:col-span-2 text-slate-700 leading-relaxed text-xs break-words">
                     {currentService.description || "—"}
                   </span>
                 </div>
 
-                <div className="py-2.5 grid grid-cols-3 gap-2">
-                  <span className="text-slate-400 font-medium">Diagnosis</span>
-                  <span className="col-span-2 text-slate-700 leading-relaxed">
+                <div className="py-2.5 flex flex-col sm:grid sm:grid-cols-3 gap-0.5 sm:gap-2">
+                  <span className="text-slate-400 font-medium text-[11px] sm:text-xs">Diagnosis</span>
+                  <span className="sm:col-span-2 text-slate-700 leading-relaxed text-xs break-words">
                     {currentService.diagnosis || "—"}
                   </span>
                 </div>
 
-                <div className="py-2.5 grid grid-cols-3 gap-2">
-                  <span className="text-slate-400 font-medium">Work performed</span>
-                  <span className="col-span-2 text-slate-700 leading-relaxed">
+                <div className="py-2.5 flex flex-col sm:grid sm:grid-cols-3 gap-0.5 sm:gap-2">
+                  <span className="text-slate-400 font-medium text-[11px] sm:text-xs">Work performed</span>
+                  <span className="sm:col-span-2 text-slate-700 leading-relaxed text-xs break-words">
                     {currentService.resolution_notes || "—"}
                   </span>
                 </div>
 
                 {/* Linked Parking Facility / Site */}
                 {(siteObj || siteName) && (
-                  <div className="py-2.5 grid grid-cols-3 gap-2 items-start border-b border-slate-100">
-                    <span className="text-slate-400 font-medium flex items-center gap-1">
+                  <div className="py-2.5 flex flex-col sm:grid sm:grid-cols-3 gap-1 sm:gap-2 items-start border-b border-slate-100">
+                    <span className="text-slate-400 font-medium text-[11px] sm:text-xs flex items-center gap-1">
                       <MdApartment className="text-sky-600 shrink-0" size={14} />
                       <span>Facility site</span>
                     </span>
-                    <div className="col-span-2 space-y-1">
+                    <div className="sm:col-span-2 space-y-1 w-full">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-bold text-slate-900 text-xs">
                           {siteName}
@@ -1275,13 +1271,13 @@ export default function ServiceDetailView({
                 )}
 
                 {/* Site Location & Route */}
-                <div className="py-2.5 grid grid-cols-3 gap-2 items-start">
-                  <span className="text-slate-400 font-medium flex items-center gap-1">
+                <div className="py-2.5 flex flex-col sm:grid sm:grid-cols-3 gap-1 sm:gap-2 items-start">
+                  <span className="text-slate-400 font-medium text-[11px] sm:text-xs flex items-center gap-1">
                     <MdLocationOn className="text-rose-500 shrink-0" size={14} />
                     <span>Site location</span>
                   </span>
-                  <div className="col-span-2 space-y-1.5">
-                    <span className="font-semibold text-slate-900 block leading-relaxed">
+                  <div className="sm:col-span-2 space-y-1.5 w-full">
+                    <span className="font-semibold text-slate-900 block leading-relaxed break-words text-xs">
                       {siteAddress || "No site address specified"}
                     </span>
                     <div className="flex flex-wrap items-center gap-2 pt-0.5">
@@ -1323,10 +1319,10 @@ export default function ServiceDetailView({
             </div>
 
             {/* CARD: Issued Spare Parts & Materials (Stock Reconciliation) */}
-            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 sm:p-6 space-y-4">
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-3.5 sm:p-6 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pb-2 border-b border-slate-100">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100/80">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100/80 shrink-0">
                     <Package size={18} />
                   </div>
                   <div>
@@ -1351,7 +1347,7 @@ export default function ServiceDetailView({
                   )}
 
                   {canDirectIssue ? (
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       {/* Direct Issue Button for Superadmin / Manager */}
                       <button
                         type="button"
@@ -1395,16 +1391,16 @@ export default function ServiceDetailView({
                   <span>Loading inventory items...</span>
                 </div>
               ) : stockSummary.items.length === 0 ? (
-                <div className="p-4 rounded-xl bg-slate-50 border border-dashed border-slate-200 text-center space-y-2">
+                <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-dashed border-slate-200 text-center space-y-2.5">
                   <p className="text-xs text-slate-500 font-medium">
                     No spare parts or inventory materials have been requested or issued for this service yet.
                   </p>
                   {canDirectIssue ? (
-                    <div className="flex items-center justify-center gap-2 pt-1">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 pt-1">
                       <button
                         type="button"
                         onClick={handleOpenDirectIssue}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
                       >
                         <ArrowUpRight size={13} />
                         <span>Issue Parts from Inventory</span>
@@ -1412,7 +1408,7 @@ export default function ServiceDetailView({
                       <button
                         type="button"
                         onClick={handleOpenStockRequest}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium transition-colors cursor-pointer shadow-2xs"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium transition-colors cursor-pointer shadow-2xs"
                       >
                         <Wrench size={12} className="text-slate-500" />
                         <span>Request Stock</span>
@@ -1422,7 +1418,7 @@ export default function ServiceDetailView({
                     <button
                       type="button"
                       onClick={handleOpenStockRequest}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-700 text-xs font-semibold transition-colors cursor-pointer"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-700 text-xs font-semibold transition-colors cursor-pointer"
                     >
                       <Wrench size={12} />
                       <span>Request Parts from Inventory</span>
@@ -1545,10 +1541,10 @@ export default function ServiceDetailView({
             </div>
 
             {/* CARD 2: Field GPS & Route Milestones (Departure, Arrival, Completion) */}
-            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 sm:p-6 space-y-4">
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-3.5 sm:p-6 space-y-4">
               <div className="flex items-center justify-between pb-1 border-b border-slate-100">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center border border-sky-100/80">
+                  <div className="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center border border-sky-100/80 shrink-0">
                     <MdNavigation size={18} />
                   </div>
                   <div>
@@ -1560,7 +1556,7 @@ export default function ServiceDetailView({
                     </p>
                   </div>
                 </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
                   GPS Audit
                 </span>
               </div>
@@ -1568,20 +1564,18 @@ export default function ServiceDetailView({
               {/* 3 Milestone Columns Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {/* Milestone 1: Navigated (Departure Location) */}
-                <div className={`p-3.5 rounded-xl border flex flex-col justify-between transition-all ${
-                  journeyMilestone
-                    ? "bg-sky-50/60 border-sky-200/80 shadow-2xs"
-                    : "bg-slate-50/50 border-dashed border-slate-200"
-                }`}>
+                <div className={`p-3 sm:p-3.5 rounded-xl border flex flex-col justify-between transition-all ${journeyMilestone
+                  ? "bg-sky-50/60 border-sky-200/80 shadow-2xs"
+                  : "bg-slate-50/50 border-dashed border-slate-200"
+                  }`}>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold text-sky-800 flex items-center gap-1.5">
                         <span>🚗</span>
                         <span>1. From Where Navigated</span>
                       </span>
-                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
-                        journeyMilestone ? "bg-sky-100 text-sky-700 border border-sky-300" : "bg-slate-200/70 text-slate-500"
-                      }`}>
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${journeyMilestone ? "bg-sky-100 text-sky-700 border border-sky-300" : "bg-slate-200/70 text-slate-500"
+                        }`}>
                         {journeyMilestone ? "Departed" : "Pending"}
                       </span>
                     </div>
@@ -1641,20 +1635,18 @@ export default function ServiceDetailView({
                 </div>
 
                 {/* Milestone 2: Where Work Started (Arrival Location) */}
-                <div className={`p-3.5 rounded-xl border flex flex-col justify-between transition-all ${
-                  visitMilestone
-                    ? "bg-amber-50/60 border-amber-200/80 shadow-2xs"
-                    : "bg-slate-50/50 border-dashed border-slate-200"
-                }`}>
+                <div className={`p-3 sm:p-3.5 rounded-xl border flex flex-col justify-between transition-all ${visitMilestone
+                  ? "bg-amber-50/60 border-amber-200/80 shadow-2xs"
+                  : "bg-slate-50/50 border-dashed border-slate-200"
+                  }`}>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold text-amber-800 flex items-center gap-1.5">
                         <span>📍</span>
                         <span>2. Where Work Started</span>
                       </span>
-                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
-                        visitMilestone ? "bg-amber-100 text-amber-800 border border-amber-300" : "bg-slate-200/70 text-slate-500"
-                      }`}>
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${visitMilestone ? "bg-amber-100 text-amber-800 border border-amber-300" : "bg-slate-200/70 text-slate-500"
+                        }`}>
                         {visitMilestone ? "On-Site" : "Pending"}
                       </span>
                     </div>
@@ -1714,20 +1706,18 @@ export default function ServiceDetailView({
                 </div>
 
                 {/* Milestone 3: Where Work Completed */}
-                <div className={`p-3.5 rounded-xl border flex flex-col justify-between transition-all ${
-                  completedMilestone
-                    ? "bg-emerald-50/60 border-emerald-200/80 shadow-2xs"
-                    : "bg-slate-50/50 border-dashed border-slate-200"
-                }`}>
+                <div className={`p-3 sm:p-3.5 rounded-xl border flex flex-col justify-between transition-all ${completedMilestone
+                  ? "bg-emerald-50/60 border-emerald-200/80 shadow-2xs"
+                  : "bg-slate-50/50 border-dashed border-slate-200"
+                  }`}>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold text-emerald-800 flex items-center gap-1.5">
                         <span>✅</span>
                         <span>3. Where Completed</span>
                       </span>
-                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
-                        completedMilestone ? "bg-emerald-100 text-emerald-800 border border-emerald-300" : "bg-slate-200/70 text-slate-500"
-                      }`}>
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${completedMilestone ? "bg-emerald-100 text-emerald-800 border border-emerald-300" : "bg-slate-200/70 text-slate-500"
+                        }`}>
                         {completedMilestone ? "Completed" : "Pending"}
                       </span>
                     </div>
@@ -1789,8 +1779,8 @@ export default function ServiceDetailView({
             </div>
 
             {/* CARD 3: Service Tasks & Checklist (With + Add Task button) */}
-            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 sm:p-6 space-y-4">
-              <div className="flex items-center justify-between pb-1 border-b border-slate-100">
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-3.5 sm:p-6 space-y-4">
+              <div className="flex items-center justify-between pb-1 border-b border-slate-100 gap-2">
                 <div>
                   <h2 className="text-xs sm:text-[13px] font-bold text-slate-900 leading-tight flex items-center gap-1.5">
                     <MdChecklist className="text-sky-600" size={16} />
@@ -1804,7 +1794,7 @@ export default function ServiceDetailView({
                 <button
                   type="button"
                   onClick={() => setAddTaskModalOpen(true)}
-                  className="px-2.5 py-1 text-xs text-sky-600 hover:text-sky-800 font-semibold border border-sky-200 rounded-lg hover:bg-sky-50 transition-colors flex items-center gap-1 cursor-pointer"
+                  className="px-2.5 py-1 text-xs text-sky-600 hover:text-sky-800 font-semibold border border-sky-200 rounded-lg hover:bg-sky-50 transition-colors flex items-center gap-1 cursor-pointer shrink-0"
                 >
                   <MdAdd size={14} />
                   <span>Add Task</span>
@@ -1825,37 +1815,34 @@ export default function ServiceDetailView({
                   <div
                     key={task.id}
                     onClick={() => handleToggleTask(task.id)}
-                    className={`flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer select-none ${
-                      task.completed
-                        ? "bg-emerald-50/40 border-emerald-200/80 hover:bg-emerald-50/60"
-                        : "bg-white border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/50"
-                    }`}
+                    className={`flex items-center justify-between p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer select-none gap-2 ${task.completed
+                      ? "bg-emerald-50/40 border-emerald-200/80 hover:bg-emerald-50/60"
+                      : "bg-white border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/50"
+                      }`}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       <div
-                        className={`w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0 ${
-                          task.completed
-                            ? "bg-emerald-600 border-emerald-600 text-white"
-                            : "border-slate-300 bg-white"
-                        }`}
+                        className={`w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0 ${task.completed
+                          ? "bg-emerald-600 border-emerald-600 text-white"
+                          : "border-slate-300 bg-white"
+                          }`}
                       >
                         {task.completed && <MdCheck size={12} className="stroke-2" />}
                       </div>
 
                       <span
-                        className={`text-xs truncate ${
-                          task.completed
-                            ? "line-through text-slate-400 font-normal"
-                            : "text-slate-800 font-medium"
-                        }`}
+                        className={`text-xs block break-words ${task.completed
+                          ? "line-through text-slate-400 font-normal"
+                          : "text-slate-800 font-medium"
+                          }`}
                       >
                         {task.title}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2.5 shrink-0 ml-2">
+                    <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-1">
                       {task.time && (
-                        <span className="text-[10px] text-slate-400 font-mono">
+                        <span className="text-[9px] sm:text-[10px] text-slate-400 font-mono">
                           {task.time}
                         </span>
                       )}
@@ -1877,21 +1864,21 @@ export default function ServiceDetailView({
             </div>
 
             {/* CARD 4: Site Notes & Activity Logs */}
-            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 sm:p-6 space-y-4">
-              <div className="flex items-center justify-between pb-1 border-b border-slate-100">
-                <div>
-                  <h2 className="text-xs sm:text-[13px] font-bold text-slate-900 leading-tight flex items-center gap-1.5">
-                    <MdNotes className="text-amber-600" size={16} />
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-3.5 sm:p-6 space-y-4">
+              <div className="flex items-center justify-between pb-1 border-b border-slate-100 gap-2">
+                <div className="min-w-0">
+                  <h2 className="text-xs sm:text-[13px] font-bold text-slate-900 leading-tight flex items-center gap-1.5 truncate">
+                    <MdNotes className="text-amber-600 shrink-0" size={16} />
                     <span>Site notes & activity logs</span>
                   </h2>
-                  <p className="text-[10px] text-slate-400 mt-0.5">
-                    Technician site observations and notes ({notesList.length})
+                  <p className="text-[10px] text-slate-400 mt-0.5 truncate">
+                    Technician site observations ({notesList.length})
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setNoteModalOpen(true)}
-                  className="px-2.5 py-1 text-xs text-amber-700 hover:text-amber-800 font-semibold border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors flex items-center gap-1 cursor-pointer bg-amber-50/50"
+                  className="px-2.5 py-1 text-xs text-amber-700 hover:text-amber-800 font-semibold border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors flex items-center gap-1 cursor-pointer bg-amber-50/50 shrink-0"
                 >
                   <MdAdd size={14} />
                   <span>Add Note</span>
@@ -1915,15 +1902,14 @@ export default function ServiceDetailView({
                     return (
                       <div
                         key={item.id}
-                        className={`p-3 rounded-xl border space-y-1.5 text-xs transition-colors ${
-                          isJourney
-                            ? "bg-sky-50/70 border-sky-200"
-                            : isVisit
+                        className={`p-3 rounded-xl border space-y-1.5 text-xs transition-colors ${isJourney
+                          ? "bg-sky-50/70 border-sky-200"
+                          : isVisit
                             ? "bg-amber-50/70 border-amber-200"
                             : isCompleted
-                            ? "bg-emerald-50/70 border-emerald-200"
-                            : "bg-slate-50/80 border-slate-100"
-                        }`}
+                              ? "bg-emerald-50/70 border-emerald-200"
+                              : "bg-slate-50/80 border-slate-100"
+                          }`}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5 flex-wrap">
@@ -1974,19 +1960,19 @@ export default function ServiceDetailView({
             </div>
 
             {/* CARD 5: Site Photos & Service Documents (Breakdown Photos, After Photos, Reports) */}
-            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 sm:p-6 space-y-4">
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-3.5 sm:p-6 space-y-4">
               <div className="flex items-center justify-between pb-1 border-b border-slate-100 flex-wrap gap-2">
-                <div>
-                  <h2 className="text-xs sm:text-[13px] font-bold text-slate-900 leading-tight flex items-center gap-1.5">
-                    <MdCameraAlt className="text-sky-600" size={16} />
+                <div className="min-w-0">
+                  <h2 className="text-xs sm:text-[13px] font-bold text-slate-900 leading-tight flex items-center gap-1.5 truncate">
+                    <MdCameraAlt className="text-sky-600 shrink-0" size={16} />
                     <span>Site photos & service documents</span>
                   </h2>
-                  <p className="text-[10px] text-slate-400 mt-0.5">
-                    Breakdown / before photos, after photos & PDF reports ({attachments.length})
+                  <p className="text-[10px] text-slate-400 mt-0.5 truncate">
+                    Breakdown / before photos, after photos & reports ({attachments.length})
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   <button
                     type="button"
                     onClick={() => setUploadModalOpen(true)}
@@ -1999,7 +1985,7 @@ export default function ServiceDetailView({
               </div>
 
               {/* Filter Tabs */}
-              <div className="flex items-center gap-1.5 border-b border-slate-100 pb-2 overflow-x-auto text-xs">
+              <div className="flex items-center gap-1.5 border-b border-slate-100 pb-2 overflow-x-auto text-xs scrollbar-thin">
                 {["all", "before", "after", "document"].map((tab) => {
                   const count =
                     tab === "all"
@@ -2009,21 +1995,20 @@ export default function ServiceDetailView({
                     tab === "all"
                       ? "All Files"
                       : tab === "before"
-                      ? "Before / Breakdown"
-                      : tab === "after"
-                      ? "After Work"
-                      : "PDF & Reports";
+                        ? "Before / Breakdown"
+                        : tab === "after"
+                          ? "After Work"
+                          : "PDF & Reports";
 
                   return (
                     <button
                       key={tab}
                       type="button"
                       onClick={() => setAttachmentFilter(tab)}
-                      className={`px-2.5 py-1 rounded-lg font-medium text-[11px] transition-colors cursor-pointer shrink-0 ${
-                        attachmentFilter === tab
-                          ? "bg-sky-100/70 text-sky-800 font-bold"
-                          : "text-slate-500 hover:bg-slate-100"
-                      }`}
+                      className={`px-2.5 py-1 rounded-lg font-medium text-[11px] transition-colors cursor-pointer shrink-0 ${attachmentFilter === tab
+                        ? "bg-sky-100/70 text-sky-800 font-bold"
+                        : "text-slate-500 hover:bg-slate-100"
+                        }`}
                     >
                       {label} ({count})
                     </button>
@@ -2040,7 +2025,7 @@ export default function ServiceDetailView({
                   <button
                     type="button"
                     onClick={() => setUploadModalOpen(true)}
-                    className="px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold rounded-lg border border-sky-200 text-xs inline-flex items-center gap-1.5 cursor-pointer"
+                    className="w-full sm:w-auto px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold rounded-lg border border-sky-200 text-xs inline-flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <MdCameraAlt size={14} />
                     <span>Upload Site Photos / PDF</span>
@@ -2084,13 +2069,12 @@ export default function ServiceDetailView({
 
                         <div className="p-2 bg-white border-t border-slate-100 flex items-center justify-between text-[10px]">
                           <span
-                            className={`px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider text-[9px] ${
-                              item.stage === "before"
-                                ? "bg-amber-100 text-amber-800"
-                                : item.stage === "after"
+                            className={`px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider text-[9px] ${item.stage === "before"
+                              ? "bg-amber-100 text-amber-800"
+                              : item.stage === "after"
                                 ? "bg-emerald-100 text-emerald-800"
                                 : "bg-sky-100 text-sky-800"
-                            }`}
+                              }`}
                           >
                             {item.stage_display || item.stage}
                           </span>
@@ -2117,9 +2101,9 @@ export default function ServiceDetailView({
 
           {/* RIGHT 1 COLUMN: DYNAMIC Technician Report & Payment */}
           <div className="lg:col-span-1 space-y-6">
-            
+
             {/* BOX 1: DYNAMIC Technician report (Matching AMC details pattern) */}
-            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 sm:p-6 space-y-4">
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-3.5 sm:p-6 space-y-4">
               <div className="flex items-center justify-between pb-1 border-b border-slate-100">
                 <div>
                   <h2 className="text-xs sm:text-[13px] font-bold text-slate-900 leading-tight">
@@ -2187,19 +2171,18 @@ export default function ServiceDetailView({
                             </>
                           )}
                           <span
-                            className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase shrink-0 ${
-                              currentService.status === "completed"
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200/60"
-                                : currentService.status === "in_progress"
+                            className={`px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase shrink-0 ${currentService.status === "completed"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200/60"
+                              : currentService.status === "in_progress"
                                 ? "bg-sky-50 text-sky-700 border-sky-200/60"
                                 : "bg-amber-50 text-amber-700 border-amber-200/60"
-                            }`}
+                              }`}
                           >
                             {currentService.status === "completed"
                               ? "Job complete"
                               : currentService.status === "in_progress"
-                              ? "On-Site"
-                              : "Assigned"}
+                                ? "On-Site"
+                                : "Assigned"}
                           </span>
                         </div>
                       </div>
@@ -2249,9 +2232,8 @@ export default function ServiceDetailView({
                 {/* Milestone 2: Journey Started / Navigated */}
                 <div className="flex items-start gap-3 relative">
                   <div
-                    className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 z-10 shadow-xs ${
-                      journeyMilestone ? "bg-sky-500 text-white" : "border-2 border-slate-200 bg-white text-slate-300"
-                    }`}
+                    className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 z-10 shadow-xs ${journeyMilestone ? "bg-sky-500 text-white" : "border-2 border-slate-200 bg-white text-slate-300"
+                      }`}
                   >
                     {journeyMilestone ? <MdCheck size={13} /> : <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>}
                   </div>
@@ -2287,13 +2269,12 @@ export default function ServiceDetailView({
                 {/* Milestone 3: Arrived on Site & Started Work */}
                 <div className="flex items-start gap-3 relative">
                   <div
-                    className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 z-10 shadow-xs ${
-                      visitMilestone
-                        ? "bg-amber-500 text-white"
-                        : isStarted
+                    className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 z-10 shadow-xs ${visitMilestone
+                      ? "bg-amber-500 text-white"
+                      : isStarted
                         ? "bg-amber-400 text-white animate-pulse"
                         : "border-2 border-slate-200 bg-white text-slate-300"
-                    }`}
+                      }`}
                   >
                     {visitMilestone ? <MdCheck size={13} /> : isStarted ? <MdAccessTime size={13} /> : <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>}
                   </div>
@@ -2329,20 +2310,18 @@ export default function ServiceDetailView({
                 {/* Milestone 4: Work Completed & Customer Sign-Off */}
                 <div className="flex items-start gap-3 relative">
                   <div
-                    className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 z-10 shadow-xs ${
-                      completedMilestone || isRepairDone
-                        ? "bg-emerald-500 text-white"
-                        : "border-2 border-slate-200 bg-white text-slate-300"
-                    }`}
+                    className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 z-10 shadow-xs ${completedMilestone || isRepairDone
+                      ? "bg-emerald-500 text-white"
+                      : "border-2 border-slate-200 bg-white text-slate-300"
+                      }`}
                   >
                     {completedMilestone || isRepairDone ? <MdCheck size={13} /> : <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>}
                   </div>
                   <div className="min-w-0 flex-1 pt-0.5">
                     <div className="flex items-center justify-between">
                       <span
-                        className={`font-semibold text-xs ${
-                          completedMilestone || isRepairDone ? "text-slate-800" : "text-slate-400"
-                        }`}
+                        className={`font-semibold text-xs ${completedMilestone || isRepairDone ? "text-slate-800" : "text-slate-400"
+                          }`}
                       >
                         3. Work Completed
                       </span>
@@ -2367,8 +2346,8 @@ export default function ServiceDetailView({
                         {completedMilestone
                           ? `Completed by ${completedMilestone.technician_name || "technician"}.`
                           : isRepairDone
-                          ? "Work marked completed."
-                          : "Awaiting job resolution and sign-off."}
+                            ? "Work marked completed."
+                            : "Awaiting job resolution and sign-off."}
                       </p>
                     )}
                   </div>
@@ -2393,11 +2372,10 @@ export default function ServiceDetailView({
                         }
                         handleQuickStatusChange("in_progress");
                       }}
-                      className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all text-center border ${
-                        isDateDue
-                          ? "bg-sky-50 hover:bg-sky-100 text-sky-700 border-sky-200 cursor-pointer"
-                          : "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60"
-                      }`}
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all text-center border ${isDateDue
+                        ? "bg-sky-50 hover:bg-sky-100 text-sky-700 border-sky-200 cursor-pointer"
+                        : "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60"
+                        }`}
                       title={
                         isDateDue
                           ? `Start ${isVisit ? "Visit" : "Service"}`
@@ -2428,7 +2406,7 @@ export default function ServiceDetailView({
             </div>
 
             {/* BOX 2: Payment (From Figma Screenshot) */}
-            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 sm:p-6 space-y-4">
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-3.5 sm:p-6 space-y-4">
               <div className="flex items-center justify-between pb-1 border-b border-slate-100">
                 <h2 className="text-xs sm:text-[13px] font-bold text-slate-900 leading-tight">
                   Payment
@@ -2482,13 +2460,12 @@ export default function ServiceDetailView({
                     }
                     handleQuickStatusChange("in_progress");
                   }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                    !isDateDue
-                      ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60"
-                      : currentService.status === "in_progress"
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${!isDateDue
+                    ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60"
+                    : currentService.status === "in_progress"
                       ? "bg-sky-600 text-white border-sky-600 cursor-pointer"
                       : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-                  }`}
+                    }`}
                   title={
                     isDateDue
                       ? "Mark as In Progress"
@@ -2523,19 +2500,18 @@ export default function ServiceDetailView({
                     }
                     handleQuickStatusChange("completed");
                   }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                    !isDateDue || (currentService.status !== "in_progress" && currentService.status !== "completed")
-                      ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60"
-                      : currentService.status === "completed"
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${!isDateDue || (currentService.status !== "in_progress" && currentService.status !== "completed")
+                    ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-60"
+                    : currentService.status === "completed"
                       ? "bg-emerald-600 text-white border-emerald-600 cursor-pointer"
                       : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
-                  }`}
+                    }`}
                   title={
                     !isDateDue
                       ? `Scheduled for ${formattedScheduledDate}. Cannot complete before scheduled date.`
                       : currentService.status !== "in_progress" && currentService.status !== "completed"
-                      ? "Must start service first before marking as completed."
-                      : "Mark as Completed"
+                        ? "Must start service first before marking as completed."
+                        : "Mark as Completed"
                   }
                 >
                   Completed
@@ -2694,7 +2670,7 @@ export default function ServiceDetailView({
           service={currentService}
           isOpen={noteModalOpen}
           onClose={() => setNoteModalOpen(false)}
-          onSuccess={(newActivity) => {
+          onSuccess={() => {
             fetchNotes();
             if (onRefresh) onRefresh();
           }}

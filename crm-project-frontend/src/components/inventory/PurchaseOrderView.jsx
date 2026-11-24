@@ -463,25 +463,25 @@ export default function PurchaseOrderView({ onRefreshParentCounts, onNavigateTab
         </div>
 
         {/* COMPACT ACTION BUTTONS */}
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="grid grid-cols-2 sm:flex items-center gap-2 w-full sm:w-auto">
           <button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer ${
-              isFilterOpen || searchQuery || selectedStatus !== "ALL"
-                ? "bg-sky-50 border-sky-300 text-sky-700"
-                : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-            }`}
+            className={`col-span-1 w-full sm:w-auto px-2.5 sm:px-3 py-2 sm:py-1.5 text-xs font-semibold rounded-lg border transition-colors flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${isFilterOpen || searchQuery || selectedStatus !== "ALL"
+              ? "bg-sky-50 border-sky-300 text-sky-700"
+              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+              }`}
           >
-            <Filter className="w-3.5 h-3.5 text-slate-500" />
+            <Filter className="w-3.5 h-3.5 text-slate-500 shrink-0" />
             <span>Filter</span>
           </button>
 
           <button
             onClick={openCreateModal}
-            className="px-3 sm:px-3.5 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+            className="col-span-1 w-full sm:w-auto px-3 sm:px-3.5 py-2 sm:py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Create Purchase Order</span>
+            <Plus className="w-3.5 h-3.5 shrink-0" />
+            <span className="sm:hidden">Create PO</span>
+            <span className="hidden sm:inline">Create Purchase Order</span>
           </button>
         </div>
       </div>
@@ -557,11 +557,10 @@ export default function PurchaseOrderView({ onRefreshParentCounts, onNavigateTab
                 <button
                   key={st}
                   onClick={() => setSelectedStatus(st)}
-                  className={`px-2.5 py-1 rounded text-[11px] transition-all ${
-                    selectedStatus === st
-                      ? "bg-white text-sky-700 shadow-xs"
-                      : "text-slate-500 hover:text-slate-700"
-                  }`}
+                  className={`px-2.5 py-1 rounded text-[11px] transition-all ${selectedStatus === st
+                    ? "bg-white text-sky-700 shadow-xs"
+                    : "text-slate-500 hover:text-slate-700"
+                    }`}
                 >
                   {st === "ALL" ? "All" : st.replace("_", " ")}
                 </button>
@@ -598,32 +597,32 @@ export default function PurchaseOrderView({ onRefreshParentCounts, onNavigateTab
 
       {/* CREATE PURCHASE ORDER MODAL (SPACIOUS FULL SIZE) */}
       {isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-4xl w-full mx-auto my-6 relative max-h-[92vh] flex flex-col overflow-hidden">
-            <div className="sticky top-0 bg-white z-10 border-b border-slate-100 px-6 py-4 flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
-                  <ShoppingCart size={22} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-4xl w-full mx-auto my-2 sm:my-6 relative max-h-[96vh] sm:max-h-[92vh] flex flex-col overflow-hidden">
+            <div className="sticky top-0 bg-white z-10 border-b border-slate-100 px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center gap-2">
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+                  <ShoppingCart size={20} className="sm:w-[22px] sm:h-[22px]" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900">
+                <div className="min-w-0">
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-snug truncate">
                     Issue New Purchase Order
                   </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-500 mt-0.5 truncate">
                     Order raw materials, membranes, pumps, and spares from authorized vendors
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsCreateOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer shrink-0"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto flex-1 text-slate-800 scrollbar-thin">
-              <form onSubmit={handleSubmit} className="space-y-5 text-sm">
+            <div className="p-4 sm:p-6 overflow-y-auto flex-1 text-slate-800 scrollbar-thin">
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 text-sm">
                 {errorMsg && (
                   <div className="p-3 text-xs bg-rose-50 border border-rose-200 text-rose-600 rounded-lg">
                     {errorMsg}
@@ -693,23 +692,35 @@ export default function PurchaseOrderView({ onRefreshParentCounts, onNavigateTab
                     </button>
                   </div>
 
-                  <div className="p-3.5 space-y-2.5">
+                  <div className="p-3 sm:p-3.5 space-y-2.5">
                     {formData.items.map((row, idx) => {
                       const rowTotal =
                         Number(row.quantity) * Number(row.unit_price) * (1 + Number(row.tax_percent) / 100);
                       return (
                         <div
                           key={idx}
-                          className="grid grid-cols-12 gap-3 items-center bg-slate-50/60 p-3 rounded-lg border border-slate-100 text-xs"
+                          className="bg-slate-50/70 p-3 rounded-lg border border-slate-200/80 text-xs space-y-2.5 sm:space-y-0 sm:grid sm:grid-cols-12 sm:gap-3 sm:items-center"
                         >
-                          <div className="col-span-5 space-y-1">
-                            <label className="block text-[11px] font-semibold text-slate-600">
-                              Item
-                            </label>
+                          <div className="sm:col-span-5 space-y-1">
+                            <div className="flex items-center justify-between">
+                              <label className="block text-[11px] font-semibold text-slate-600">
+                                Item
+                              </label>
+                              {formData.items.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveItemRow(idx)}
+                                  className="sm:hidden text-rose-500 hover:text-rose-700 p-1 rounded-md hover:bg-rose-50 transition-colors cursor-pointer"
+                                  title="Remove item"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
                             <select
                               value={row.item}
                               onChange={(e) => handleItemChange(idx, "item", e.target.value)}
-                              className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg"
+                              className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg truncate"
                             >
                               <option value="">-- Choose Item --</option>
                               {inventoryItems.map((it) => (
@@ -720,69 +731,71 @@ export default function PurchaseOrderView({ onRefreshParentCounts, onNavigateTab
                             </select>
                           </div>
 
-                          <div className="col-span-2 space-y-1">
-                            <label className="block text-[11px] font-semibold text-slate-600">
-                              Qty
-                            </label>
-                            <input
-                              type="number"
-                              min="1"
-                              value={row.quantity}
-                              onChange={(e) => handleItemChange(idx, "quantity", e.target.value)}
-                              className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-right font-semibold"
-                            />
-                          </div>
+                          <div className="grid grid-cols-10 gap-2 sm:contents">
+                            <div className="col-span-3 sm:col-span-2 space-y-1">
+                              <label className="block text-[11px] font-semibold text-slate-600">
+                                Qty
+                              </label>
+                              <input
+                                type="number"
+                                min="1"
+                                value={row.quantity}
+                                onChange={(e) => handleItemChange(idx, "quantity", e.target.value)}
+                                className="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs bg-white border border-slate-200 rounded-lg text-right font-semibold"
+                              />
+                            </div>
 
-                          <div className="col-span-2 space-y-1">
-                            <label className="block text-[11px] font-semibold text-slate-600">
-                              Price (₹)
-                            </label>
-                            <input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              value={row.unit_price}
-                              onChange={(e) => handleItemChange(idx, "unit_price", e.target.value)}
-                              className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg text-right"
-                            />
-                          </div>
+                            <div className="col-span-4 sm:col-span-2 space-y-1">
+                              <label className="block text-[11px] font-semibold text-slate-600">
+                                Price (₹)
+                              </label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={row.unit_price}
+                                onChange={(e) => handleItemChange(idx, "unit_price", e.target.value)}
+                                className="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs bg-white border border-slate-200 rounded-lg text-right"
+                              />
+                            </div>
 
-                          <div className="col-span-2 text-right space-y-1">
-                            <label className="block text-[11px] font-semibold text-slate-600">
-                              Total
-                            </label>
-                            <span className="font-bold text-slate-800 text-xs block py-2">
-                              ₹{rowTotal.toFixed(2)}
-                            </span>
-                          </div>
+                            <div className="col-span-3 sm:col-span-2 text-right space-y-1">
+                              <label className="block text-[11px] font-semibold text-slate-600">
+                                Total
+                              </label>
+                              <span className="font-bold text-slate-800 text-xs block py-1.5 sm:py-2 truncate">
+                                ₹{rowTotal.toFixed(2)}
+                              </span>
+                            </div>
 
-                          <div className="col-span-1 text-center">
-                            {formData.items.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveItemRow(idx)}
-                                className="text-rose-500 hover:text-rose-700 p-1.5 mt-5 cursor-pointer"
-                                title="Remove item"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            )}
+                            <div className="hidden sm:flex sm:col-span-1 justify-center items-center pt-5">
+                              {formData.items.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveItemRow(idx)}
+                                  className="text-rose-500 hover:text-rose-700 p-1.5 rounded-md hover:bg-rose-50 transition-colors cursor-pointer"
+                                  title="Remove item"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       );
                     })}
                   </div>
 
-                  <div className="bg-slate-50 px-5 py-3 border-t border-slate-200 flex flex-col items-end gap-1 text-xs">
-                    <div className="flex justify-between w-64 text-slate-600">
+                  <div className="bg-slate-50 px-4 sm:px-5 py-3 border-t border-slate-200 flex flex-col items-end gap-1.5 text-xs">
+                    <div className="flex justify-between w-full sm:w-64 text-slate-600">
                       <span>Subtotal:</span>
                       <span className="font-semibold">₹{calculatedTotals.subtotal.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between w-64 text-slate-600">
+                    <div className="flex justify-between w-full sm:w-64 text-slate-600">
                       <span>Tax (18%):</span>
                       <span className="font-semibold">₹{calculatedTotals.taxAmount.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between w-64 text-sm font-bold text-slate-900 border-t border-slate-200 pt-1 mt-1">
+                    <div className="flex justify-between w-full sm:w-64 text-sm font-bold text-slate-900 border-t border-slate-200 pt-1.5 mt-0.5">
                       <span>Total Amount:</span>
                       <span className="text-sky-700">₹{calculatedTotals.total.toFixed(2)}</span>
                     </div>
@@ -802,18 +815,18 @@ export default function PurchaseOrderView({ onRefreshParentCounts, onNavigateTab
                   ></textarea>
                 </div>
 
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-3.5 sm:pt-4 border-t border-slate-100">
                   <button
                     type="button"
                     onClick={() => setIsCreateOpen(false)}
-                    className="px-5 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                    className="w-full sm:w-auto px-5 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer text-center"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-6 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-sm font-semibold shadow-sm disabled:opacity-50 transition-colors cursor-pointer"
+                    className="w-full sm:w-auto px-6 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-sm font-semibold shadow-sm disabled:opacity-50 transition-colors cursor-pointer text-center"
                   >
                     {isSubmitting ? "Creating PO..." : "Issue Purchase Order"}
                   </button>
@@ -826,25 +839,25 @@ export default function PurchaseOrderView({ onRefreshParentCounts, onNavigateTab
 
       {/* VIEW PURCHASE ORDER MODAL */}
       {viewingPO && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-2xl w-full mx-auto my-6 relative max-h-[90vh] flex flex-col overflow-hidden">
-            <div className="sticky top-0 bg-white z-10 border-b border-slate-100 px-6 py-4 flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-sky-600" />
-                <span className="text-base font-bold text-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-2xl w-full mx-auto my-2 sm:my-6 relative max-h-[96vh] sm:max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="sticky top-0 bg-white z-10 border-b border-slate-100 px-4 sm:px-6 py-3.5 sm:py-4 flex justify-between items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <FileText className="w-5 h-5 text-sky-600 shrink-0" />
+                <span className="text-sm sm:text-base font-bold text-slate-800 truncate">
                   PO: {viewingPO.po_number}
                 </span>
-                {getStatusBadge(viewingPO.status)}
+                <span className="shrink-0">{getStatusBadge(viewingPO.status)}</span>
               </div>
               <button
                 onClick={() => setViewingPO(null)}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer shrink-0"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-4 text-sm text-slate-700">
+            <div className="p-4 sm:p-6 overflow-y-auto space-y-4 text-sm text-slate-700 scrollbar-thin">
               <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200/80">
                 <div>
                   <span className="text-xs text-slate-400 block">Vendor</span>

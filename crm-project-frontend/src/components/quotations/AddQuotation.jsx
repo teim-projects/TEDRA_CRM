@@ -29,7 +29,7 @@ function normalizeProductList(raw) {
       try {
         const parsed = JSON.parse(trimmed);
         if (Array.isArray(parsed)) return parsed;
-      } catch (e) {
+      } catch {
         // fallback
       }
     }
@@ -678,7 +678,7 @@ export default function AddQuotation({ id, leadData, onBack, initialCustomerId }
         try {
           const custRes = await api.get(`lead/customers/?search=${encodeURIComponent(q)}`);
           custData = Array.isArray(custRes.data) ? custRes.data : custRes.data?.results || [];
-        } catch (e) {
+        } catch {
           // ignore customer search error
         }
 
@@ -1160,15 +1160,14 @@ export default function AddQuotation({ id, leadData, onBack, initialCustomerId }
   }, [availableProducts]);
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-3 sm:p-4 animate-fade-in">
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-2 sm:p-4 animate-fade-in">
       <div
-        className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-4xl w-full mx-auto relative flex flex-col overflow-hidden"
-        style={{ height: "90vh" }}
+        className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-4xl w-full mx-auto relative flex flex-col overflow-hidden max-h-[96vh] sm:max-h-[90vh] h-[96vh] sm:h-[90vh]"
       >
         {/* Exact Fixed Header matching Image 1 */}
-        <div className="bg-white px-6 pt-6 pb-3 flex justify-between items-start shrink-0 border-b border-slate-100/60">
+        <div className="bg-white px-4 sm:px-6 pt-4 sm:pt-6 pb-3 flex justify-between items-start shrink-0 border-b border-slate-100/60">
           <div>
-            <h3 className="text-xl font-bold text-slate-900">
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900">
               {isEdit
                 ? versionName
                   ? `${versionName} - Edit Quotation`
@@ -1188,12 +1187,12 @@ export default function AddQuotation({ id, leadData, onBack, initialCustomerId }
         </div>
 
         {/* 3-Step Wizard Navigation Pill Bar */}
-        <div className="bg-slate-50/80 border-b border-slate-200/80 px-6 py-2.5 flex items-center justify-between gap-2 shrink-0">
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+        <div className="bg-slate-50/80 border-b border-slate-200/80 px-3 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between gap-2 shrink-0 overflow-x-auto scrollbar-none">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap shrink-0">
             <button
               type="button"
               onClick={() => setStep(1)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                 step === 1
                   ? "bg-blue-600 text-white shadow-xs"
                   : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
@@ -1202,13 +1201,13 @@ export default function AddQuotation({ id, leadData, onBack, initialCustomerId }
               <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] bg-black/15 font-bold">1</span>
               <span>Parties & Line Items</span>
             </button>
-            <span className="text-slate-300 text-xs hidden sm:inline">→</span>
+            <span className="text-slate-300 text-xs shrink-0">→</span>
             <button
               type="button"
               onClick={() => {
                 if (validateStep1()) setStep(2);
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                 step === 2
                   ? "bg-blue-600 text-white shadow-xs"
                   : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
@@ -1222,13 +1221,13 @@ export default function AddQuotation({ id, leadData, onBack, initialCustomerId }
                 </span>
               )}
             </button>
-            <span className="text-slate-300 text-xs hidden sm:inline">→</span>
+            <span className="text-slate-300 text-xs shrink-0">→</span>
             <button
               type="button"
               onClick={() => {
                 if (validateStep1()) setStep(3);
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                 step === 3
                   ? "bg-blue-600 text-white shadow-xs"
                   : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
@@ -1243,13 +1242,13 @@ export default function AddQuotation({ id, leadData, onBack, initialCustomerId }
               )}
             </button>
           </div>
-          <div className="text-[11px] font-medium text-slate-400 hidden md:block">
+          <div className="text-[11px] font-medium text-slate-400 hidden md:block shrink-0">
             Step {step} of 3
           </div>
         </div>
 
         {/* Body Form */}
-        <div className="p-6 overflow-y-auto flex-1 scrollbar-thin flex flex-col">
+        <div className="p-3.5 sm:p-6 overflow-y-auto flex-1 scrollbar-thin flex flex-col">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -2006,8 +2005,8 @@ export default function AddQuotation({ id, leadData, onBack, initialCustomerId }
                     </div>
 
                     {items.length > 0 ? (
-                      <div className="overflow-x-auto border border-slate-200/80 rounded-lg shadow-2xs">
-                        <table className="w-full text-xs">
+                      <div className="overflow-x-auto scrollbar-thin border border-slate-200/80 rounded-lg shadow-2xs">
+                        <table className="w-full min-w-[700px] text-xs">
                           <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold">
                             <tr>
                               <th className="px-3 py-2 text-left">#</th>
@@ -2189,20 +2188,21 @@ export default function AddQuotation({ id, leadData, onBack, initialCustomerId }
                 </div>
 
                 {/* Footer Step 1 */}
-                <div className="flex items-center justify-between pt-4 border-t border-slate-100 shrink-0">
+                <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-2.5 pt-3 sm:pt-4 border-t border-slate-100 shrink-0">
                   <button
                     type="button"
                     onClick={onBack}
-                    className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
+                    className="w-full sm:w-auto px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-xs cursor-pointer text-center justify-center"
                   >
                     Cancel
                   </button>
                   <button
                     type="button"
                     onClick={handleNextStep}
-                    className="flex items-center gap-1.5 px-5 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors shadow-sm shadow-blue-500/10 cursor-pointer"
+                    className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-5 py-2.5 sm:py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors shadow-sm shadow-blue-500/10 cursor-pointer whitespace-nowrap"
                   >
-                    Next: Technical Scope & Sections <MdArrowForward size={16} />
+                    <span>Next: Technical Scope & Sections</span>
+                    <MdArrowForward size={16} />
                   </button>
                 </div>
               </div>
@@ -2217,50 +2217,53 @@ export default function AddQuotation({ id, leadData, onBack, initialCustomerId }
                 </div>
 
                 {/* Footer Step 2 */}
-                <div className="flex items-center justify-between pt-4 border-t border-slate-100 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setStep(1)}
-                    className="flex items-center gap-1 px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
-                  >
-                    <MdArrowBack size={16} /> Back to Parties & Line Items
-                  </button>
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-2.5 pt-3 sm:pt-4 border-t border-slate-100 shrink-0">
+                  <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => setStep(1)}
+                      className="flex items-center justify-center gap-1 px-3 sm:px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-xs cursor-pointer whitespace-nowrap"
+                    >
+                      <MdArrowBack size={16} />
+                      <span className="sm:hidden">Back</span>
+                      <span className="hidden sm:inline">Back to Parties & Items</span>
+                    </button>
                     <button
                       type="button"
                       onClick={onBack}
-                      className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
+                      className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-xs cursor-pointer text-center justify-center"
                     >
                       Cancel
                     </button>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setStep(3);
-                      }}
-                      className="flex items-center gap-1.5 px-5 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors shadow-sm shadow-blue-500/10 cursor-pointer"
-                    >
-                      Next: Commercial Terms & Conditions <MdArrowForward size={16} />
-                    </button>
                   </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setStep(3);
+                    }}
+                    className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-5 py-2.5 sm:py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors shadow-sm shadow-blue-500/10 cursor-pointer whitespace-nowrap"
+                  >
+                    <span>Next: Commercial Terms & Conditions</span>
+                    <MdArrowForward size={16} />
+                  </button>
                 </div>
               </div>
             ) : (
               /* STEP 3: CATEGORY-WISE ACCORDIONS FOR TERMS & CONDITIONS */
               <div className="flex-1 flex flex-col justify-between space-y-6">
                 <div className="space-y-4 flex-1">
-                  <div className="flex justify-between items-center bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
                     <div>
                       <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                        3. Commercial Terms & Conditions Categories
+                        3. Commercial Terms &amp; Conditions Categories
                       </h4>
                       <p className="text-[11px] text-slate-400 mt-0.5">
                         Select applicable categories and customize standard contractual terms
                       </p>
                     </div>
-                    <span className="text-xs font-semibold px-2.5 py-0.5 bg-blue-100 text-blue-700 rounded-full flex items-center gap-1">
+                    <span className="self-start sm:self-auto text-xs font-semibold px-2.5 py-0.5 bg-blue-100 text-blue-700 rounded-full flex items-center gap-1 shrink-0">
                       <MdCheckCircle size={14} /> {selectedTerms.length} Selected
                     </span>
                   </div>
@@ -2296,26 +2299,26 @@ export default function AddQuotation({ id, leadData, onBack, initialCustomerId }
                             {/* Accordion Header */}
                             <div
                               onClick={() => toggleCategoryAccordion(cat.id)}
-                              className="bg-slate-50/80 hover:bg-slate-100/80 px-4 py-2.5 flex justify-between items-center cursor-pointer select-none transition-colors"
+                              className="bg-slate-50/80 hover:bg-slate-100/80 px-3 sm:px-4 py-2.5 flex flex-wrap sm:flex-nowrap justify-between items-center gap-2 cursor-pointer select-none transition-colors"
                             >
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                                 {isOpen ? (
-                                  <MdExpandMore size={18} className="text-slate-500" />
+                                  <MdExpandMore size={18} className="text-slate-500 shrink-0" />
                                 ) : (
-                                  <MdChevronRight size={18} className="text-slate-500" />
+                                  <MdChevronRight size={18} className="text-slate-500 shrink-0" />
                                 )}
-                                <h5 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                                <h5 className="text-xs font-bold text-slate-800 uppercase tracking-wider truncate">
                                   {cat.name}
                                 </h5>
                               </div>
-                              <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto" onClick={(e) => e.stopPropagation()}>
                                 <span className="text-[10px] font-medium text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">
                                   {selectedInCat.length} / {activeCatTerms.length} Selected
                                 </span>
                                 <button
                                   type="button"
                                   onClick={() => toggleAllCategoryTerms(cat)}
-                                  className="text-[11px] text-blue-600 hover:text-blue-800 font-semibold px-2 py-0.5 rounded hover:bg-blue-50 transition-colors"
+                                  className="text-[11px] text-blue-600 hover:text-blue-800 font-semibold px-2 py-0.5 rounded hover:bg-blue-50 transition-colors cursor-pointer whitespace-nowrap"
                                 >
                                   {allSelected ? "Deselect All" : "Select All"}
                                 </button>
@@ -2324,7 +2327,7 @@ export default function AddQuotation({ id, leadData, onBack, initialCustomerId }
 
                             {/* Collapsible Terms List - Visible only when isOpen is true */}
                             {isOpen && (
-                              <div className="p-4 space-y-3 divide-y divide-slate-100 border-t border-slate-200">
+                              <div className="p-3 sm:p-4 space-y-3 divide-y divide-slate-100 border-t border-slate-200">
                                 {activeCatTerms.length === 0 ? (
                                   <p className="text-xs text-slate-400 italic">No terms in this category.</p>
                                 ) : (
@@ -2337,22 +2340,22 @@ export default function AddQuotation({ id, leadData, onBack, initialCustomerId }
                                     );
 
                                     return (
-                                      <div key={term.id} className="pt-3 first:pt-0 flex items-start gap-3">
+                                      <div key={term.id} className="pt-3 first:pt-0 flex items-start gap-2.5 sm:gap-3">
                                         <input
                                           type="checkbox"
                                           id={`term-${term.id}`}
                                           checked={selected}
                                           onChange={() => toggleTerm(term, cat)}
-                                          className="mt-1 h-4 w-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
+                                          className="mt-1 h-4 w-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer shrink-0"
                                         />
-                                        <div className="flex-1 space-y-1">
+                                        <div className="flex-1 min-w-0 space-y-1">
                                           <label
                                             htmlFor={`term-${term.id}`}
-                                            className="text-xs font-semibold text-slate-800 cursor-pointer flex items-center gap-2"
+                                            className="text-xs font-semibold text-slate-800 cursor-pointer flex items-center gap-2 flex-wrap"
                                           >
-                                            {term.name}
+                                            <span className="break-words">{term.name}</span>
                                             {term.is_default && (
-                                              <span className="text-[9px] bg-emerald-50 text-emerald-600 px-1.5 py-0.2 rounded border border-emerald-100 font-medium">
+                                              <span className="text-[9px] bg-emerald-50 text-emerald-600 px-1.5 py-0.2 rounded border border-emerald-100 font-medium shrink-0">
                                                 Default
                                               </span>
                                             )}
@@ -2369,10 +2372,10 @@ export default function AddQuotation({ id, leadData, onBack, initialCustomerId }
                                                   e.target.value
                                                 )
                                               }
-                                              className="w-full text-xs p-2 border border-slate-200 rounded-lg focus:ring-1 focus:ring-blue-500 bg-slate-50/50"
+                                              className="w-full min-w-0 text-xs p-2 border border-slate-200 rounded-lg focus:ring-1 focus:ring-blue-500 bg-slate-50/50"
                                             />
                                           ) : (
-                                            <p className="text-xs text-slate-500 leading-relaxed">
+                                            <p className="text-xs text-slate-500 leading-relaxed break-words">
                                               {term.description}
                                             </p>
                                           )}
@@ -2391,35 +2394,37 @@ export default function AddQuotation({ id, leadData, onBack, initialCustomerId }
                 </div>
 
                 {/* Footer Step 3 */}
-                <div className="flex items-center justify-between pt-4 border-t border-slate-100 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setStep(2)}
-                    className="flex items-center gap-1 px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
-                  >
-                    <MdArrowBack size={16} /> Back to Technical Scope & Sections
-                  </button>
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-2.5 pt-3 sm:pt-4 border-t border-slate-100 shrink-0">
+                  <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => setStep(2)}
+                      className="flex items-center justify-center gap-1 px-3 sm:px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-xs cursor-pointer whitespace-nowrap"
+                    >
+                      <MdArrowBack size={16} />
+                      <span className="sm:hidden">Back</span>
+                      <span className="hidden sm:inline">Back to Scope & Sections</span>
+                    </button>
                     <button
                       type="button"
                       onClick={onBack}
-                      className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
+                      className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-xs cursor-pointer text-center justify-center"
                     >
                       Cancel
                     </button>
-                    <button
-                      type="button"
-                      onClick={handleSubmit}
-                      disabled={loading}
-                      className="px-5 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm cursor-pointer"
-                    >
-                      {loading
-                        ? "Saving..."
-                        : isEdit
-                          ? "Update Quotation"
-                          : "Create Quotation"}
-                    </button>
                   </div>
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className="w-full sm:w-auto flex items-center justify-center px-5 py-2.5 sm:py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm cursor-pointer whitespace-nowrap"
+                  >
+                    {loading
+                      ? "Saving..."
+                      : isEdit
+                        ? "Update Quotation"
+                        : "Create Quotation"}
+                  </button>
                 </div>
               </div>
             )}

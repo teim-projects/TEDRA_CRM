@@ -335,24 +335,24 @@ export default function VendorView({ onRefreshParentCounts, onNavigateTab, baseA
         </div>
 
         {/* COMPACT ACTION BUTTONS */}
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="grid grid-cols-2 sm:flex items-center gap-2 w-full sm:w-auto">
           <button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer ${
+            className={`col-span-1 w-full sm:w-auto px-2.5 sm:px-3 py-2 sm:py-1.5 text-xs font-semibold rounded-lg border transition-colors flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
               isFilterOpen || searchQuery || filterCity !== "ALL" || filterStatus !== "ALL"
                 ? "bg-sky-50 border-sky-300 text-sky-700"
                 : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
             }`}
           >
-            <Filter className="w-3.5 h-3.5 text-slate-500" />
+            <Filter className="w-3.5 h-3.5 text-slate-500 shrink-0" />
             <span>Filter</span>
           </button>
 
           <button
             onClick={openAddModal}
-            className="px-3 sm:px-3.5 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+            className="col-span-1 w-full sm:w-auto px-3 sm:px-3.5 py-2 sm:py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-3.5 h-3.5 shrink-0" />
             <span>Add Vendor</span>
           </button>
         </div>
@@ -480,41 +480,41 @@ export default function VendorView({ onRefreshParentCounts, onNavigateTab, baseA
 
       {/* ADD / EDIT VENDOR MODAL (SPACIOUS FULL SIZE MATCHING CUSTOMER FORM) */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-3xl w-full mx-auto my-6 relative max-h-[90vh] flex flex-col overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-3xl w-full mx-auto my-2 sm:my-6 relative max-h-[96vh] sm:max-h-[90vh] flex flex-col overflow-hidden">
             {/* Modal Header */}
-            <div className="sticky top-0 bg-white z-10 border-b border-slate-100 px-6 py-4 flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
-                  <Building size={22} />
+            <div className="sticky top-0 bg-white z-10 border-b border-slate-100 px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center gap-2">
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+                  <Building size={20} className="sm:w-[22px] sm:h-[22px]" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900">
+                <div className="min-w-0">
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-snug truncate">
                     {editingVendor ? "Edit Vendor Profile" : "Register Institutional Vendor"}
                   </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-500 mt-0.5 truncate">
                     {editingVendor ? `Code: ${editingVendor.vendor_code || 'N/A'}` : "Create new supplier / vendor profile"}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer shrink-0"
               >
                 <X size={20} />
               </button>
             </div>
 
             {/* Modal Form */}
-            <div className="p-6 overflow-y-auto flex-1 text-slate-800 scrollbar-thin">
-              <form onSubmit={handleSubmit} className="space-y-5 text-sm">
+            <div className="p-4 sm:p-6 overflow-y-auto flex-1 text-slate-800 scrollbar-thin">
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 text-sm">
                 {errorMsg && (
                   <div className="p-3 text-xs bg-rose-50 border border-rose-200 text-rose-600 rounded-lg">
                     {errorMsg}
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div className="space-y-1.5">
                     <label className="block text-xs font-semibold text-slate-700">
                       Vendor / Agency Name <span className="text-rose-500">*</span>
@@ -525,7 +525,7 @@ export default function VendorView({ onRefreshParentCounts, onNavigateTab, baseA
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="e.g. SHIVANI PRINTER"
-                      className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white"
+                      className="w-full px-3 sm:px-3.5 py-2 sm:py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white"
                     />
                   </div>
 
@@ -538,7 +538,7 @@ export default function VendorView({ onRefreshParentCounts, onNavigateTab, baseA
                       value={formData.vendor_code}
                       onChange={(e) => setFormData({ ...formData, vendor_code: e.target.value })}
                       placeholder="VEND-001"
-                      className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white"
+                      className="w-full px-3 sm:px-3.5 py-2 sm:py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white"
                     />
                   </div>
 
@@ -551,7 +551,7 @@ export default function VendorView({ onRefreshParentCounts, onNavigateTab, baseA
                       value={formData.contact_person}
                       onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
                       placeholder="e.g. Ramesh Kumar"
-                      className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white"
+                      className="w-full px-3 sm:px-3.5 py-2 sm:py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white"
                     />
                   </div>
 
@@ -564,7 +564,7 @@ export default function VendorView({ onRefreshParentCounts, onNavigateTab, baseA
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       placeholder="4455661122"
-                      className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white"
+                      className="w-full px-3 sm:px-3.5 py-2 sm:py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white"
                     />
                   </div>
 
@@ -577,7 +577,7 @@ export default function VendorView({ onRefreshParentCounts, onNavigateTab, baseA
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="vendor@gmail.com"
-                      className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white"
+                      className="w-full px-3 sm:px-3.5 py-2 sm:py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white"
                     />
                   </div>
 
@@ -590,7 +590,7 @@ export default function VendorView({ onRefreshParentCounts, onNavigateTab, baseA
                       value={formData.address}
                       onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                       placeholder="Street / Industrial address"
-                      className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white"
+                      className="w-full px-3 sm:px-3.5 py-2 sm:py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white"
                     />
                   </div>
 
@@ -603,7 +603,7 @@ export default function VendorView({ onRefreshParentCounts, onNavigateTab, baseA
                       value={formData.city}
                       onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                       placeholder="e.g. Pune"
-                      className="w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white"
+                      className="w-full px-3 sm:px-3.5 py-2 sm:py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white"
                     />
                   </div>
 
@@ -616,24 +616,24 @@ export default function VendorView({ onRefreshParentCounts, onNavigateTab, baseA
                       value={formData.gst_number}
                       onChange={(e) => setFormData({ ...formData, gst_number: e.target.value })}
                       placeholder="27ADGET345SGG"
-                      className="w-full px-3.5 py-2.5 text-sm font-mono border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white uppercase"
+                      className="w-full px-3 sm:px-3.5 py-2 sm:py-2.5 text-sm font-mono border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 bg-white uppercase"
                     />
                   </div>
                 </div>
 
                 {/* Footer Buttons */}
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-3.5 sm:pt-4 border-t border-slate-100">
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-5 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                    className="w-full sm:w-auto px-5 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer text-center"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-6 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-sm font-semibold shadow-sm disabled:opacity-50 transition-colors cursor-pointer"
+                    className="w-full sm:w-auto px-6 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-sm font-semibold shadow-sm disabled:opacity-50 transition-colors cursor-pointer text-center"
                   >
                     {isSubmitting ? "Saving..." : editingVendor ? "Update Profile" : "Save Vendor"}
                   </button>

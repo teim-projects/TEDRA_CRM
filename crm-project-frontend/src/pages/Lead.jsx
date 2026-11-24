@@ -807,45 +807,47 @@ export default function Lead() {
 
         {/* HEADER BLOCK WITH THE BLUE VERTICAL ACCENT LINE */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-1 pt-1">
-          <div className="flex items-center gap-3">
-            <span className="w-1.5 h-10 bg-sky-600 rounded-full block"></span>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-tight">Enquiry Management</h1>
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <span className="w-1.5 h-9 sm:h-10 bg-sky-600 rounded-full block shrink-0"></span>
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 leading-tight">Enquiry Management</h1>
               <p className="text-xs text-slate-500 mt-0.5">
                 {loading ? "Synchronizing pipeline records..." : `Total ${totalCount} records identified across channels`}
               </p>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-            <button
-              onClick={() => setIsFilterOpen(true)}
-              className="px-3 sm:px-4 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
-            >
-              <MdFilterList className="text-slate-400" />
-              Filter
-            </button>
-            {canCreateLead && (
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+            <div className={`grid ${canCreateLead ? "grid-cols-3" : "grid-cols-2"} sm:flex items-center gap-1.5 sm:gap-2.5 w-full sm:w-auto`}>
               <button
-                onClick={() => setShowImportModal(true)}
-                className="px-2.5 sm:px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 hover:text-sky-600 hover:border-sky-200 transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
-                title="Import Leads from Excel or CSV"
+                onClick={() => setIsFilterOpen(true)}
+                className="col-span-1 w-full sm:w-auto px-2 sm:px-4 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                <MdUpload className="text-sky-600 text-sm" />
-                Import
+                <MdFilterList className="text-slate-400 shrink-0 text-sm" />
+                <span>Filter</span>
               </button>
-            )}
-            <button
-              onClick={handleExportExcel}
-              className="px-2.5 sm:px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
-              title="Export Leads to Excel"
-            >
-              <MdDownload className="text-emerald-600 text-sm" />
-              Export
-            </button>
+              {canCreateLead && (
+                <button
+                  onClick={() => setShowImportModal(true)}
+                  className="col-span-1 w-full sm:w-auto px-2 sm:px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 hover:text-sky-600 hover:border-sky-200 transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="Import Leads from Excel or CSV"
+                >
+                  <MdUpload className="text-sky-600 text-sm shrink-0" />
+                  <span>Import</span>
+                </button>
+              )}
+              <button
+                onClick={handleExportExcel}
+                className="col-span-1 w-full sm:w-auto px-2 sm:px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                title="Export Leads to Excel"
+              >
+                <MdDownload className="text-emerald-600 text-sm shrink-0" />
+                <span>Export</span>
+              </button>
+            </div>
             {canCreateLead && (
               <button
                 onClick={() => { setEditingLead(null); setShowLeadForm(true); }}
-                className="px-3 sm:px-4 py-1.5 bg-sky-600 text-white text-xs font-semibold rounded-lg hover:bg-sky-700 transition-colors shadow-2xs shadow-sky-500/10 flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+                className="w-full sm:w-auto px-3.5 sm:px-4 py-2 sm:py-1.5 bg-sky-600 text-white text-xs font-semibold rounded-lg hover:bg-sky-700 transition-colors shadow-2xs shadow-sky-500/10 flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
               >
                 <span>+</span> Add Enquiry
               </button>

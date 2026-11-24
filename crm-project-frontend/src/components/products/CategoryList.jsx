@@ -195,22 +195,22 @@ const CategoryList = () => {
                 
                 {/* HEADER BLOCK */}
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between pb-1 pt-1 gap-3">
-                    <div className="flex items-center gap-3">
-                        <span className="w-1.5 h-10 bg-blue-600 rounded-full block"></span>
-                        <div>
-                            <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-tight">Product Categories</h1>
+                    <div className="flex items-center gap-2.5 sm:gap-3">
+                        <span className="w-1.5 h-9 sm:h-10 bg-blue-600 rounded-full block shrink-0"></span>
+                        <div className="min-w-0">
+                            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 leading-tight">Product Categories</h1>
                             <p className="text-xs text-slate-500 mt-0.5">
                                 {loading ? "Synchronizing index records..." : `Total ${categories.length} category records active`}
                             </p>
                         </div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+                    <div className="grid grid-cols-2 sm:flex items-center gap-1.5 sm:gap-2.5 w-full sm:w-auto">
                         <button
                             onClick={() => navigate('/products')}
-                            className="px-3 py-1.5 border border-slate-200 bg-white text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+                            className="col-span-1 w-full sm:w-auto px-2 sm:px-3 py-2 sm:py-1.5 border border-slate-200 bg-white text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
                         >
-                            <FaArrowLeft className="text-slate-500 text-xs" />
-                            <span>Back to Products</span>
+                            <FaArrowLeft className="text-slate-500 text-xs shrink-0" />
+                            <span className="truncate">Back to Products</span>
                         </button>
 
                         {canCreateCategory && (
@@ -220,7 +220,7 @@ const CategoryList = () => {
                                     setFormData({ name: '', description: '', is_active: true });
                                     setShowModal(true);
                                 }}
-                                className="px-3 sm:px-4 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-xs shadow-blue-500/10 flex items-center gap-1 cursor-pointer whitespace-nowrap shrink-0"
+                                className="col-span-1 w-full sm:w-auto px-3 sm:px-4 py-2 sm:py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-xs shadow-blue-500/10 flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap shrink-0"
                             >
                                 <span className="text-sm">+</span>
                                 <span>Add Category</span>

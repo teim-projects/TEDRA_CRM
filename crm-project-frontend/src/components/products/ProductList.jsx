@@ -234,50 +234,57 @@ const ProductList = () => {
             <div className="w-full space-y-5 font-sans antialiased text-slate-800 pt-1 sm:pt-2 px-1">
                 
                 {/* HEADER BLOCK */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between pb-1 pt-1">
-                    <div className="flex items-center gap-3">
-                        <span className="w-1.5 h-10 bg-sky-600 rounded-full block"></span>
-                        <div>
-                            <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-tight">Product & Service Master</h1>
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between pb-1 pt-1 gap-3">
+                    <div className="flex items-center gap-2.5 sm:gap-3">
+                        <span className="w-1.5 h-9 sm:h-10 bg-sky-600 rounded-full block shrink-0"></span>
+                        <div className="min-w-0">
+                            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 leading-tight">Product & Service Master</h1>
                             <p className="text-xs text-slate-500 mt-0.5">
                                 {loading ? "Synchronizing catalog records..." : `${totalCount} products / services`}
                             </p>
                         </div>
                     </div>
-                    <div className="mt-3 md:mt-0 flex flex-wrap items-center gap-2 sm:gap-2.5">
-                        <button
-                            onClick={() => setIsFilterOpen(true)}
-                            className="px-2.5 sm:px-3.5 py-1.5 border border-slate-200 bg-white text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
-                        >
-                            <MdFilterList className="text-slate-400" />
-                            Filter
-                        </button>
-                        <button
-                            onClick={handleExportExcel}
-                            className="px-2.5 sm:px-3.5 py-1.5 border border-slate-200 bg-white text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
-                            title="Export Products to Excel"
-                        >
-                            <MdDownload className="text-emerald-600 text-sm" />
-                            Export
-                        </button>
-                        <button 
-                            onClick={() => navigate('/categories')}
-                            className="px-2.5 sm:px-3.5 py-1.5 border border-slate-200 bg-white text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-xs cursor-pointer whitespace-nowrap shrink-0"
-                        >
-                            Manage Categories
-                        </button>
-                        {canCreateProduct && (
-                            <button 
-                                onClick={() => {
-                                    setSelectedProductId(null);
-                                    setShowProductForm(true);
-                                    }}
-                                className="px-3 sm:px-4 py-1.5 bg-sky-600 text-white text-xs font-semibold rounded-lg hover:bg-sky-700 transition-colors shadow-2xs shadow-sky-500/10 cursor-pointer whitespace-nowrap shrink-0 flex items-center gap-1.5"
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2.5 w-full md:w-auto">
+                        {/* Row 1 on mobile: Filter & Export */}
+                        <div className="grid grid-cols-2 sm:flex items-center gap-1.5 sm:gap-2.5 w-full sm:w-auto">
+                            <button
+                                onClick={() => setIsFilterOpen(true)}
+                                className="col-span-1 w-full sm:w-auto px-2 sm:px-3.5 py-1.5 border border-slate-200 bg-white text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
                             >
-                                <MdAdd className="text-sm" />
-                                <span>Add Product</span>
+                                <MdFilterList className="text-slate-400 shrink-0 text-sm" />
+                                <span>Filter</span>
                             </button>
-                        )}
+                            <button
+                                onClick={handleExportExcel}
+                                className="col-span-1 w-full sm:w-auto px-2 sm:px-3.5 py-1.5 border border-slate-200 bg-white text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+                                title="Export Products to Excel"
+                            >
+                                <MdDownload className="text-emerald-600 text-sm shrink-0" />
+                                <span>Export</span>
+                            </button>
+                        </div>
+
+                        {/* Row 2 on mobile: Manage Categories & Add Product */}
+                        <div className="grid grid-cols-2 sm:flex items-center gap-1.5 sm:gap-2.5 w-full sm:w-auto">
+                            <button 
+                                onClick={() => navigate('/categories')}
+                                className="col-span-1 w-full sm:w-auto px-2 sm:px-3.5 py-2 sm:py-1.5 border border-slate-200 bg-white text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-xs cursor-pointer whitespace-nowrap flex items-center justify-center text-center truncate"
+                            >
+                                <span className="truncate">Manage Categories</span>
+                            </button>
+                            {canCreateProduct && (
+                                <button 
+                                    onClick={() => {
+                                        setSelectedProductId(null);
+                                        setShowProductForm(true);
+                                    }}
+                                    className="col-span-1 w-full sm:w-auto px-3 sm:px-4 py-2 sm:py-1.5 bg-sky-600 text-white text-xs font-semibold rounded-lg hover:bg-sky-700 transition-colors shadow-2xs shadow-sky-500/10 cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5 shrink-0"
+                                >
+                                    <MdAdd className="text-base sm:text-sm shrink-0" />
+                                    <span>Add Product</span>
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
 

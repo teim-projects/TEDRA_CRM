@@ -785,10 +785,10 @@ export default function WorkDesk() {
       <div className="w-full space-y-4 font-sans antialiased text-slate-800 pt-1 sm:pt-2 px-1">
         {/* HEADER BLOCK WITH THE BLUE VERTICAL ACCENT LINE */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-1 pt-1">
-          <div className="flex items-center gap-3">
-            <span className="w-1.5 h-10 bg-sky-600 rounded-full block"></span>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-tight">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <span className="w-1.5 h-9 sm:h-10 bg-sky-600 rounded-full block shrink-0"></span>
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 leading-tight">
                 Work Desk
               </h1>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -799,89 +799,96 @@ export default function WorkDesk() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-            {/* Quick Filter Dropdown (Exact match to screenshot) */}
-            <div className="relative">
-              <button
-                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                className="px-2.5 sm:px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-xs whitespace-nowrap cursor-pointer"
-              >
-                <MdFilterList className="text-slate-400" />
-                <span>{currentFilterLabel}</span>
-              </button>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+            {/* Row 1 on mobile: Quick Filter & Field Map */}
+            <div className="grid grid-cols-2 sm:flex items-center gap-1.5 sm:gap-2.5 w-full sm:w-auto">
+              {/* Quick Filter Dropdown */}
+              <div className="relative col-span-1">
+                <button
+                  onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                  className="w-full sm:w-auto px-2 sm:px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-1 shadow-xs whitespace-nowrap cursor-pointer truncate"
+                >
+                  <MdFilterList className="text-slate-400 shrink-0 text-sm" />
+                  <span className="truncate">{currentFilterLabel}</span>
+                </button>
 
-              {showFilterDropdown && (
-                <>
-                  <div
-                    className="fixed inset-0 z-20 cursor-default"
-                    onClick={() => setShowFilterDropdown(false)}
-                  />
-                  <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 px-1 z-30">
-                    {filterOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => {
-                          setFilterType(option.value);
-                          setShowFilterDropdown(false);
-                          if (option.value === "all") {
-                            setSearchParams({});
-                          } else {
-                            setSearchParams({ filter: option.value });
-                          }
-                        }}
-                        className={`w-full text-left px-3.5 py-2 text-xs rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-between cursor-pointer ${filterType === option.value
-                          ? "bg-blue-50/80 text-blue-600 font-semibold"
-                          : "text-slate-700 font-medium"
-                          }`}
-                      >
-                        <span>{option.label}</span>
-                        {filterType === option.value && (
-                          <span className="text-blue-600 font-bold text-xs">✓</span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
+                {showFilterDropdown && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-20 cursor-default"
+                      onClick={() => setShowFilterDropdown(false)}
+                    />
+                    <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 px-1 z-30">
+                      {filterOptions.map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => {
+                            setFilterType(option.value);
+                            setShowFilterDropdown(false);
+                            if (option.value === "all") {
+                              setSearchParams({});
+                            } else {
+                              setSearchParams({ filter: option.value });
+                            }
+                          }}
+                          className={`w-full text-left px-3.5 py-2 text-xs rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-between cursor-pointer ${filterType === option.value
+                            ? "bg-blue-50/80 text-blue-600 font-semibold"
+                            : "text-slate-700 font-medium"
+                            }`}
+                        >
+                          <span>{option.label}</span>
+                          {filterType === option.value && (
+                            <span className="text-blue-600 font-bold text-xs">✓</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Field Map Button */}
+              <button
+                onClick={() => navigate("/technician/field-map")}
+                className="col-span-1 w-full sm:w-auto px-2 sm:px-3 py-1.5 text-xs font-semibold bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 rounded-lg transition-colors flex items-center justify-center gap-1 shadow-xs whitespace-nowrap cursor-pointer"
+                title="Open Daily Field Route Map"
+              >
+                <MdNavigation className="text-blue-600 text-sm shrink-0" />
+                <span>🗺️ Field Map</span>
+              </button>
             </div>
 
-            {/* Field Map Button */}
-            <button
-              onClick={() => navigate("/technician/field-map")}
-              className="px-2.5 sm:px-3 py-1.5 text-xs font-semibold bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 rounded-lg transition-colors flex items-center gap-1.5 shadow-xs whitespace-nowrap cursor-pointer"
-              title="Open Daily Field Route Map"
-            >
-              <MdNavigation className="text-blue-600 text-sm" />
-              <span>🗺️ Field Map</span>
-            </button>
+            {/* Row 2 on mobile: Filter, Export, Refresh */}
+            <div className="grid grid-cols-3 sm:flex items-center gap-1.5 sm:gap-2.5 w-full sm:w-auto">
+              {/* Advanced Filter Button */}
+              <button
+                onClick={() => setIsFilterOpen(true)}
+                className="col-span-1 w-full sm:w-auto px-2 sm:px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center gap-1 shadow-xs whitespace-nowrap cursor-pointer"
+              >
+                <MdFilterList className="text-slate-400 shrink-0 text-sm" />
+                <span>Filter</span>
+              </button>
 
-            {/* Advanced Filter Button */}
-            <button
-              onClick={() => setIsFilterOpen(true)}
-              className="px-2.5 sm:px-3 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-1.5 shadow-xs whitespace-nowrap cursor-pointer"
-            >
-              <MdFilterList className="text-slate-400" />
-              Filter
-            </button>
+              {/* Export to Excel Button */}
+              <button
+                onClick={handleExportExcel}
+                className="col-span-1 w-full sm:w-auto px-2 sm:px-3.5 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors flex items-center justify-center gap-1 shadow-xs whitespace-nowrap cursor-pointer"
+                title="Export Work Desk to Excel"
+              >
+                <MdDownload className="text-emerald-600 text-sm shrink-0" />
+                <span>Export</span>
+              </button>
 
-            {/* Export to Excel Button */}
-            <button
-              onClick={handleExportExcel}
-              className="px-2.5 sm:px-3.5 py-1.5 text-xs font-semibold bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors flex items-center gap-1.5 shadow-xs whitespace-nowrap cursor-pointer"
-              title="Export Work Desk to Excel"
-            >
-              <MdDownload className="text-emerald-600 text-sm" />
-              Export
-            </button>
-
-            {/* Refresh Button */}
-            <button
-              onClick={() => fetchDataAndStats()}
-              className="p-1.5 bg-white border border-slate-200 text-slate-600 hover:text-sky-600 rounded-lg hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
-              title="Refresh Work Desk"
-            >
-              <MdRefresh className="text-base" />
-            </button>
+              {/* Refresh Button */}
+              <button
+                onClick={() => fetchDataAndStats()}
+                className="col-span-1 w-full sm:w-auto px-2 sm:px-2.5 py-1.5 sm:p-1.5 bg-white border border-slate-200 text-slate-600 hover:text-sky-600 rounded-lg hover:bg-slate-50 transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1"
+                title="Refresh Work Desk"
+              >
+                <MdRefresh className="text-base shrink-0" />
+                <span className="sm:hidden">Refresh</span>
+              </button>
+            </div>
           </div>
         </div>
 

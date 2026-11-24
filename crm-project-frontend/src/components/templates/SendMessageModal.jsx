@@ -4,7 +4,7 @@ import { Paperclip, UploadCloud, Trash2, FileText } from "lucide-react";
 import Swal from "sweetalert2";
 import RichVisualEditor, { htmlToWhatsAppText } from "./RichVisualEditor";
 
-export function getRecordEmail(record = {}) {
+function getRecordEmail(record = {}) {
   if (!record) return "";
   return (
     record.email_address ||
@@ -26,7 +26,7 @@ export function getRecordEmail(record = {}) {
   );
 }
 
-export function getRecordPhone(record = {}) {
+function getRecordPhone(record = {}) {
   if (!record) return "";
   return (
     record.mobile_number ||
@@ -49,7 +49,7 @@ export function getRecordPhone(record = {}) {
   );
 }
 
-export function replacePlaceholders(templateText, record = {}) {
+function replacePlaceholders(templateText, record = {}) {
   if (!templateText) return "";
 
   const contactPerson =
@@ -80,7 +80,9 @@ export function replacePlaceholders(templateText, record = {}) {
         const u = JSON.parse(userStr);
         finalExecutive = u.full_name || u.first_name || u.username || "";
       }
-    } catch (e) {}
+    } catch {
+      /* ignore */
+    }
   }
   if (!finalExecutive) finalExecutive = "AKSN Infotech";
 
@@ -177,7 +179,7 @@ export default function SendMessageModal({
   const baseApi = import.meta.env.VITE_BASE_API_URL ?? "http://127.0.0.1:8000";
 
   const [templates, setTemplates] = useState([]);
-  const [loadingTemplates, setLoadingTemplates] = useState(false);
+  const [_loadingTemplates, setLoadingTemplates] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [channel, setChannel] = useState(initialChannel || "email");
   const [recipientEmail, setRecipientEmail] = useState("");
@@ -482,22 +484,22 @@ export default function SendMessageModal({
   const categoryLabel = category.charAt(0).toUpperCase() + category.slice(1);
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
-      <div className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-2xl w-full mx-auto my-8 relative max-h-[90vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-2 sm:p-4 animate-fade-in">
+      <div className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-2xl w-full mx-auto my-2 sm:my-8 relative max-h-[96vh] sm:max-h-[90vh] flex flex-col overflow-hidden">
         
         {/* Header Bar - Exactly Matching AddLeadForm.jsx */}
-        <div className="bg-white px-6 pt-6 pb-2 flex justify-between items-start">
-          <div>
-            <h3 className="text-xl font-bold text-slate-900">
+        <div className="bg-white px-4 sm:px-6 pt-4 sm:pt-6 pb-2 flex justify-between items-start gap-2">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900 truncate">
               Send Communication ({categoryLabel})
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-400 mt-0.5 truncate">
               Select an automated template or compose your message
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-50 cursor-pointer"
+            className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 rounded-lg hover:bg-slate-50 cursor-pointer shrink-0"
             title="Close"
           >
             <RxCross2 size={18} />
@@ -505,7 +507,7 @@ export default function SendMessageModal({
         </div>
 
         {/* Form Main Body */}
-        <div className="p-6 overflow-y-auto flex-1 scrollbar-thin">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 scrollbar-thin">
           <form className="space-y-4 text-slate-800" onSubmit={handleSend}>
             
             {/* Channel Switcher */}
@@ -724,19 +726,19 @@ export default function SendMessageModal({
             )}
 
             {/* Footer Buttons - Matching AddLeadForm.jsx */}
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-4">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-4 border-t border-slate-100 mt-4">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={sending}
-                className="px-4 py-2 text-xs font-semibold text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 border border-slate-200 sm:border-transparent rounded-lg transition-colors cursor-pointer text-center"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={sending}
-                className={`px-5 py-2 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm cursor-pointer disabled:opacity-50 ${
+                className={`w-full sm:w-auto px-5 py-2 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm cursor-pointer disabled:opacity-50 text-center ${
                   channel === "whatsapp"
                     ? "bg-green-600 hover:bg-green-700 shadow-green-500/10"
                     : "bg-blue-600 hover:bg-blue-700 shadow-blue-500/10"

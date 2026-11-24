@@ -340,16 +340,16 @@ export default function InventoryStockView({ onRefreshParentCounts, onNavigateTa
         </div>
 
         {/* COMPACT ACTION BUTTONS */}
-        <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+        <div className="grid grid-cols-2 sm:flex flex-wrap items-center gap-2 w-full md:w-auto">
           <button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer ${
+            className={`col-span-1 w-full sm:w-auto px-2.5 sm:px-3 py-2 sm:py-1.5 text-xs font-semibold rounded-lg border transition-colors flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
               isFilterOpen || searchQuery || selectedCategory !== "ALL" || selectedStatus !== "ALL"
                 ? "bg-sky-50 border-sky-300 text-sky-700"
                 : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
             }`}
           >
-            <Filter className="w-3.5 h-3.5 text-slate-500" />
+            <Filter className="w-3.5 h-3.5 text-slate-500 shrink-0" />
             <span>Filter</span>
           </button>
 
@@ -358,9 +358,9 @@ export default function InventoryStockView({ onRefreshParentCounts, onNavigateTa
               setEditingItem(null);
               setIsAddItemOpen(true);
             }}
-            className="px-3 sm:px-3.5 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+            className="col-span-1 w-full sm:w-auto px-3 sm:px-3.5 py-2 sm:py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-3.5 h-3.5 shrink-0" />
             <span>Add Item</span>
           </button>
 
@@ -369,9 +369,9 @@ export default function InventoryStockView({ onRefreshParentCounts, onNavigateTa
               setSelectedItemForAction(null);
               setIsAddStockOpen(true);
             }}
-            className="px-3 sm:px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+            className="col-span-1 w-full sm:w-auto px-3 sm:px-3.5 py-2 sm:py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
           >
-            <ArrowUpRight className="w-3.5 h-3.5" />
+            <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
             <span>Add Stock</span>
           </button>
 
@@ -380,9 +380,9 @@ export default function InventoryStockView({ onRefreshParentCounts, onNavigateTa
               setSelectedItemForAction(null);
               setIsIssueStockOpen(true);
             }}
-            className="px-3 sm:px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+            className="col-span-1 w-full sm:w-auto px-3 sm:px-3.5 py-2 sm:py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
           >
-            <Send className="w-3.5 h-3.5" />
+            <Send className="w-3.5 h-3.5 shrink-0" />
             <span>Issue Stock</span>
           </button>
 
@@ -391,9 +391,9 @@ export default function InventoryStockView({ onRefreshParentCounts, onNavigateTa
               setSelectedItemForAction(null);
               setIsReturnStockOpen(true);
             }}
-            className="px-3 sm:px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+            className="col-span-2 sm:col-span-1 w-full sm:w-auto px-3 sm:px-3.5 py-2 sm:py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
           >
-            <ArrowDownLeft className="w-3.5 h-3.5" />
+            <ArrowDownLeft className="w-3.5 h-3.5 shrink-0" />
             <span>Return Stock</span>
           </button>
         </div>

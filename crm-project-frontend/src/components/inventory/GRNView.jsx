@@ -124,7 +124,6 @@ function GRNItemCard({ item, index, onChange }) {
 
 export default function GRNView({
   onRefreshParentCounts,
-  onNavigateTab,
   preselectedPOId = null,
   onClearPreselectedPO,
   baseApi: propBaseApi
@@ -531,24 +530,24 @@ export default function GRNView({
         </div>
 
         {/* COMPACT ACTION BUTTONS */}
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="grid grid-cols-2 sm:flex items-center gap-2 w-full sm:w-auto">
           <button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer ${
+            className={`col-span-1 w-full sm:w-auto px-2.5 sm:px-3 py-2 sm:py-1.5 text-xs font-semibold rounded-lg border transition-colors flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer ${
               isFilterOpen || searchQuery
                 ? "bg-sky-50 border-sky-300 text-sky-700"
                 : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
             }`}
           >
-            <Filter className="w-3.5 h-3.5 text-slate-500" />
+            <Filter className="w-3.5 h-3.5 text-slate-500 shrink-0" />
             <span>Filter</span>
           </button>
 
           <button
             onClick={openCreateModal}
-            className="px-3 sm:px-3.5 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+            className="col-span-1 w-full sm:w-auto px-3 sm:px-3.5 py-2 sm:py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-3.5 h-3.5 shrink-0" />
             <span>Create GRN</span>
           </button>
         </div>
@@ -645,31 +644,31 @@ export default function GRNView({
 
       {/* CREATE GRN MODAL (SPACIOUS FULL SIZE MATCHING CUSTOMER FORM) */}
       {isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-4xl overflow-hidden max-h-[92vh] flex flex-col">
-            <div className="px-6 py-4 bg-slate-50/70 border-b border-slate-200 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-4xl overflow-hidden max-h-[96vh] sm:max-h-[92vh] flex flex-col">
+            <div className="px-4 sm:px-6 py-3.5 sm:py-4 bg-slate-50/70 border-b border-slate-200 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center shrink-0">
                   <ClipboardCheck className="w-5 h-5" />
                 </div>
-                <div>
-                  <h2 className="text-base font-bold text-slate-900">
+                <div className="min-w-0">
+                  <h2 className="text-sm sm:text-base font-bold text-slate-900 leading-snug break-words">
                     Record Goods Receipt Note (GRN)
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 mt-0.5 line-clamp-1 sm:line-clamp-none">
                     Perform inward physical inspection and update inventory stock
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsCreateOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors cursor-pointer shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-5 text-sm">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-5 text-sm scrollbar-thin">
               {errorMsg && (
                 <div className="p-3 text-sm bg-rose-50 border border-rose-200 text-rose-600 rounded-lg">
                   {errorMsg}
@@ -766,24 +765,24 @@ export default function GRNView({
 
               {/* LINE ITEMS - STRICTLY FETCHED FROM PO */}
               <div className="border border-slate-200 rounded-xl overflow-hidden mt-2">
-                <div className="bg-slate-50/80 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-800 block">
+                <div className="bg-slate-50/80 px-3.5 sm:px-4 py-2.5 border-b border-slate-200 flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-800 block truncate">
                       Ordered Materials (From PO)
                     </span>
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-[11px] text-slate-500 block truncate sm:text-clip">
                       Materials fetched strictly from Purchase Order. Enter received and damaged quantities.
                     </span>
                   </div>
-                  <div className="text-xs font-semibold text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-md">
+                  <div className="text-xs font-semibold text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-md shrink-0 whitespace-nowrap">
                     {formData.items.length} {formData.items.length === 1 ? "Item" : "Items"}
                   </div>
                 </div>
 
                 <div className="p-3.5 space-y-3">
                   {formData.items.length === 0 ? (
-                    <div className="py-8 text-center bg-slate-50/50 rounded-lg border border-dashed border-slate-200 text-slate-500 space-y-1.5">
-                      <ClipboardCheck className="w-8 h-8 text-slate-300 mx-auto" />
+                    <div className="py-7 px-3 text-center bg-slate-50/50 rounded-lg border border-dashed border-slate-200 text-slate-500 space-y-1.5">
+                      <ClipboardCheck className="w-7 h-7 text-slate-300 mx-auto" />
                       <p className="text-xs font-semibold text-slate-700">No Purchase Order Selected</p>
                       <p className="text-[11px] text-slate-400">Please choose a Purchase Order above to automatically load ordered items.</p>
                     </div>
@@ -813,18 +812,18 @@ export default function GRNView({
                 ></textarea>
               </div>
 
-              <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-3">
+              <div className="pt-3.5 sm:pt-4 border-t border-slate-200 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3">
                 <button
                   type="button"
                   onClick={() => setIsCreateOpen(false)}
-                  className="px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                  className="w-full sm:w-auto px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer text-center"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-2.5 text-sm font-semibold bg-sky-600 hover:bg-sky-700 text-white rounded-lg transition-colors shadow-2xs disabled:opacity-50 cursor-pointer"
+                  className="w-full sm:w-auto px-6 py-2.5 text-sm font-semibold bg-sky-600 hover:bg-sky-700 text-white rounded-lg transition-colors shadow-2xs disabled:opacity-50 cursor-pointer text-center"
                 >
                   {isSubmitting ? "Receiving..." : "Confirm & Update Stock"}
                 </button>
@@ -836,36 +835,36 @@ export default function GRNView({
 
       {/* VIEW GRN MODAL */}
       {viewingGRN && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col">
-            <div className="px-6 py-4 bg-slate-50/70 border-b border-slate-200 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-2xl overflow-hidden max-h-[96vh] sm:max-h-[90vh] flex flex-col">
+            <div className="px-4 sm:px-6 py-3.5 sm:py-4 bg-slate-50/70 border-b border-slate-200 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center shrink-0">
                   <ClipboardCheck className="w-5 h-5" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-bold text-slate-900">
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900 truncate">
                       GRN: {viewingGRN.grn_number}
                     </h3>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
                       Completed
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 truncate">
                     Inward material receipt & inspection slip details
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setViewingGRN(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors cursor-pointer shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-4 text-xs text-slate-700">
+            <div className="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs text-slate-700 scrollbar-thin">
               <div className="grid grid-cols-2 gap-3.5 bg-slate-50/70 p-4 rounded-xl border border-slate-200/80">
                 <div>
                   <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">

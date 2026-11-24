@@ -600,29 +600,29 @@ export default function TallyIntegrationPage() {
         {/* ========================================================================= */}
         {/* HEADER BLOCK WITH THE BLUE VERTICAL ACCENT LINE (EXACT LEAD PAGE STYLE) */}
         {/* ========================================================================= */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between pb-1 pt-1">
-          <div className="flex items-center gap-3">
-            <span className="w-1.5 h-10 bg-sky-600 rounded-full block"></span>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-tight">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between pb-1 pt-1 gap-2.5 sm:gap-3">
+          <div className="flex items-start sm:items-center gap-2.5 sm:gap-3">
+            <span className="w-1.5 h-9 sm:h-10 bg-sky-600 rounded-full block shrink-0 mt-0.5 sm:mt-0"></span>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 leading-tight">
                   TallyPrime Integration
                 </h1>
-                <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-bold uppercase tracking-wider">
+                <span className="px-1.5 sm:px-2 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap shrink-0">
                   Phase 1
                 </span>
                 {isConnected ? (
-                  <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase tracking-wider">
+                  <span className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap shrink-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     Connected
                   </span>
                 ) : isOffline ? (
-                  <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-amber-50 text-amber-600 text-[10px] font-bold uppercase tracking-wider">
+                  <span className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded bg-amber-50 text-amber-600 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap shrink-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                     Tally Offline
                   </span>
                 ) : (
-                  <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-rose-50 text-rose-600 text-[10px] font-bold uppercase tracking-wider">
+                  <span className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded bg-rose-50 text-rose-600 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap shrink-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
                     Disconnected
                   </span>
@@ -637,12 +637,12 @@ export default function TallyIntegrationPage() {
           </div>
 
           {/* Action Buttons in Header - Formatted identically to Lead.jsx */}
-          <div className="mt-3 md:mt-0 flex flex-wrap items-center gap-2 sm:gap-2.5">
+          <div className="grid grid-cols-2 sm:flex items-center gap-2 sm:gap-2.5 w-full md:w-auto mt-2 md:mt-0">
             {/* Sync Now Button */}
             <button
               onClick={() => setIsSyncModalOpen(true)}
               disabled={isSyncing}
-              className="px-3 sm:px-3.5 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50 whitespace-nowrap shrink-0"
+              className="w-full sm:w-auto px-3 sm:px-3.5 py-2 sm:py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 whitespace-nowrap"
               title="Synchronize invoices from Tally (All or Date Range)"
             >
               <MdSync className={`text-slate-500 text-sm ${isSyncing ? "animate-spin text-blue-600" : ""}`} />
@@ -653,14 +653,14 @@ export default function TallyIntegrationPage() {
             {isDisconnected ? (
               <button
                 onClick={() => setIsPairingModalOpen(true)}
-                className="px-3 sm:px-4 py-1.5 bg-sky-600 text-white text-xs font-semibold rounded-lg hover:bg-sky-700 transition-colors shadow-2xs shadow-sky-500/10 flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+                className="w-full sm:w-auto px-3 sm:px-4 py-2 sm:py-1.5 bg-sky-600 text-white text-xs font-semibold rounded-lg hover:bg-sky-700 transition-colors shadow-2xs shadow-sky-500/10 flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
               >
                 <span>+</span> Connect Tally
               </button>
             ) : (
               <button
                 onClick={handleDisconnect}
-                className="px-3 sm:px-3.5 py-1.5 bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold rounded-lg transition-colors shadow-xs flex items-center gap-1 cursor-pointer whitespace-nowrap shrink-0"
+                className="w-full sm:w-auto px-3 sm:px-3.5 py-2 sm:py-1.5 bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold rounded-lg transition-colors shadow-xs flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap"
                 title="Disconnect Tally connector"
               >
                 <MdLinkOff className="text-sm" />
@@ -675,7 +675,7 @@ export default function TallyIntegrationPage() {
         {/* ========================================================================= */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 border-b border-slate-200/80 pb-2">
           {/* TABS BAR */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 scrollbar-none w-full sm:w-auto flex-nowrap shrink-0">
             <button
               onClick={() => setActiveTab("invoices")}
               className={`px-3 sm:px-4 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
@@ -712,47 +712,56 @@ export default function TallyIntegrationPage() {
 
           {/* Quick Search & Filter when on Invoices Tab */}
           {activeTab === "invoices" && (
-            <div className="flex flex-wrap items-center gap-2">
-              <input
-                type="text"
-                placeholder="Search invoice or party..."
-                value={invoiceSearch}
-                onChange={(e) => setInvoiceSearch(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && fetchInvoices()}
-                className="flex-1 sm:flex-initial sm:w-48 min-w-[150px] px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white"
-              />
-              <select
-                value={voucherTypeFilter}
-                onChange={(e) => {
-                  setVoucherTypeFilter(e.target.value);
-                  setInvoicePage(1);
-                }}
-                className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-slate-700 shrink-0"
-              >
-                <option value="">All Types</option>
-                <option value="Sales">Sales</option>
-              </select>
-              <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-600 shrink-0">
-                <span className="text-[10.5px] text-slate-400 font-medium">From:</span>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full lg:w-auto">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <input
-                  type="date"
-                  value={startDateFilter}
+                  type="text"
+                  placeholder="Search invoice or party..."
+                  value={invoiceSearch}
+                  onChange={(e) => setInvoiceSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && fetchInvoices()}
+                  className="flex-1 min-w-0 sm:w-48 px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white"
+                />
+                <select
+                  value={voucherTypeFilter}
                   onChange={(e) => {
-                    setStartDateFilter(e.target.value);
+                    setVoucherTypeFilter(e.target.value);
                     setInvoicePage(1);
                   }}
-                  className="text-xs border-0 p-0 focus:ring-0 text-slate-700 bg-transparent"
-                />
-                <span className="text-[10.5px] text-slate-400 font-medium ml-1">To:</span>
-                <input
-                  type="date"
-                  value={endDateFilter}
-                  onChange={(e) => {
-                    setEndDateFilter(e.target.value);
-                    setInvoicePage(1);
-                  }}
-                  className="text-xs border-0 p-0 focus:ring-0 text-slate-700 bg-transparent"
-                />
+                  className="w-auto px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white text-slate-700 shrink-0"
+                >
+                  <option value="">All Types</option>
+                  <option value="Sales">Sales</option>
+                </select>
+              </div>
+
+              {/* Date Range Filter */}
+              <div className="flex items-center justify-between sm:justify-start gap-1 sm:gap-1.5 bg-white border border-slate-200 rounded-lg px-2 sm:px-2.5 py-1 text-xs text-slate-600 w-full sm:w-auto">
+                <div className="flex items-center gap-1 min-w-0 flex-1 sm:flex-initial">
+                  <span className="text-[10px] text-slate-400 font-medium shrink-0">From:</span>
+                  <input
+                    type="date"
+                    value={startDateFilter}
+                    onChange={(e) => {
+                      setStartDateFilter(e.target.value);
+                      setInvoicePage(1);
+                    }}
+                    className="text-[11px] sm:text-xs border-0 p-0 focus:ring-0 text-slate-700 bg-transparent w-full min-w-0"
+                  />
+                </div>
+                <span className="text-slate-300 shrink-0">|</span>
+                <div className="flex items-center gap-1 min-w-0 flex-1 sm:flex-initial">
+                  <span className="text-[10px] text-slate-400 font-medium shrink-0">To:</span>
+                  <input
+                    type="date"
+                    value={endDateFilter}
+                    onChange={(e) => {
+                      setEndDateFilter(e.target.value);
+                      setInvoicePage(1);
+                    }}
+                    className="text-[11px] sm:text-xs border-0 p-0 focus:ring-0 text-slate-700 bg-transparent w-full min-w-0"
+                  />
+                </div>
                 {(startDateFilter || endDateFilter) && (
                   <button
                     type="button"
@@ -761,7 +770,7 @@ export default function TallyIntegrationPage() {
                       setEndDateFilter("");
                       setInvoicePage(1);
                     }}
-                    className="text-[11px] text-slate-400 hover:text-rose-600 px-1 cursor-pointer font-bold"
+                    className="text-[11px] text-slate-400 hover:text-rose-600 px-1 cursor-pointer font-bold shrink-0 ml-1"
                     title="Clear date filter"
                   >
                     ✕

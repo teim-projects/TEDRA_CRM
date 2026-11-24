@@ -34,7 +34,7 @@ export default function IssueStockModal({
   const [services, setServices] = useState([]);
   const [amcVisits, setAmcVisits] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [loadingOptions, setLoadingOptions] = useState(false);
+  const [_loadingOptions, setLoadingOptions] = useState(false);
 
   // Cached user detection
   const getCachedUser = () => {
@@ -352,19 +352,19 @@ export default function IssueStockModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-xl border border-slate-200/90 w-full max-w-xl overflow-hidden max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-xl border border-slate-200/90 w-full max-w-xl overflow-hidden max-h-[96vh] sm:max-h-[92vh] flex flex-col my-2 sm:my-6">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-sky-50/60">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-sky-600 text-white flex items-center justify-center shadow-xs">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 bg-sky-50/60 gap-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-sky-600 text-white flex items-center justify-center shadow-xs shrink-0">
               {isRequestOnly ? <Wrench size={19} /> : <ArrowUpRight size={20} />}
             </div>
-            <div>
-              <h3 className="text-base font-bold text-slate-900">
+            <div className="min-w-0">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-snug break-words">
                 {isRequestOnly ? "Request Stock for Field Work" : "Issue Stock to Technician"}
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 mt-0.5 line-clamp-1 sm:line-clamp-none">
                 {isRequestOnly
                   ? "Submit a requisition request for spare parts & materials for this service / visit"
                   : "Allocate spare parts & materials to technician for service job or AMC visit"}
@@ -374,14 +374,14 @@ export default function IssueStockModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer shrink-0"
           >
             <MdClose size={20} />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto text-sm">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-3.5 sm:space-y-4 overflow-y-auto text-sm scrollbar-thin">
           {/* Select Item */}
           <div className="space-y-1.5">
             <label className="block text-xs font-semibold text-slate-700">
@@ -501,11 +501,11 @@ export default function IssueStockModal({
             <label className="block text-xs font-semibold text-slate-700">
               {isRequestOnly ? "Request For Job / Project" : "Issue For Specific Job / Project"}
             </label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <button
                 type="button"
                 onClick={() => setJobType("SERVICE")}
-                className={`py-1.5 px-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                className={`py-2 sm:py-1.5 px-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer text-center whitespace-nowrap ${
                   jobType === "SERVICE"
                     ? "bg-sky-50 border-sky-400 text-sky-700 shadow-2xs"
                     : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
@@ -516,7 +516,7 @@ export default function IssueStockModal({
               <button
                 type="button"
                 onClick={() => setJobType("AMC_VISIT")}
-                className={`py-1.5 px-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                className={`py-2 sm:py-1.5 px-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer text-center whitespace-nowrap ${
                   jobType === "AMC_VISIT"
                     ? "bg-purple-50 border-purple-400 text-purple-700 shadow-2xs"
                     : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
@@ -527,7 +527,7 @@ export default function IssueStockModal({
               <button
                 type="button"
                 onClick={() => setJobType("PROJECT")}
-                className={`py-1.5 px-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                className={`py-2 sm:py-1.5 px-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer text-center whitespace-nowrap ${
                   jobType === "PROJECT"
                     ? "bg-indigo-50 border-indigo-400 text-indigo-700 shadow-2xs"
                     : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
@@ -538,7 +538,7 @@ export default function IssueStockModal({
               <button
                 type="button"
                 onClick={() => setJobType("GENERAL")}
-                className={`py-1.5 px-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                className={`py-2 sm:py-1.5 px-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer text-center whitespace-nowrap ${
                   jobType === "GENERAL"
                     ? "bg-slate-100 border-slate-400 text-slate-800 shadow-2xs"
                     : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
@@ -640,18 +640,18 @@ export default function IssueStockModal({
           </div>
 
           {/* Footer Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-3.5 sm:pt-4 border-t border-slate-100">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+              className="w-full sm:w-auto px-5 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer text-center"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-sm font-semibold shadow-xs disabled:opacity-50 transition-colors cursor-pointer flex items-center gap-1.5"
+              className="w-full sm:w-auto px-6 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-sm font-semibold shadow-xs disabled:opacity-50 transition-colors cursor-pointer flex items-center justify-center gap-1.5 text-center whitespace-nowrap"
             >
               {loading
                 ? isRequestOnly

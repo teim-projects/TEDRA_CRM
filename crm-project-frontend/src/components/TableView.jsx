@@ -25,7 +25,6 @@ export default function TableView({
   page = 1,
   totalPages = 1,
   onPageChange = () => { },
-  pageSize = 10,
   actions = null,
   renderExpandedRow = null,
   emptyMessage = "No records",
@@ -50,38 +49,40 @@ export default function TableView({
                 </tr>
               </thead>
 
-              <tbody>
-                {rows.length === 0 ? (
-                  <tr>
-                    <td colSpan={columns.length + (actions ? 1 : 0)} className="py-6 text-center text-slate-500">
-                      {emptyMessage}
-                    </td>
-                  </tr>
-                ) : rows.map((row, idx) => (
-                  <React.Fragment key={row.id ?? idx}>
-                    <tr className={`border-b hover:bg-gray-50/80 transition-colors h-9 sm:h-10 ${rowClassName ? rowClassName(row) : ''}`}>
-                      {columns.map(col => (
-                        <td key={col.key} className={`py-1 px-3 text-center align-middle ${col.className || ""}`}>
-                          {col.render ? col.render(row, idx) : (row[col.key] ?? "")}
-                        </td>
-                      ))}
+              {rows.length > 0 && (
+                <tbody>
+                  {rows.map((row, idx) => (
+                    <React.Fragment key={row.id ?? idx}>
+                      <tr className={`border-b hover:bg-gray-50/80 transition-colors h-9 sm:h-10 ${rowClassName ? rowClassName(row) : ''}`}>
+                        {columns.map(col => (
+                          <td key={col.key} className={`py-1 px-3 text-center align-middle ${col.className || ""}`}>
+                            {col.render ? col.render(row, idx) : (row[col.key] ?? "")}
+                          </td>
+                        ))}
 
-                      {actions && (
-                        <td className="py-1 px-3 align-middle whitespace-nowrap">
-                          <div className="flex items-center justify-center text-center gap-1.5">
-                            {actions(row)}
-                          </div>
-                        </td>
-                      )}
-                    </tr>
+                        {actions && (
+                          <td className="py-1 px-3 align-middle whitespace-nowrap">
+                            <div className="flex items-center justify-center text-center gap-1.5">
+                              {actions(row)}
+                            </div>
+                          </td>
+                        )}
+                      </tr>
 
-                    {/* Render inline expanded version row directly underneath if passed */}
-                    {renderExpandedRow && renderExpandedRow(row)}
-                  </React.Fragment>
-                ))}
-              </tbody>
+                      {/* Render inline expanded version row directly underneath if passed */}
+                      {renderExpandedRow && renderExpandedRow(row)}
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              )}
             </table>
           </div>
+
+          {rows.length === 0 && (
+            <div className="py-8 px-4 text-center text-xs sm:text-sm text-slate-500 font-medium">
+              {emptyMessage}
+            </div>
+          )}
 
           {/* Pagination (Fixed below table, stays visible when table scrolls horizontally) */}
           <div className="mt-4 pt-2 border-t border-slate-100 flex items-center justify-between text-xs sm:text-sm">

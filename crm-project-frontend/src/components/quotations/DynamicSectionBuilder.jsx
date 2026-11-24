@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { useState } from "react";
 import {
   Plus,
@@ -372,34 +373,34 @@ export default function DynamicSectionBuilder({ sections = [], onChange }) {
   return (
     <div className="space-y-4">
       {/* Top Controls Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 bg-slate-50 p-3 sm:p-3.5 rounded-xl border border-slate-200">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 bg-slate-50 p-3 sm:p-3.5 rounded-xl border border-slate-200">
         <div>
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-sky-600" />
-            Dynamic Proposal Scope &amp; Sections Builder
+            <Sparkles className="w-4 h-4 text-sky-600 shrink-0" />
+            <span>Dynamic Proposal Scope &amp; Sections Builder</span>
           </h4>
           <p className="text-[11px] text-slate-500 mt-0.5">
             Add custom main headings, descriptions, dynamic tables, bold highlight boxes, and note callouts.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+        <div className="flex flex-col xs:flex-row items-stretch sm:items-center gap-2 shrink-0 w-full sm:w-auto">
           <button
             type="button"
             onClick={handleLoadStandardTemplate}
-            className="px-3 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+            className="w-full sm:w-auto px-3 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs text-center"
             title="Pre-populate with standard DS Aqua RO Plant technical scope, process flow, and responsibility matrix"
           >
-            <Sparkles className="w-3.5 h-3.5 text-sky-600" />
-            Load Standard DS Aqua Template
+            <Sparkles className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+            <span className="truncate">Load Standard DS Aqua Template</span>
           </button>
           <button
             type="button"
             onClick={handleAddSection}
-            className="px-3 py-1.5 bg-sky-600 text-white hover:bg-sky-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs shadow-sky-500/10"
+            className="w-full sm:w-auto px-3 py-1.5 bg-sky-600 text-white hover:bg-sky-700 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs shadow-sky-500/10 text-center shrink-0"
           >
-            <Plus className="w-3.5 h-3.5" />
-            Add Section
+            <Plus className="w-3.5 h-3.5 shrink-0" />
+            <span>Add Section</span>
           </button>
         </div>
       </div>
@@ -424,12 +425,12 @@ export default function DynamicSectionBuilder({ sections = [], onChange }) {
                 className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden transition-all"
               >
                 {/* Section Header */}
-                <div className="bg-slate-50/80 px-4 py-2.5 flex items-center justify-between border-b border-slate-200/80">
-                  <div className="flex items-center gap-2 flex-1 mr-2">
+                <div className="bg-slate-50/80 px-3 sm:px-4 py-2.5 flex items-center justify-between border-b border-slate-200/80 gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0 mr-1 sm:mr-2">
                     <button
                       type="button"
                       onClick={() => toggleCollapse(sec.id)}
-                      className="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 cursor-pointer"
+                      className="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 cursor-pointer shrink-0"
                     >
                       {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
                     </button>
@@ -438,7 +439,7 @@ export default function DynamicSectionBuilder({ sections = [], onChange }) {
                       value={sec.title}
                       onChange={(e) => handleUpdateSection(sIdx, "title", e.target.value)}
                       placeholder="e.g. 2. PROJECT SCOPE & DESIGN BASIS"
-                      className="w-full text-xs font-bold text-slate-800 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-sky-500 focus:bg-white px-1.5 py-0.5 rounded focus:outline-hidden transition-colors"
+                      className="w-full min-w-0 text-xs font-bold text-slate-800 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-sky-500 focus:bg-white px-1.5 py-0.5 rounded focus:outline-hidden transition-colors"
                     />
                   </div>
 
@@ -464,7 +465,7 @@ export default function DynamicSectionBuilder({ sections = [], onChange }) {
                     <button
                       type="button"
                       onClick={() => handleDeleteSection(sIdx)}
-                      className="p-1 rounded text-rose-500 hover:bg-rose-50 cursor-pointer ml-1"
+                      className="p-1 rounded text-rose-500 hover:bg-rose-50 cursor-pointer ml-0.5 sm:ml-1"
                       title="Delete Section"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -474,7 +475,7 @@ export default function DynamicSectionBuilder({ sections = [], onChange }) {
 
                 {/* Section Content */}
                 {!isCollapsed && (
-                  <div className="p-4 space-y-4">
+                  <div className="p-3 sm:p-4 space-y-4">
                     {/* Section Description */}
                     <div className="space-y-1">
                       <label className="block text-[11px] font-semibold text-slate-500">
@@ -495,7 +496,7 @@ export default function DynamicSectionBuilder({ sections = [], onChange }) {
                         {sec.blocks.map((blk, bIdx) => (
                           <div
                             key={blk.id || bIdx}
-                            className="p-3.5 rounded-lg border border-slate-200/90 bg-slate-50/40 relative space-y-2.5"
+                            className="p-3 sm:p-3.5 rounded-lg border border-slate-200/90 bg-slate-50/40 relative space-y-2.5"
                           >
                             {/* Block Header Bar */}
                             <div className="flex items-center justify-between pb-1.5 border-b border-slate-200/60">
@@ -521,32 +522,34 @@ export default function DynamicSectionBuilder({ sections = [], onChange }) {
                             {/* TYPE: TABLE */}
                             {blk.type === "table" && (
                               <div className="space-y-2">
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                                   <input
                                     type="text"
                                     value={blk.title || ""}
                                     onChange={(e) => handleUpdateBlock(sIdx, bIdx, "title", e.target.value)}
                                     placeholder="Table Heading (e.g. Included scope (proposed))"
-                                    className="flex-1 text-xs font-semibold px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white focus:outline-hidden focus:border-sky-500"
+                                    className="flex-1 min-w-0 w-full text-xs font-semibold px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white focus:outline-hidden focus:border-sky-500"
                                   />
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAddTableColumn(sIdx, bIdx)}
-                                    className="px-2 py-1 bg-white border border-slate-200 hover:bg-slate-50 text-[11px] font-medium text-sky-700 rounded-lg cursor-pointer"
-                                  >
-                                    + Add Column
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAddTableRow(sIdx, bIdx)}
-                                    className="px-2 py-1 bg-white border border-slate-200 hover:bg-slate-50 text-[11px] font-medium text-emerald-700 rounded-lg cursor-pointer"
-                                  >
-                                    + Add Row
-                                  </button>
+                                  <div className="flex items-center gap-1.5 self-end sm:self-auto shrink-0">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAddTableColumn(sIdx, bIdx)}
+                                      className="px-2.5 py-1 bg-white border border-slate-200 hover:bg-slate-50 text-[11px] font-medium text-sky-700 rounded-lg cursor-pointer whitespace-nowrap"
+                                    >
+                                      + Add Column
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAddTableRow(sIdx, bIdx)}
+                                      className="px-2.5 py-1 bg-white border border-slate-200 hover:bg-slate-50 text-[11px] font-medium text-emerald-700 rounded-lg cursor-pointer whitespace-nowrap"
+                                    >
+                                      + Add Row
+                                    </button>
+                                  </div>
                                 </div>
 
-                                <div className="overflow-x-auto border border-slate-200 rounded-lg bg-white">
-                                  <table className="w-full text-xs text-left border-collapse">
+                                <div className="overflow-x-auto scrollbar-thin border border-slate-200 rounded-lg bg-white">
+                                  <table className="w-full min-w-[500px] text-xs text-left border-collapse">
                                     <thead>
                                       <tr className="bg-sky-700 text-white">
                                         {(blk.headers || []).map((h, cIdx) => (
@@ -646,18 +649,18 @@ export default function DynamicSectionBuilder({ sections = [], onChange }) {
                             {/* TYPE: BULLETS / CHECKLIST */}
                             {blk.type === "bullets" && (
                               <div className="space-y-2">
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                                   <input
                                     type="text"
                                     value={blk.title || ""}
                                     onChange={(e) => handleUpdateBlock(sIdx, bIdx, "title", e.target.value)}
                                     placeholder="Sub-heading (e.g. Design and safety notes / Installation sequence)"
-                                    className="flex-1 text-xs font-semibold px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white focus:outline-hidden focus:border-emerald-500"
+                                    className="flex-1 min-w-0 w-full text-xs font-semibold px-2.5 py-1.5 border border-slate-200 rounded-lg bg-white focus:outline-hidden focus:border-emerald-500"
                                   />
                                   <button
                                     type="button"
                                     onClick={() => handleAddBullet(sIdx, bIdx)}
-                                    className="px-2 py-1 bg-white border border-slate-200 hover:bg-slate-50 text-[11px] font-medium text-emerald-700 rounded-lg cursor-pointer"
+                                    className="self-end sm:self-auto px-2.5 py-1 bg-white border border-slate-200 hover:bg-slate-50 text-[11px] font-medium text-emerald-700 rounded-lg cursor-pointer shrink-0 whitespace-nowrap"
                                   >
                                     + Add Point
                                   </button>
@@ -666,7 +669,7 @@ export default function DynamicSectionBuilder({ sections = [], onChange }) {
                                 <div className="space-y-1.5">
                                   {(blk.bullets || []).map((b, bItemIdx) => (
                                     <div key={bItemIdx} className="flex items-center gap-2">
-                                      <span className="text-slate-400 text-xs">•</span>
+                                      <span className="text-slate-400 text-xs shrink-0">•</span>
                                       <input
                                         type="text"
                                         value={b}
@@ -674,12 +677,12 @@ export default function DynamicSectionBuilder({ sections = [], onChange }) {
                                           handleUpdateBullet(sIdx, bIdx, bItemIdx, e.target.value)
                                         }
                                         placeholder="Bullet item text..."
-                                        className="flex-1 text-xs px-2.5 py-1 border border-slate-200 rounded-lg bg-white focus:outline-hidden focus:border-emerald-500"
+                                        className="flex-1 min-w-0 text-xs px-2.5 py-1 border border-slate-200 rounded-lg bg-white focus:outline-hidden focus:border-emerald-500"
                                       />
                                       <button
                                         type="button"
                                         onClick={() => handleDeleteBullet(sIdx, bIdx, bItemIdx)}
-                                        className="text-slate-300 hover:text-rose-500 p-1 cursor-pointer"
+                                        className="text-slate-300 hover:text-rose-500 p-1 cursor-pointer shrink-0"
                                       >
                                         &times;
                                       </button>
@@ -694,36 +697,42 @@ export default function DynamicSectionBuilder({ sections = [], onChange }) {
                     )}
 
                     {/* Add Content Block Buttons */}
-                    <div className="pt-2 flex flex-wrap items-center gap-2">
-                      <span className="text-[11px] font-semibold text-slate-500">Add to this section:</span>
-                      <button
-                        type="button"
-                        onClick={() => handleAddBlock(sIdx, "table")}
-                        className="px-2.5 py-1 bg-white border border-slate-200 hover:border-sky-300 hover:text-sky-700 rounded-lg text-xs font-medium text-slate-700 flex items-center gap-1 cursor-pointer transition-colors"
-                      >
-                        <TableIcon className="w-3.5 h-3.5 text-sky-600" /> + Table
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleAddBlock(sIdx, "bold")}
-                        className="px-2.5 py-1 bg-white border border-slate-200 hover:border-blue-300 hover:text-blue-700 rounded-lg text-xs font-medium text-slate-700 flex items-center gap-1 cursor-pointer transition-colors"
-                      >
-                        <Bold className="w-3.5 h-3.5 text-blue-600" /> + Bold / Flow Box
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleAddBlock(sIdx, "note")}
-                        className="px-2.5 py-1 bg-white border border-slate-200 hover:border-amber-300 hover:text-amber-700 rounded-lg text-xs font-medium text-slate-700 flex items-center gap-1 cursor-pointer transition-colors"
-                      >
-                        <AlertCircle className="w-3.5 h-3.5 text-amber-600" /> + Note / Callout
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleAddBlock(sIdx, "bullets")}
-                        className="px-2.5 py-1 bg-white border border-slate-200 hover:border-emerald-300 hover:text-emerald-700 rounded-lg text-xs font-medium text-slate-700 flex items-center gap-1 cursor-pointer transition-colors"
-                      >
-                        <List className="w-3.5 h-3.5 text-emerald-600" /> + Bullet Points
-                      </button>
+                    <div className="pt-2 flex flex-col sm:flex-row sm:items-center gap-2">
+                      <span className="text-[11px] font-semibold text-slate-500 shrink-0">Add to this section:</span>
+                      <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 w-full sm:w-auto">
+                        <button
+                          type="button"
+                          onClick={() => handleAddBlock(sIdx, "table")}
+                          className="px-2.5 py-1.5 sm:py-1 bg-white border border-slate-200 hover:border-sky-300 hover:text-sky-700 rounded-lg text-xs font-medium text-slate-700 flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <TableIcon className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+                          <span>+ Table</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAddBlock(sIdx, "bold")}
+                          className="px-2.5 py-1.5 sm:py-1 bg-white border border-slate-200 hover:border-blue-300 hover:text-blue-700 rounded-lg text-xs font-medium text-slate-700 flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <Bold className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                          <span>+ Flow Box</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAddBlock(sIdx, "note")}
+                          className="px-2.5 py-1.5 sm:py-1 bg-white border border-slate-200 hover:border-amber-300 hover:text-amber-700 rounded-lg text-xs font-medium text-slate-700 flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                          <span>+ Note</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAddBlock(sIdx, "bullets")}
+                          className="px-2.5 py-1.5 sm:py-1 bg-white border border-slate-200 hover:border-emerald-300 hover:text-emerald-700 rounded-lg text-xs font-medium text-slate-700 flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <List className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span>+ Bullets</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}

@@ -100,7 +100,7 @@ export default function AddStaffForm({
       });
 
       let data;
-      try { data = await res.json(); } catch (e) { data = {}; }
+      try { data = await res.json(); } catch { data = {}; }
 
       if (!res.ok) {
         throw new Error(data?.detail || data?.non_field_errors?.[0] || JSON.stringify(data) || `${res.status} ${res.statusText}`);

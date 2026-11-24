@@ -299,7 +299,7 @@ export default function SummaryDashboard({
     <div className="w-full space-y-5 font-sans antialiased text-slate-800">
       {/* ENTERPRISE PULSE BANNER */}
       <div
-        className="relative overflow-hidden rounded-2xl p-6 text-white shadow-md border border-cyan-500/20 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-cover bg-center"
+        className="relative overflow-hidden rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 text-white shadow-md border border-cyan-500/20 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-cover bg-center"
         style={{
           backgroundImage: "url('/login-bg-clean.jpg')",
           backgroundColor: "#0f172a",
@@ -308,33 +308,38 @@ export default function SummaryDashboard({
         {/* Deep slate & aqua water tint overlay matching login page */}
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/92 via-slate-900/85 to-[#062432]/90 backdrop-blur-xs pointer-events-none" />
 
-        <div className="relative z-10 space-y-1.5">
-          <div className="flex items-center gap-2">
+        <div className="relative z-10 space-y-1.5 flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 shadow-xs">
               Operations Center
             </span>
-            <span className="text-xs text-slate-300">All Modules Integrated</span>
+            <span className="text-[11px] sm:text-xs text-slate-300">All Modules Integrated</span>
           </div>
-          <h2 className="text-xl font-bold tracking-tight text-white drop-shadow-xs">
+          <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white drop-shadow-xs leading-snug">
             Enterprise CRM High-Level Pulse
           </h2>
-          <p className="text-xs text-slate-200/90 max-w-2xl leading-relaxed">
+          <p className="text-[11px] sm:text-xs text-slate-200/90 max-w-2xl leading-relaxed">
             Real-time multi-dimensional view across sales leads, client quotations, maintenance contracts, product inventory, and personnel permissions.
           </p>
         </div>
 
-        <div className="relative z-10 flex flex-wrap items-center gap-3">
-          <div className="bg-slate-900/60 backdrop-blur-md px-4 py-2.5 rounded-xl border border-cyan-400/20 text-right min-w-[140px] shadow-sm">
-            <span className="text-[10px] uppercase font-bold text-cyan-300 flex items-center justify-end gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
-              Live IST
-            </span>
-            <span className="text-lg sm:text-xl font-mono font-extrabold text-white tracking-wider block leading-tight mt-0.5">
-              {timeStr}
-            </span>
-            <span className="text-[10px] text-slate-300 block font-medium mt-0.5">
-              {dateStr}
-            </span>
+        <div className="relative z-10 flex items-center w-full md:w-auto shrink-0">
+          <div className="w-full md:w-auto bg-slate-900/70 backdrop-blur-md px-3.5 sm:px-4 py-2.5 rounded-xl border border-cyan-400/20 shadow-sm flex items-center justify-between md:flex-col md:items-end md:justify-center gap-2 md:min-w-[140px]">
+            <div className="flex flex-col md:items-end min-w-0">
+              <span className="text-[10px] uppercase font-bold text-cyan-300 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                Live IST
+              </span>
+              <span className="text-[10px] text-slate-300 font-medium mt-0.5 truncate">
+                {dateStr}
+              </span>
+            </div>
+
+            <div className="shrink-0 text-right">
+              <span className="text-base sm:text-lg md:text-xl font-mono font-extrabold text-white tracking-wider block leading-none">
+                {timeStr}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -387,143 +392,143 @@ export default function SummaryDashboard({
       </div>
 
       {/* HIGH-PRIORITY ACTION RADAR */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
         {/* ACTION ITEMS */}
-        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-5 flex flex-col justify-between lg:col-span-2">
+        <div className="bg-white rounded-xl border border-slate-200/70 shadow-sm p-3.5 sm:p-5 flex flex-col justify-between lg:col-span-2">
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900">Immediate Operational Attention</h3>
-                <p className="text-xs text-slate-400">Cross-module high priority action triggers</p>
+            <div className="flex items-start sm:items-center justify-between gap-2.5 mb-3.5 sm:mb-4">
+              <div className="min-w-0">
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-snug">Immediate Operational Attention</h3>
+                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">Cross-module high priority action triggers</p>
               </div>
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-semibold flex items-center gap-1">
-                <AlertTriangle className="w-3 h-3" /> Priority Tasks
+              <span className="px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] sm:text-[11px] font-semibold flex items-center gap-1 shrink-0 whitespace-nowrap self-start sm:self-auto shadow-2xs">
+                <AlertTriangle className="w-3 h-3 text-amber-600 shrink-0" /> Priority Tasks
               </span>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2.5 sm:space-y-3">
               {/* 1. OVERDUE LEAD FOLLOW-UPS */}
               <Link
                 to="/follow-up?filter=overdue"
-                className="p-3.5 rounded-xl bg-rose-50/70 border border-rose-100 flex items-center justify-between hover:bg-rose-50 hover:border-rose-200 transition group"
+                className="p-2.5 sm:p-3.5 rounded-xl bg-rose-50/70 border border-rose-100 flex items-center justify-between gap-2.5 sm:gap-3 hover:bg-rose-50 hover:border-rose-200 transition group"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-xs">
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-xs shrink-0">
                     ⚠️
                   </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-rose-900">
+                  <div className="min-w-0 flex-1">
+                    <h4 className="text-xs sm:text-sm font-bold text-rose-900 leading-tight">
                       {overdueFollowups} Overdue Lead Follow-ups
                     </h4>
-                    <p className="text-[11px] text-rose-700">
+                    <p className="text-[10px] sm:text-[11px] text-rose-700 leading-snug mt-0.5 line-clamp-2 sm:line-clamp-none">
                       Follow-up dates missed and requiring immediate contact
                     </p>
                   </div>
                 </div>
-                <span className="text-xs font-bold text-rose-700 group-hover:underline flex items-center gap-0.5">
-                  Resolve <ChevronRight className="w-3.5 h-3.5" />
+                <span className="text-[11px] sm:text-xs font-bold text-rose-700 group-hover:underline flex items-center gap-0.5 shrink-0 whitespace-nowrap ml-1">
+                  Resolve <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 </span>
               </Link>
 
               {/* 2. AMC CONTRACTS EXPIRING SOON */}
               <Link
                 to="/amc?filter=expiring_soon"
-                className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-100 flex items-center justify-between hover:bg-amber-50 hover:border-amber-200 transition group"
+                className="p-2.5 sm:p-3.5 rounded-xl bg-amber-50/70 border border-amber-100 flex items-center justify-between gap-2.5 sm:gap-3 hover:bg-amber-50 hover:border-amber-200 transition group"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs shrink-0">
                     ⏳
                   </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-amber-900">
+                  <div className="min-w-0 flex-1">
+                    <h4 className="text-xs sm:text-sm font-bold text-amber-900 leading-tight">
                       {expiringSoonAMC} AMC Contracts Expiring Soon
                     </h4>
-                    <p className="text-[11px] text-amber-700">
+                    <p className="text-[10px] sm:text-[11px] text-amber-700 leading-snug mt-0.5 line-clamp-2 sm:line-clamp-none">
                       Service contracts due for renewal within the next 30 days
                     </p>
                   </div>
                 </div>
-                <span className="text-xs font-bold text-amber-700 group-hover:underline flex items-center gap-0.5">
-                  Review <ChevronRight className="w-3.5 h-3.5" />
+                <span className="text-[11px] sm:text-xs font-bold text-amber-700 group-hover:underline flex items-center gap-0.5 shrink-0 whitespace-nowrap ml-1">
+                  Review <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 </span>
               </Link>
 
               {/* 3. EXPIRED AMC CONTRACTS */}
               <Link
                 to="/amc?filter=expired"
-                className="p-3.5 rounded-xl bg-red-50/70 border border-red-200 flex items-center justify-between hover:bg-red-50 hover:border-red-300 transition group"
+                className="p-2.5 sm:p-3.5 rounded-xl bg-red-50/70 border border-red-200 flex items-center justify-between gap-2.5 sm:gap-3 hover:bg-red-50 hover:border-red-300 transition group"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-red-100 text-red-700 flex items-center justify-center font-bold text-xs">
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-red-100 text-red-700 flex items-center justify-center font-bold text-xs shrink-0">
                     ⏱️
                   </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-red-900">
+                  <div className="min-w-0 flex-1">
+                    <h4 className="text-xs sm:text-sm font-bold text-red-900 leading-tight">
                       {expiredAMC} Expired AMC Contracts
                     </h4>
-                    <p className="text-[11px] text-red-700">
+                    <p className="text-[10px] sm:text-[11px] text-red-700 leading-snug mt-0.5 line-clamp-2 sm:line-clamp-none">
                       Service contracts that have lapsed and require renewal or reactivation
                     </p>
                   </div>
                 </div>
-                <span className="text-xs font-bold text-red-700 group-hover:underline flex items-center gap-0.5">
-                  Resolve <ChevronRight className="w-3.5 h-3.5" />
+                <span className="text-[11px] sm:text-xs font-bold text-red-700 group-hover:underline flex items-center gap-0.5 shrink-0 whitespace-nowrap ml-1">
+                  Resolve <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 </span>
               </Link>
 
               {/* 4. OPEN QUOTATIONS PENDING DECISION */}
               <Link
                 to="/quotation?filter=active"
-                className="p-3.5 rounded-xl bg-blue-50/70 border border-blue-100 flex items-center justify-between hover:bg-blue-50 hover:border-blue-200 transition group"
+                className="p-2.5 sm:p-3.5 rounded-xl bg-blue-50/70 border border-blue-100 flex items-center justify-between gap-2.5 sm:gap-3 hover:bg-blue-50 hover:border-blue-200 transition group"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shrink-0">
                     📝
                   </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-blue-900">
+                  <div className="min-w-0 flex-1">
+                    <h4 className="text-xs sm:text-sm font-bold text-blue-900 leading-tight">
                       {openQuotations} Open Quotations Pending Decision
                     </h4>
-                    <p className="text-[11px] text-blue-700">
+                    <p className="text-[10px] sm:text-[11px] text-blue-700 leading-snug mt-0.5 line-clamp-2 sm:line-clamp-none">
                       Awaiting client signoff or final proposal revision
                     </p>
                   </div>
                 </div>
-                <span className="text-xs font-bold text-blue-700 group-hover:underline flex items-center gap-0.5">
+                <span className="text-[11px] sm:text-xs font-bold text-blue-700 group-hover:underline flex items-center gap-0.5 shrink-0 whitespace-nowrap ml-1">
                   Review <ChevronRight className="w-3.5 h-3.5" />
                 </span>
               </Link>
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-400">
+          <div className="mt-3.5 sm:mt-4 pt-2.5 sm:pt-3 border-t border-slate-100 text-[10px] sm:text-[11px] text-slate-400">
             System updates live every 60 seconds with active telemetry synchronization.
           </div>
         </div>
 
         {/* PROJECT REVENUE GROWTH & MOM COMPARISON CARD (DATA FROM PROJECTS MODULE) */}
-        <div className="bg-gradient-to-br from-[#eff6ff] via-[#f5f9ff] to-white rounded-xl border border-blue-100 shadow-sm p-5 flex flex-col justify-between">
+        <div className="bg-gradient-to-br from-[#eff6ff] via-[#f5f9ff] to-white rounded-xl border border-blue-100 shadow-sm p-3.5 sm:p-5 flex flex-col justify-between">
           <div>
             {/* Header with Title and Growth Pill */}
-            <div className="flex items-center justify-between mb-3.5">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                  <TrendingUp className="w-4 h-4 text-blue-600" />
+            <div className="flex items-start sm:items-center justify-between gap-2 mb-3 sm:mb-3.5">
+              <div className="min-w-0">
+                <h3 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5 leading-tight">
+                  <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 shrink-0" />
                   Project Revenue Growth
                 </h3>
-                <p className="text-xs text-slate-400">Month-over-Month comparison</p>
+                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">Month-over-Month comparison</p>
               </div>
 
               <div
-                className={`px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1 border shadow-2xs ${projectRevenueData.isPositive
+                className={`px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold flex items-center gap-1 border shadow-2xs shrink-0 whitespace-nowrap self-start sm:self-auto ${projectRevenueData.isPositive
                     ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                     : "bg-rose-50 text-rose-700 border-rose-200"
                   }`}
               >
                 {projectRevenueData.isPositive ? (
-                  <ArrowUpRight className="w-3.5 h-3.5" />
+                  <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 ) : (
-                  <ArrowDownRight className="w-3.5 h-3.5" />
+                  <ArrowDownRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 )}
                 <span>
                   {projectRevenueData.growthRate > 0 ? "+" : ""}
@@ -533,30 +538,30 @@ export default function SummaryDashboard({
             </div>
 
             {/* Current Month Primary Revenue Hero Box */}
-            <div className="bg-white/90 rounded-xl border border-blue-100 p-4 mb-3.5 shadow-2xs">
-              <div className="flex justify-between items-start">
+            <div className="bg-white/90 rounded-xl border border-blue-100 p-3 sm:p-4 mb-3 sm:mb-3.5 shadow-2xs">
+              <div className="flex justify-between items-start gap-2">
                 <div>
-                  <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+                  <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
                     {projectRevenueData.thisMonthLabel} Revenue
                   </span>
-                  <div className="text-2xl font-extrabold text-slate-900 tracking-tight mt-0.5">
+                  <div className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight mt-0.5">
                     {formatCurrency(projectRevenueData.thisMonthRev)}
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                <div className="text-right shrink-0">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 whitespace-nowrap">
                     {projectRevenueData.thisMonthCount} {projectRevenueData.thisMonthCount === 1 ? "Project" : "Projects"}
                   </span>
                 </div>
               </div>
 
               {/* MoM Variance Subtitle */}
-              <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span className="text-slate-500 text-[11px]">
+              <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-xs gap-2">
+                <span className="text-slate-500 text-[10px] sm:text-[11px]">
                   vs {projectRevenueData.lastMonthLabel}:
                 </span>
                 <span
-                  className={`font-bold text-[11px] ${projectRevenueData.diff >= 0 ? "text-emerald-600" : "text-rose-600"
+                  className={`font-bold text-[10px] sm:text-[11px] shrink-0 ${projectRevenueData.diff >= 0 ? "text-emerald-600" : "text-rose-600"
                     }`}
                 >
                   {projectRevenueData.diff >= 0 ? "+" : "-"}
@@ -569,7 +574,7 @@ export default function SummaryDashboard({
 
             {/* Visual MoM Comparison List / Mini Bars */}
             <div className="space-y-2">
-              <div className="flex justify-between items-center text-[11px] text-slate-500 font-medium px-0.5">
+              <div className="flex justify-between items-center text-[10px] sm:text-[11px] text-slate-500 font-medium px-0.5">
                 <span>Recent Months Pipeline</span>
                 <span>Revenue (₹)</span>
               </div>
@@ -578,21 +583,21 @@ export default function SummaryDashboard({
                 {projectRevenueData.monthlyTrend.map((m) => (
                   <div
                     key={m.key}
-                    className={`p-2 rounded-lg border transition flex items-center justify-between text-xs ${m.isCurrent
+                    className={`p-1.5 sm:p-2 rounded-lg border transition flex items-center justify-between text-xs gap-2 ${m.isCurrent
                         ? "bg-blue-50/70 border-blue-200 text-blue-900 font-semibold"
                         : "bg-white/60 border-slate-100 text-slate-600"
                       }`}
                   >
-                    <div className="flex items-center gap-2 min-w-[75px]">
+                    <div className="flex items-center gap-1.5 sm:gap-2 min-w-[65px] sm:min-w-[75px] shrink-0">
                       <span
-                        className={`w-2 h-2 rounded-full ${m.isCurrent ? "bg-blue-600" : "bg-slate-300"
+                        className={`w-2 h-2 rounded-full shrink-0 ${m.isCurrent ? "bg-blue-600" : "bg-slate-300"
                           }`}
                       ></span>
-                      <span className="text-xs font-medium">{m.month}</span>
+                      <span className="text-[11px] sm:text-xs font-medium truncate">{m.month}</span>
                     </div>
 
                     {/* Mini inline bar */}
-                    <div className="flex-1 mx-3 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                    <div className="flex-1 mx-2 sm:mx-3 bg-slate-100 rounded-full h-1.5 overflow-hidden">
                       <div
                         className={`h-1.5 rounded-full transition-all duration-500 ${m.isCurrent ? "bg-blue-600" : "bg-slate-400"
                           }`}
@@ -600,7 +605,7 @@ export default function SummaryDashboard({
                       ></div>
                     </div>
 
-                    <div className="text-right font-bold text-slate-800 text-[11px] min-w-[70px]">
+                    <div className="text-right font-bold text-slate-800 text-[10px] sm:text-[11px] min-w-[60px] sm:min-w-[70px] shrink-0 whitespace-nowrap">
                       {formatCurrency(m.revenue)}
                     </div>
                   </div>
@@ -610,19 +615,19 @@ export default function SummaryDashboard({
           </div>
 
           {/* Card Footer: Total Projects Lifetime & Link to Projects */}
-          <div className="mt-4 pt-3 border-t border-blue-100/70 flex items-center justify-between text-xs">
+          <div className="mt-3.5 sm:mt-4 pt-2.5 sm:pt-3 border-t border-blue-100/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
             <div>
               <span className="text-[10px] text-slate-400 block font-medium">
                 Total Projects Value
               </span>
-              <strong className="text-slate-800 text-xs">
+              <strong className="text-slate-800 text-[11px] sm:text-xs">
                 {formatCurrency(projectRevenueData.totalAllTime)} ({projectRevenueData.totalProjectsCount} projects)
               </strong>
             </div>
 
             <Link
               to="/projects"
-              className="font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 text-[11px] group"
+              className="font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 text-[11px] group shrink-0 self-start sm:self-auto"
             >
               Projects Module <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </Link>

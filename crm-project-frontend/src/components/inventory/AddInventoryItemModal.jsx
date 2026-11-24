@@ -154,19 +154,19 @@ export default function AddInventoryItemModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in overflow-y-auto">
-      <div className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-3xl w-full mx-auto my-6 relative max-h-[90vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in overflow-y-auto">
+      <div className="bg-white rounded-xl shadow-xl border border-slate-100 max-w-3xl w-full mx-auto my-2 sm:my-6 relative max-h-[96vh] sm:max-h-[90vh] flex flex-col overflow-hidden">
         {/* HEADER (MATCHING LEAD / CUSTOMER FORMS) */}
-        <div className="sticky top-0 bg-white z-10 border-b border-slate-100 px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center">
-              <Package size={22} />
+        <div className="sticky top-0 bg-white z-10 border-b border-slate-100 px-4 sm:px-6 py-3.5 sm:py-4 flex justify-between items-center gap-2">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+              <Package size={20} className="sm:w-[22px] sm:h-[22px]" />
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">
+            <div className="min-w-0">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-snug truncate">
                 {isEdit ? "Edit Inventory Item" : "Add New Inventory Item"}
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5 truncate">
                 {isEdit ? `Item Code: ${currentItem?.item_code || 'N/A'}` : "Register spare parts, raw materials, and consumables to catalog"}
               </p>
             </div>
@@ -174,15 +174,15 @@ export default function AddInventoryItemModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer shrink-0"
           >
             <MdClose size={20} />
           </button>
         </div>
 
         {/* FORM BODY */}
-        <div className="p-6 overflow-y-auto flex-1 text-slate-800 scrollbar-thin">
-          <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 text-slate-800 scrollbar-thin">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
             {/* Optional: Link with Catalog Product */}
             {catalogProducts && catalogProducts.length > 0 && !isEdit && (
               <div className="p-3.5 bg-sky-50/70 border border-sky-200/80 rounded-xl space-y-1.5">
@@ -356,18 +356,18 @@ export default function AddInventoryItemModal({
             </div>
 
             {/* Footer Buttons */}
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-3.5 sm:pt-4 border-t border-slate-100">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="w-full sm:w-auto px-5 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer text-center"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-6 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-sm font-semibold shadow-sm disabled:opacity-50 transition-colors cursor-pointer"
+                className="w-full sm:w-auto px-6 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-sm font-semibold shadow-sm disabled:opacity-50 transition-colors cursor-pointer text-center"
               >
                 {loading ? "Saving..." : isEdit ? "Update Item" : "Create Item"}
               </button>

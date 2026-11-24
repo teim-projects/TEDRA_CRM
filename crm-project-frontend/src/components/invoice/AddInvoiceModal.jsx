@@ -96,7 +96,7 @@ export default function AddInvoiceModal({
 }) {
   const isEdit = Boolean(invoiceId);
 
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [fetchingNumber, setFetchingNumber] = useState(false);
 
@@ -119,7 +119,7 @@ export default function AddInvoiceModal({
   const [servicesList, setServicesList] = useState([]);
   const [customersList, setCustomersList] = useState([]);
   const [billingDetailsList, setBillingDetailsList] = useState([]);
-  const [availableProducts, setAvailableProducts] = useState([]);
+  const [_availableProducts, setAvailableProducts] = useState([]);
 
   // Fixed DS Aqua Company Details
   const companyDetails = {
@@ -161,7 +161,7 @@ export default function AddInvoiceModal({
   const [shipToCompanyName, setShipToCompanyName] = useState("");
   const [shipToContactPerson, setShipToContactPerson] = useState("");
   const [shipToContact, setShipToContact] = useState("");
-  const [shipToEmail, setShipToEmail] = useState("");
+  const [_shipToEmail, setShipToEmail] = useState("");
   const [shipToState, setShipToState] = useState("Maharashtra");
   const [shipToCity, setShipToCity] = useState("Pune");
   const [shipToAddress, setShipToAddress] = useState("");
@@ -196,7 +196,7 @@ export default function AddInvoiceModal({
   const [bankAccountNo, setBankAccountNo] = useState("645105006800");
   const [bankIfscCode, setBankIfscCode] = useState("ICIC0006451");
   const [bankAccountHolder, setBankAccountHolder] = useState("D S WATER TECH PVT LTD");
-  const [bankBranch, setBankBranch] = useState("S. P. Pune");
+  const [_bankBranch, setBankBranch] = useState("S. P. Pune");
 
   // Line Items
   const [items, setItems] = useState([
@@ -222,7 +222,7 @@ export default function AddInvoiceModal({
   const [previousBalance, setPreviousBalance] = useState(0);
   const [currentBalance, setCurrentBalance] = useState(0);
   const [termsAndConditions, setTermsAndConditions] = useState("Thank you for doing business with us.");
-  const [status, setStatus] = useState("PAID");
+  const [_status, setStatus] = useState("PAID");
 
   // Function to fetch next invoice number
   const fetchNextInvoiceNumber = useCallback(async () => {
@@ -577,8 +577,8 @@ export default function AddInvoiceModal({
       if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
         try {
           parsed = JSON.parse(trimmed.replace(/'/g, '"'));
-        } catch (e) {
-          parsed = [trimmed.replace(/[\[\]'"]/g, "").trim()];
+        } catch {
+          parsed = [trimmed.replace(/[[\]'"]/g, "").trim()];
         }
       } else if (trimmed) {
         parsed = [trimmed];
@@ -1129,19 +1129,19 @@ export default function AddInvoiceModal({
   return createPortal(
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-[9999] p-2 sm:p-4 animate-fade-in font-sans">
       <div
-        className="bg-white rounded-xl shadow-2xl border border-slate-100 max-w-5xl w-full mx-auto relative flex flex-col overflow-hidden"
-        style={{ height: "92vh" }}
+        className="bg-white rounded-xl shadow-2xl border border-slate-100 max-w-5xl w-full mx-auto relative flex flex-col overflow-hidden max-h-[96vh] sm:max-h-[92vh]"
+        style={{ height: "96vh" }}
       >
         {/* Fixed Header */}
-        <div className="bg-white px-6 pt-5 pb-3.5 flex justify-between items-start shrink-0 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <span className="w-1.5 h-8 bg-sky-600 rounded-full block"></span>
-            <div>
-              <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                <Receipt className="w-5 h-5 text-sky-600" />
-                {isEdit ? `Edit Tax Invoice #${invoiceNumber}` : "Create New Tax Invoice"}
+        <div className="bg-white px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-3.5 flex justify-between items-start shrink-0 border-b border-slate-100 gap-2">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <span className="w-1.5 h-8 bg-sky-600 rounded-full block shrink-0"></span>
+            <div className="min-w-0">
+              <h3 className="text-base sm:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-1.5 sm:gap-2 truncate">
+                <Receipt className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600 shrink-0" />
+                <span className="truncate">{isEdit ? `Edit Tax Invoice #${invoiceNumber}` : "Create New Tax Invoice"}</span>
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
                 Generate GST-compliant tax invoices auto-filled from Projects, AMC Contracts, or Services
               </p>
             </div>
@@ -1149,23 +1149,23 @@ export default function AddInvoiceModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+            className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
           >
             <RxCross2 size={20} />
           </button>
         </div>
 
         {/* Scrollable Form Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6 scrollbar-thin">
-          <form onSubmit={handleSubmit} className="space-y-6 text-slate-800">
+        <div className="flex-1 overflow-y-auto px-3.5 sm:px-6 py-4 sm:py-5 space-y-5 sm:space-y-6 scrollbar-thin">
+          <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6 text-slate-800">
             {/* 1. SOURCE SELECTOR TABS */}
-            <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200/80 space-y-3">
-              <div className="flex items-center justify-between">
+            <div className="bg-slate-50/70 p-3 sm:p-4 rounded-xl border border-slate-200/80 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                 <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-sky-600"></span>
-                  Select Invoice Source
+                  <span className="w-2 h-2 rounded-full bg-sky-600 shrink-0"></span>
+                  <span>Select Invoice Source</span>
                 </span>
-                <span className="text-[11px] text-slate-400">Pulls customer, GSTIN, address & items automatically</span>
+                <span className="text-[11px] text-slate-400">Pulls customer, GSTIN, address &amp; items automatically</span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -1369,21 +1369,21 @@ export default function AddInvoiceModal({
 
             {/* 2. INVOICE META & DOCUMENT DETAILS */}
             <div className="space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 pb-1 border-b border-slate-100 flex items-center justify-between">
-                <span>Invoice & Document Details</span>
-                <span className="text-[10px] text-sky-700 font-semibold bg-sky-50 px-2 py-0.5 rounded border border-sky-100">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 pb-1 border-b border-slate-100 flex flex-wrap items-center justify-between gap-1.5">
+                <span>Invoice &amp; Document Details</span>
+                <span className="text-[10px] text-sky-700 font-semibold bg-sky-50 px-2 py-0.5 rounded border border-sky-100 shrink-0">
                   Sequential Tax Document
                 </span>
               </h4>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                 {/* Invoice Number (Auto-Generated & Read-Only / Locked) */}
                 <div className="space-y-1">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-1">
                     <label className="block text-xs font-semibold text-slate-600">
                       Invoice Number <span className="text-red-500">*</span>
                     </label>
-                    <span className="text-[10px] font-bold text-sky-600 bg-sky-50 px-1.5 py-0.2 rounded border border-sky-100 flex items-center gap-1">
+                    <span className="text-[10px] font-bold text-sky-600 bg-sky-50 px-1.5 py-0.2 rounded border border-sky-100 flex items-center gap-1 shrink-0">
                       <Sparkles className="w-2.5 h-2.5" />
                       Auto-Generated (Locked)
                     </span>
@@ -1657,12 +1657,12 @@ export default function AddInvoiceModal({
               </div>
 
               {shipToSameAsBillTo ? (
-                <div className="p-3 bg-emerald-50/60 border border-emerald-100 rounded-lg text-xs text-emerald-800 flex items-center justify-between">
+                <div className="p-3 bg-emerald-50/60 border border-emerald-100 rounded-lg text-xs text-emerald-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <MdCheckCircle className="text-base text-emerald-600" />
+                    <MdCheckCircle className="text-base text-emerald-600 shrink-0" />
                     <span>Shipping and site installation address matches the Billing Party details above.</span>
                   </div>
-                  <span className="font-semibold text-sky-700 text-[11px] bg-white px-2 py-0.5 rounded border border-emerald-200">
+                  <span className="font-semibold text-sky-700 text-[11px] bg-white px-2 py-0.5 rounded border border-emerald-200 shrink-0 self-start sm:self-auto">
                     Same as Bill To
                   </span>
                 </div>
@@ -1762,18 +1762,28 @@ export default function AddInvoiceModal({
 
             {/* 5. INVOICE LINE ITEMS */}
             <div className="space-y-3 pt-1">
-              <div className="flex items-center justify-between pb-1 border-b border-slate-100">
+              <div className="flex flex-wrap items-center justify-between gap-1 pb-1 border-b border-slate-100">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
-                  <Package className="w-3.5 h-3.5 text-blue-600" />
-                  Line Items & Products ({items.length})
+                  <Package className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                  <span>Line Items &amp; Products ({items.length})</span>
                 </h4>
-                <span className="text-[11px] text-slate-400 font-medium">
-                  Auto-populated from source
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAddItem}
+                    className="px-2.5 py-1 bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Item</span>
+                  </button>
+                  <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">
+                    Auto-populated from source
+                  </span>
+                </div>
               </div>
 
-              <div className="overflow-x-auto rounded-lg border border-slate-200 shadow-2xs">
-                <table className="w-full text-xs text-left border-collapse">
+              <div className="overflow-x-auto rounded-lg border border-slate-200 shadow-2xs scrollbar-thin">
+                <table className="w-full min-w-[780px] text-xs text-left border-collapse">
                   <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
                     <tr>
                       <th className="py-2.5 px-3 w-8 text-center">#</th>
@@ -1955,10 +1965,10 @@ export default function AddInvoiceModal({
               </div>
 
               {/* Live Totals & Payment Summary Card */}
-              <div className="bg-sky-50/40 p-4 rounded-xl border border-sky-100 space-y-2.5">
-                <span className="text-xs font-bold text-sky-900 uppercase tracking-wider flex items-center justify-between pb-1 border-b border-sky-200/60">
+              <div className="bg-sky-50/40 p-3.5 sm:p-4 rounded-xl border border-sky-100 space-y-2.5">
+                <span className="text-xs font-bold text-sky-900 uppercase tracking-wider flex flex-wrap items-center justify-between gap-1.5 pb-1 border-b border-sky-200/60">
                   <span>Financial Summary</span>
-                  <span className="text-[10px] font-bold bg-white text-sky-700 px-2 py-0.5 rounded border border-sky-200">
+                  <span className="text-[10px] font-bold bg-white text-sky-700 px-2 py-0.5 rounded border border-sky-200 shrink-0">
                     {calculation.cgstAmount > 0 ? "Intrastate GST (CGST+SGST)" : "Interstate GST (IGST)"}
                   </span>
                 </span>
@@ -2013,12 +2023,12 @@ export default function AddInvoiceModal({
                     <span className="text-lg text-sky-700">₹{calculation.grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                   </div>
 
-                  <div className="text-[11px] text-slate-500 italic pt-1">
+                  <div className="text-[11px] text-slate-500 italic pt-1 break-words">
                     "{calculation.words}"
                   </div>
 
                   {/* Payment settlement */}
-                  <div className="pt-2 grid grid-cols-2 gap-2 text-xs">
+                  <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                     <div>
                       <label className="block text-[11px] font-semibold text-slate-600 mb-0.5">Amount Received</label>
                       <input
@@ -2027,7 +2037,7 @@ export default function AddInvoiceModal({
                         step="any"
                         value={receivedAmount}
                         onChange={(e) => setReceivedAmount(e.target.value)}
-                        className="w-full px-2 py-1 text-xs font-bold text-emerald-700 border border-slate-200 rounded bg-white"
+                        className="w-full px-2.5 py-1.5 text-xs font-bold text-emerald-700 border border-slate-200 rounded-lg bg-white"
                       />
                     </div>
                     <div>
@@ -2035,7 +2045,7 @@ export default function AddInvoiceModal({
                       <select
                         value={paymentMode}
                         onChange={(e) => setPaymentMode(e.target.value)}
-                        className="w-full px-2 py-1 text-xs border border-slate-200 rounded bg-white font-medium"
+                        className="w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg bg-white font-medium h-[33px]"
                       >
                         <option value="ICICI BANK">ICICI BANK</option>
                         <option value="NEFT/RTGS">NEFT / RTGS</option>
@@ -2057,21 +2067,21 @@ export default function AddInvoiceModal({
             </div>
 
             {/* Bottom Actions */}
-            <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-3 shrink-0">
+            <div className="pt-4 border-t border-slate-200 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 shrink-0">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2.5 sm:py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer text-center"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="px-6 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-lg shadow-md shadow-sky-600/20 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full sm:w-auto px-6 py-2.5 sm:py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-lg shadow-md shadow-sky-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 text-center"
               >
-                <MdSave className="text-base" />
-                {saving ? "Saving Invoice..." : isEdit ? "Update Tax Invoice" : "Create Tax Invoice"}
+                <MdSave className="text-base shrink-0" />
+                <span>{saving ? "Saving Invoice..." : isEdit ? "Update Tax Invoice" : "Create Tax Invoice"}</span>
               </button>
             </div>
           </form>
