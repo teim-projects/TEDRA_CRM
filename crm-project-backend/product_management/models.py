@@ -48,6 +48,18 @@ class Product(models.Model):
         verbose_name="Capacity (LPH)",
         help_text="e.g. 250 LPH, 500 LPH, 1000 LPH"
     )
+
+    # Material & Physical Specifications
+    material = models.CharField(max_length=150, blank=True, null=True, verbose_name="Material")
+    width = models.CharField(max_length=50, blank=True, null=True, verbose_name="Width")
+    length = models.CharField(max_length=50, blank=True, null=True, verbose_name="Length")
+    thickness = models.CharField(max_length=50, blank=True, null=True, verbose_name="Thickness")
+    density = models.CharField(max_length=50, blank=True, null=True, verbose_name="Density")
+    description_size = models.CharField(max_length=255, blank=True, null=True, verbose_name="Description / Size")
+    uom = models.CharField(max_length=50, blank=True, null=True, verbose_name="UOM (Unit of Measurement)")
+    weight = models.CharField(max_length=50, blank=True, null=True, verbose_name="Weight")
+    net_weight = models.CharField(max_length=50, blank=True, null=True, verbose_name="Net Weight")
+    cutting_length = models.CharField(max_length=50, blank=True, null=True, verbose_name="Cutting Length")
     
     # Status
     STATUS_CHOICES = [

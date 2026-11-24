@@ -29,9 +29,12 @@ class ProductViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['name', 'product_code', 'hsn_sac_code', 'capacity_lph']
-    filterset_fields = ['is_active', 'is_service', 'status', 'category']
-    ordering_fields = ['name', 'unit_price', 'created_at']
+    search_fields = [
+        'name', 'product_code', 'hsn_sac_code', 'capacity_lph',
+        'material', 'description_size', 'uom'
+    ]
+    filterset_fields = ['is_active', 'is_service', 'status', 'category', 'uom', 'material']
+    ordering_fields = ['name', 'unit_price', 'created_at', 'material', 'uom']
     ordering = ['name']
     
     def get_queryset(self):
@@ -86,7 +89,10 @@ def product_search_all(request):
         queryset = queryset.filter(
             Q(name__icontains=search_query) |
             Q(product_code__icontains=search_query) |
-            Q(category__name__icontains=search_query)
+            Q(category__name__icontains=search_query) |
+            Q(material__icontains=search_query) |
+            Q(description_size__icontains=search_query) |
+            Q(uom__icontains=search_query)
         )
     
     queryset = queryset[:50]
@@ -99,6 +105,9 @@ def product_search_all(request):
         'category': product.category.name if product.category else None,
         'unit_price': product.unit_price,
         'capacity_lph': product.capacity_lph,
+        'material': product.material,
+        'uom': product.uom,
+        'description_size': product.description_size,
         'price_with_gst': product.get_price_with_gst()
     } for product in queryset]
     

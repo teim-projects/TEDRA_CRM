@@ -70,6 +70,7 @@ export default function RecordViewer({
     // Product display fields
     "category_details",
     "category_name",
+    "extra_attributes",
 
     // Related fields that are not actual model fields
     "followups",
@@ -132,6 +133,16 @@ export default function RecordViewer({
       'gst_percentage': 'GST Percentage',
       'is_service': 'Is Service',
       'product_image_url': 'Product Image URL',
+      'material': 'Material',
+      'width': 'Width',
+      'length': 'Length',
+      'thickness': 'Thickness',
+      'density': 'Density',
+      'description_size': 'Description / Size',
+      'uom': 'UOM (Unit of Measurement)',
+      'weight': 'Weight',
+      'net_weight': 'Net Weight',
+      'cutting_length': 'Cutting Length',
     };
 
     if (labelMap[text]) return labelMap[text];

@@ -29,10 +29,43 @@ class ProductSerializer(serializers.ModelSerializer):
             'id', 'name', 'product_code', 'category', 'category_name',
             'unit_price', 'hsn_sac_code', 'capacity_lph', 'status', 'description',
             'product_image_url', 'gst_type', 'gst_percentage',
+            'material', 'width', 'length', 'thickness', 'density',
+            'description_size', 'uom', 'weight', 'net_weight', 'cutting_length',
             'is_active', 'is_service', 'extra_attributes',
             'price_with_gst', 'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at']
+
+    def to_internal_value(self, data):
+        ret = super().to_internal_value(data)
+        # If extra_attributes was passed, sync any missing top-level spec fields from extra_attributes
+        extra = ret.get('extra_attributes') or {}
+        if isinstance(extra, dict):
+            spec_fields = [
+                'material', 'width', 'length', 'thickness', 'density',
+                'description_size', 'uom', 'weight', 'net_weight', 'cutting_length'
+            ]
+            for field in spec_fields:
+                if not ret.get(field) and field in extra and extra[field] is not None:
+                    ret[field] = str(extra[field])
+        return ret
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        # Populate extra_attributes with spec fields for backward compatibility
+        extra = ret.get('extra_attributes') or {}
+        if not isinstance(extra, dict):
+            extra = {}
+        spec_fields = [
+            'material', 'width', 'length', 'thickness', 'density',
+            'description_size', 'uom', 'weight', 'net_weight', 'cutting_length'
+        ]
+        for field in spec_fields:
+            val = getattr(instance, field, None)
+            if val and field not in extra:
+                extra[field] = val
+        ret['extra_attributes'] = extra
+        return ret
     
     def validate_product_code(self, value):
         if value and value.strip():
