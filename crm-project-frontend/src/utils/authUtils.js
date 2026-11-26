@@ -20,18 +20,14 @@ export function clearAuthSession() {
   }
 }
 
-export function getValidAccessToken() {
-  const token = localStorage.getItem("access") || localStorage.getItem("token");
+export function getTokenPayload(explicitToken = null) {
+  const token = explicitToken || localStorage.getItem("access") || localStorage.getItem("token");
   if (!token) return null;
 
   try {
     const parts = token.split(".");
-    if (parts.length !== 3) {
-      clearAuthSession();
-      return null;
-    }
+    if (parts.length !== 3) return null;
 
-    // Safely decode Base64Url payload with unicode support
     const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
     const jsonPayload = decodeURIComponent(
       atob(base64)
@@ -39,10 +35,25 @@ export function getValidAccessToken() {
         .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
         .join("")
     );
-    const payload = JSON.parse(jsonPayload);
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
+}
+
+export function getValidAccessToken() {
+  const token = localStorage.getItem("access") || localStorage.getItem("token");
+  if (!token) return null;
+
+  try {
+    const payload = getTokenPayload(token);
+    if (!payload) {
+      clearAuthSession();
+      return null;
+    }
 
     // Check expiration (exp is in seconds)
-    if (payload && payload.exp && Date.now() >= payload.exp * 1000) {
+    if (payload.exp && Date.now() >= payload.exp * 1000) {
       clearAuthSession();
       return null;
     }
@@ -59,6 +70,7 @@ export function isUserLoggedIn() {
 }
 
 export default {
+  getTokenPayload,
   getValidAccessToken,
   clearAuthSession,
   isUserLoggedIn,

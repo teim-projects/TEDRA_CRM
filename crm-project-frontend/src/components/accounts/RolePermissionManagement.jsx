@@ -66,6 +66,11 @@ export const SYSTEM_MODULES = [
     name: "Billing & Bank Master",
     description: "Manage bank accounts, IFSC, UPI IDs, and QR code details",
   },
+  {
+    key: "tickets",
+    name: "Support Tickets",
+    description: "View customer support tickets, assign technicians, and update ticket statuses",
+  },
 ];
 
 // Helper to get default permissions for a role name

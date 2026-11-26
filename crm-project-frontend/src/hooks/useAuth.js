@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getValidAccessToken, clearAuthSession } from '../utils/authUtils';
+import { getValidAccessToken, getTokenPayload, clearAuthSession } from '../utils/authUtils';
 
 const SYSTEM_MODULE_KEYS = [
   "dashboard",
@@ -18,6 +18,7 @@ const SYSTEM_MODULE_KEYS = [
   "billing",
   "inventory",
   "invoices",
+  "tickets",
 ];
 
 function getDefaultPermissionsForRole(roleName) {
@@ -68,7 +69,12 @@ export function useUserRole(baseApi) {
     }
 
     if (!userInfo) setIsLoading(true);
-    fetch(`${baseApi}/auth/me/`, {
+    const tokenPayload = getTokenPayload(token);
+    const meEndpoint = tokenPayload?.user_type === "customer"
+      ? `${baseApi}/api/customer/me/`
+      : `${baseApi}/auth/me/`;
+
+    fetch(meEndpoint, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -103,6 +109,11 @@ export function useUserRole(baseApi) {
     if (!userInfo) return false;
 
     const roleName = userRole?.name?.toLowerCase() || "";
+
+    // Customers only have access to Customer Portal routes (never staff/admin modules)
+    if (userInfo.is_customer || userInfo.user_type === "customer" || roleName === "customer") {
+      return false;
+    }
 
     // Superuser or Admin role gets full access to all features and modules
     if (userInfo.is_superuser || roleName === "admin" || roleName === "superuser") {

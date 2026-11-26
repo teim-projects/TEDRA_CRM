@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     'chatbot',
     'tally',
     'technician',
+    'customer',
     'inventory',
     'invoice_billing',
 ] 

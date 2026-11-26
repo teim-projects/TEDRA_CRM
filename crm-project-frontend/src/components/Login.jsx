@@ -24,6 +24,7 @@ const Login = ({ forceForgot = false }) => {
   const BASE_API = getBaseApiUrl();
 
   const LOGIN_ENDPOINT = `${BASE_API}/auth/dj-rest-auth/login/`;
+  const CUSTOMER_LOGIN_ENDPOINT = `${BASE_API}/api/customer/login/`;
   const RESET_ENDPOINT = `${BASE_API}/auth/password-reset/`;
 
   const [form, setForm] = useState({ email_or_mobile: "", password: "" });
@@ -81,19 +82,42 @@ const Login = ({ forceForgot = false }) => {
         body: JSON.stringify(form),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        setMessage("❌ Login failed: " + JSON.stringify(data));
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        if (data.access) localStorage.setItem("access", data.access);
+        if (data.refresh) localStorage.setItem("refresh", data.refresh);
+        localStorage.removeItem("crm_user_info");
+
+        window.dispatchEvent(new Event("authChange"));
+
+        setMessage("✅ Login successful!");
+        navigate("/dashboard");
         return;
       }
 
-      if (data.access) localStorage.setItem("access", data.access);
-      if (data.refresh) localStorage.setItem("refresh", data.refresh);
+      // Fallback: attempt Customer Portal login if staff/technician credentials did not match
+      const custRes = await fetch(CUSTOMER_LOGIN_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
 
-      window.dispatchEvent(new Event("authChange"));
+      const custData = await custRes.json().catch(() => ({}));
+      if (custRes.ok && custData.access) {
+        localStorage.setItem("access", custData.access);
+        if (custData.refresh) localStorage.setItem("refresh", custData.refresh);
+        if (custData.user) {
+          localStorage.setItem("crm_user_info", JSON.stringify(custData.user));
+        }
 
-      setMessage("✅ Login successful!");
-      navigate("/dashboard");
+        window.dispatchEvent(new Event("authChange"));
+
+        setMessage("✅ Customer login successful!");
+        navigate("/dashboard");
+        return;
+      }
+
+      setMessage(`❌ Login failed: ${custData.error || "Invalid email ID or password."}`);
     } catch (error) {
       console.error("Login error:", error);
       setMessage("⚠️ Error connecting to server.");
@@ -248,13 +272,6 @@ const Login = ({ forceForgot = false }) => {
           {isForgotPassView ? (
             /* FORGOT PASSWORD VIEW */
             <div>
-              <div className="flex justify-center mb-6">
-                <img
-                  src="/TEDRA_LOGO.jpeg"
-                  alt="TEDRA Automotive Solutions"
-                  className="h-13 w-auto max-w-[250px] object-contain rounded-lg"
-                />
-              </div>
               <h2 className="text-2xl font-bold text-slate-900 mb-1.5 tracking-tight">
                 Reset Password
               </h2>
@@ -315,13 +332,6 @@ const Login = ({ forceForgot = false }) => {
           ) : (
             /* STANDARD SIGN-IN VIEW */
             <div>
-              <div className="flex justify-center mb-6">
-                <img
-                  src="/TEDRA_LOGO.jpeg"
-                  alt="TEDRA Automotive Solutions"
-                  className="h-14 w-auto max-w-[270px] object-contain rounded-lg"
-                />
-              </div>
               <h2 className="text-2xl font-bold text-slate-900 mb-1 tracking-tight">
                 Welcome back
               </h2>

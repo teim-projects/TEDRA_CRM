@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import Base from "./Base";
 import { MdPerson, MdLock, MdCheck, MdShield, MdEmail, MdPhone } from "react-icons/md";
+import { getTokenPayload } from "../utils/authUtils";
 
 export default function ProfileSection() {
   const navigate = useNavigate();
@@ -30,6 +31,8 @@ export default function ProfileSection() {
   const [changingPassword, setChangingPassword] = useState(false);
 
   const token = useMemo(() => localStorage.getItem("access") || localStorage.getItem("token") || "", []);
+  const isCustomerUser = useMemo(() => getTokenPayload(token)?.user_type === "customer", [token]);
+  const [customerProfile, setCustomerProfile] = useState(null);
 
   // Fetch current user details
   const fetchUserData = useCallback(async () => {
@@ -40,6 +43,30 @@ export default function ProfileSection() {
 
     setLoading(true);
     try {
+      if (isCustomerUser) {
+        const res = await fetch(`${BASE_API}/api/customer/me/`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setCustomerProfile(data.customer_profile || data);
+          setProfile({
+            first_name: data.contact_person || data.name || "",
+            last_name: "",
+            full_name: data.full_name || data.name || "Customer",
+            email: data.email || "",
+            mobile_no: data.mobile_no || "",
+            role_name: `CUSTOMER (${data.customer_code || "PORTAL"})`,
+          });
+        } else {
+          navigate("/login", { replace: true });
+        }
+        return;
+      }
+
       // First try /auth/me/ or dj-rest-auth user
       const res = await fetch(`${BASE_API}/auth/me/`, {
         headers: {
@@ -86,7 +113,7 @@ export default function ProfileSection() {
     } finally {
       setLoading(false);
     }
-  }, [BASE_API, token, navigate]);
+  }, [BASE_API, token, navigate, isCustomerUser]);
 
   useEffect(() => {
     fetchUserData();
@@ -226,6 +253,74 @@ export default function ProfileSection() {
       <Base title="">
         <div className="w-full py-12 text-center text-slate-500 font-medium text-xs">
           Loading profile details...
+        </div>
+      </Base>
+    );
+  }
+
+  if (isCustomerUser) {
+    return (
+      <Base title="">
+        <div className="w-full space-y-4 font-sans antialiased text-slate-800 pt-1 sm:pt-2 px-1">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between pb-1 pt-1">
+            <div className="flex items-center gap-3">
+              <span className="w-1.5 h-10 bg-cyan-600 rounded-full block"></span>
+              <div>
+                <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-tight">
+                  Customer Account Profile
+                </h1>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  View your registered company and contact information (read-only)
+                </p>
+              </div>
+            </div>
+            <div className="mt-3 md:mt-0 flex items-center gap-2">
+              <span className="px-3.5 py-1.5 bg-cyan-50 border border-cyan-200/80 text-cyan-800 text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-2xs">
+                <MdShield className="text-cyan-600 text-sm" />
+                <span>{profile.role_name}</span>
+              </span>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div>
+              <span className="text-[10px] font-bold uppercase text-slate-400 block">Company Name</span>
+              <span className="text-sm font-bold text-slate-900 mt-0.5 block">
+                {customerProfile?.name || profile.full_name}
+              </span>
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase text-slate-400 block">Contact Person</span>
+              <span className="text-sm font-semibold text-slate-800 mt-0.5 block">
+                {customerProfile?.contact_person || "—"}
+              </span>
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase text-slate-400 block">Email Address</span>
+              <span className="text-sm font-medium text-slate-700 mt-0.5 block">
+                {profile.email || "—"}
+              </span>
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase text-slate-400 block">Mobile Number</span>
+              <span className="text-sm font-medium text-slate-700 mt-0.5 block">
+                {profile.mobile_no || "—"}
+              </span>
+            </div>
+            <div className="md:col-span-2">
+              <span className="text-[10px] font-bold uppercase text-slate-400 block">Billing Address</span>
+              <span className="text-xs text-slate-700 mt-0.5 block">
+                {[
+                  customerProfile?.billing_address,
+                  customerProfile?.city,
+                  customerProfile?.state,
+                  customerProfile?.pin_code,
+                ]
+                  .filter(Boolean)
+                  .join(", ") || "—"}
+              </span>
+            </div>
+          </div>
         </div>
       </Base>
     );

@@ -12,7 +12,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useUserRole } from "../hooks/useAuth";
 import { getBaseApiUrl } from "../utils/apiConfig";
-import { getValidAccessToken, clearAuthSession } from "../utils/authUtils";
+import { getValidAccessToken, getTokenPayload, clearAuthSession } from "../utils/authUtils";
 import NotificationDrawer from "./NotificationDrawer";
 import ChatbotAssistant from "./chatbot/ChatbotAssistant";
 import { Sparkles, SquareParking } from "lucide-react";
@@ -172,6 +172,7 @@ const allSidebarItems = [
   { key: "amc_services", label: "Services", icon: ServiceIcon, path: "/amc-services", section: "OPERATIONS" },
   { key: "invoices", label: "Invoice / Billing", icon: InvoiceIcon, path: "/invoices", section: "OPERATIONS" },
   { key: "inventory", label: "Inventory", icon: InventoryIcon, path: "/inventory", section: "OPERATIONS" },
+  { key: "tickets", label: "Tickets", icon: TicketIcon, path: "/tickets", section: "OPERATIONS" },
 
   // WORK LIST (Technician Field Operations - Single Unified Work Desk & Route Map)
   { key: "work_desk", label: "Work Desk", icon: WorkDeskIcon, path: "/technician/work-desk", section: "WORK LIST" },
@@ -190,6 +191,13 @@ const allSidebarItems = [
   { key: "accounts", label: "Accounts", icon: BuildingIcon, path: "/accounts", section: "ADMINISTRATION" },
   { key: "technicians", label: "Technicians", icon: TechnicianIcon, path: "/technicians", section: "ADMINISTRATION" },
   { key: "roles", label: "Role Management", icon: ShieldIcon, path: "/roles", section: "ADMINISTRATION" },
+
+  // CUSTOMER PORTAL (Customer Self-Service Read-Only Login)
+  { key: "customer_home", label: "Dashboard", icon: HomeIcon, path: "/dashboard", section: "CUSTOMER PORTAL" },
+  { key: "customer_projects", label: "My Projects", icon: ProjectIcon, path: "/customer-portal/projects", section: "CUSTOMER PORTAL" },
+  { key: "customer_amcs", label: "My AMC", icon: AmcIcon, path: "/customer-portal/amcs", section: "CUSTOMER PORTAL" },
+  { key: "customer_services", label: "My Services", icon: ServiceIcon, path: "/customer-portal/services", section: "CUSTOMER PORTAL" },
+  { key: "customer_tickets", label: "Support Tickets", icon: TicketIcon, path: "/customer-portal/tickets", section: "CUSTOMER PORTAL" },
 ];
 
 export default function Sidebar({ children }) {
@@ -205,6 +213,7 @@ export default function Sidebar({ children }) {
   const { userRole, userInfo, isLoading: loadingRole, hasPermission } = useUserRole(baseApi);
   const roleName = (userRole?.name || userInfo?.role_name || userInfo?.role?.name || "").toLowerCase();
   const isTechnician = roleName === "technician" || roleName.includes("technician") || Boolean(userInfo?.is_technician);
+  const isCustomer = roleName === "customer" || Boolean(userInfo?.is_customer) || userInfo?.user_type === "customer";
 
   // Auto-close sidebar on mobile when navigating
   useEffect(() => {
@@ -231,7 +240,8 @@ export default function Sidebar({ children }) {
     const customNotifs = JSON.parse(localStorage.getItem("crm_custom_notifs") || "[]");
 
     const token = localStorage.getItem("access") || localStorage.getItem("access_token") || "";
-    if (!token) {
+    const tokenPayload = getTokenPayload(token);
+    if (!token || tokenPayload?.user_type === "customer" || isCustomer) {
       setUnreadNotifCount(0);
       return;
     }
@@ -286,6 +296,11 @@ export default function Sidebar({ children }) {
     if (loadingRole && !userInfo) return [];
 
     const rName = (userRole?.name || userInfo?.role_name || userInfo?.role?.name || "").toLowerCase();
+    const isCust = rName === "customer" || Boolean(userInfo?.is_customer) || userInfo?.user_type === "customer";
+    if (isCust) {
+      return allSidebarItems.filter((item) => item.section === "CUSTOMER PORTAL");
+    }
+
     const isTech = rName === "technician" || rName.includes("technician") || Boolean(userInfo?.is_technician);
 
     // If technician, allow Dashboard ("home"), Work Desk ("work_desk"), Field Route Map ("field_map"), and Project Management ("projects")!
@@ -316,9 +331,13 @@ export default function Sidebar({ children }) {
       roles: "roles",
       billing: "billing",
       invoices: "invoices",
+      tickets: "tickets",
     };
 
     return allSidebarItems.filter((item) => {
+      if (item.section === "CUSTOMER PORTAL") {
+        return false;
+      }
       if (item.key === "work_desk" || item.key === "field_map") {
         return true;
       }
@@ -331,6 +350,14 @@ export default function Sidebar({ children }) {
   }, [loadingRole, hasPermission, userRole, userInfo]);
 
   const getPageTitle = () => {
+    if (isCustomer) {
+      if (currentPath.startsWith("/customer-portal/projects")) return "My Projects";
+      if (currentPath.startsWith("/customer-portal/amcs")) return "My AMC Contracts";
+      if (currentPath.startsWith("/customer-portal/services")) return "My Services";
+      if (currentPath.startsWith("/customer-portal/tickets")) return "Support Tickets";
+      if (currentPath.startsWith("/profile")) return "Customer Profile";
+      return "Customer Dashboard";
+    }
     if (currentPath.startsWith("/technician/todays-work")) return "Today's Work";
     if (currentPath.startsWith("/technician/work-desk")) return "Work Desk";
     if (currentPath.startsWith("/technician/completed-work")) return "Completed Work";
@@ -339,11 +366,13 @@ export default function Sidebar({ children }) {
     if (currentPath.startsWith("/billing-details")) return "Billing Details Master";
     if (currentPath.startsWith("/technicians")) return "Technician Management";
     if (currentPath.startsWith("/invoices")) return "Invoice & Billing Management";
+    if (currentPath.startsWith("/tickets")) return "Support Tickets";
     const currentItem = allSidebarItems.find(item => isActive(item.path, currentPath));
     return currentItem ? currentItem.label : "Executive Dashboard";
   };
 
   const sections = [
+    "CUSTOMER PORTAL",
     "OVERVIEW",
     "SALES",
     "OPERATIONS",
@@ -446,6 +475,7 @@ export default function Sidebar({ children }) {
           modules={filteredItems}
           onChatbotClick={() => setIsChatbotOpen((prev) => !prev)}
           isChatbotOpen={isChatbotOpen}
+          isCustomer={isCustomer}
         />
 
         <main className="flex-1 p-3 sm:p-5 md:p-6 w-full bg-[#f4f5f9] overflow-x-hidden">
@@ -454,17 +484,21 @@ export default function Sidebar({ children }) {
       </div>
 
       {/* NOTIFICATION DRAWER - SLIDES IN FROM RIGHT */}
-      <NotificationDrawer
-        isOpen={isNotificationOpen}
-        onClose={() => setIsNotificationOpen(false)}
-        onUnreadCountChange={setUnreadNotifCount}
-      />
+      {!isCustomer && (
+        <NotificationDrawer
+          isOpen={isNotificationOpen}
+          onClose={() => setIsNotificationOpen(false)}
+          onUnreadCountChange={setUnreadNotifCount}
+        />
+      )}
 
       {/* AI CHATBOT ASSISTANT - DRAGGABLE ANYWHERE */}
-      <ChatbotAssistant
-        isOpen={isChatbotOpen}
-        onClose={() => setIsChatbotOpen(false)}
-      />
+      {!isCustomer && (
+        <ChatbotAssistant
+          isOpen={isChatbotOpen}
+          onClose={() => setIsChatbotOpen(false)}
+        />
+      )}
     </div>
   );
 }
@@ -477,7 +511,8 @@ const Navbar = ({
   unreadCount,
   modules = [],
   onChatbotClick,
-  isChatbotOpen
+  isChatbotOpen,
+  isCustomer = false
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -502,8 +537,13 @@ const Navbar = ({
     if (!token) return setIsAuthenticated(false);
 
     try {
+      const payload = getTokenPayload(token);
+      const authCheckUrl = payload?.user_type === "customer"
+        ? `${baseApi}/api/customer/me/`
+        : `${baseApi}/auth/dj-rest-auth/user/`;
+
       const res = await fetch(
-        `${baseApi}/auth/dj-rest-auth/user/`,
+        authCheckUrl,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (res.ok) {
@@ -800,34 +840,38 @@ const Navbar = ({
           </div>
         )}
 
-        {/* AI CHATBOT BUTTON (Beside notification bell) */}
-        <button
-          onClick={onChatbotClick}
-          className={`p-1 sm:p-2 rounded-xl relative transition-all cursor-pointer flex items-center justify-center shrink-0 ${isChatbotOpen
-            ? "bg-cyan-50 text-cyan-600 shadow-xs"
-            : "text-gray-400 hover:text-cyan-600 hover:bg-gray-50"
-            }`}
-          title="AI Assistant (Ask any Lead or CRM doubt)"
-        >
-          <Sparkles className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-indigo-500 hover:text-cyan-600 transition-transform hover:scale-110" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-500 rounded-full animate-pulse border border-white" />
-        </button>
+        {/* AI CHATBOT BUTTON (Staff / Admin / Technician only) */}
+        {!isCustomer && (
+          <button
+            onClick={onChatbotClick}
+            className={`p-1 sm:p-2 rounded-xl relative transition-all cursor-pointer flex items-center justify-center shrink-0 ${isChatbotOpen
+              ? "bg-cyan-50 text-cyan-600 shadow-xs"
+              : "text-gray-400 hover:text-cyan-600 hover:bg-gray-50"
+              }`}
+            title="AI Assistant (Ask any Lead or CRM doubt)"
+          >
+            <Sparkles className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-indigo-500 hover:text-cyan-600 transition-transform hover:scale-110" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-500 rounded-full animate-pulse border border-white" />
+          </button>
+        )}
 
-        <button
-          onClick={onNotificationClick}
-          className="p-1 sm:p-2 text-gray-400 hover:text-cyan-600 relative transition-colors cursor-pointer shrink-0"
-          title="Notifications"
-        >
-          <FontAwesomeIcon icon={faBell} className="text-sm sm:text-base" />
-          {unreadCount > 0 && (
-            <>
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-cyan-500 rounded-full animate-ping"></span>
-              <span className="absolute -top-0.5 -right-1 px-1 min-w-[15px] h-[15px] bg-cyan-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white shadow-xs">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            </>
-          )}
-        </button>
+        {!isCustomer && (
+          <button
+            onClick={onNotificationClick}
+            className="p-1 sm:p-2 text-gray-400 hover:text-cyan-600 relative transition-colors cursor-pointer shrink-0"
+            title="Notifications"
+          >
+            <FontAwesomeIcon icon={faBell} className="text-sm sm:text-base" />
+            {unreadCount > 0 && (
+              <>
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-cyan-500 rounded-full animate-ping"></span>
+                <span className="absolute -top-0.5 -right-1 px-1 min-w-[15px] h-[15px] bg-cyan-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white shadow-xs">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              </>
+            )}
+          </button>
+        )}
 
         {isAuthenticated ? (
           <div className="flex items-center gap-0.5 sm:gap-2 border-l border-gray-100 pl-1 sm:pl-2 shrink-0">
@@ -898,6 +942,7 @@ function BuildingIcon(props) { return <svg {...props} viewBox="0 0 24 24" fill="
 function BoxIcon(props) { return <svg {...props} viewBox="0 0 24 24" fill="none"><path d="M21 16V8a2 2 0 00-1-1.73L13 3.27a2 2 0 00-2 0L4 6.27A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>; }
 function CategoryIcon(props) { return <svg {...props} viewBox="0 0 24 24" fill="none"><path d="M7 7h.01M7 3h5a2 2 0 011.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V5a2 2 0 012-2h2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>; }
 function QuoteIcon(props) { return <svg {...props} viewBox="0 0 24 24" fill="none"><path d="M8 7H5a2 2 0 00-2 2v4a2 2 0 002 2h3V7zM19 7h-3a2 2 0 00-2 2v4a2 2 0 002 2h3V7z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>; }
+function TicketIcon(props) { return <svg {...props} viewBox="0 0 24 24" fill="none"><path d="M3 9a2 2 0 012-2h14a2 2 0 012 2v1a2 2 0 000 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1a2 2 0 000-4V9z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M9 12h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>; }
 
 function FollowUpIcon(props) {
   return <svg {...props} viewBox="0 0 24 24" fill="none">

@@ -59,6 +59,8 @@ urlpatterns = [
     path('api/tally/', include('tally.urls')),
     path('technician/', include('technician.urls')),
     path('api/technician/', include('technician.urls')),
+    path('customer/', include('customer.urls')),
+    path('api/customer/', include('customer.urls')),
     path('inventory/', include('inventory.urls')),
     path('api/inventory/', include('inventory.urls')),
     path('invoice/', include('invoice_billing.urls')),

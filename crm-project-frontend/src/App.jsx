@@ -26,6 +26,11 @@ import AMCServices from "./pages/AMCServices";
 import TechnicianDashboard from "./pages/technician/TechnicianDashboard";
 import WorkDesk from "./pages/technician/WorkDesk";
 import FieldMap from "./pages/technician/FieldMap";
+import CustomerProjects from "./components/customer_login/CustomerProjects";
+import CustomerAMCs from "./components/customer_login/CustomerAMCs";
+import CustomerServices from "./components/customer_login/CustomerServices";
+import CustomerTickets from "./components/customer_login/CustomerTickets";
+import Tickets from "./pages/Tickets";
 
 import ProductList from './components/products/ProductList';
 import ProductForm from './components/products/ProductForm';
@@ -74,6 +79,12 @@ function ModuleProtectedRoute({ module, action = "view", children }) {
   }
 
   const roleName = (userRole?.name || userInfo?.role_name || userInfo?.role?.name || "").toLowerCase();
+  const isCustomer = roleName === "customer" || Boolean(userInfo?.is_customer) || userInfo?.user_type === "customer";
+
+  if (isCustomer) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const isTechnician = roleName === "technician" || roleName.includes("technician") || Boolean(userInfo?.is_technician);
 
   if (isTechnician) {
@@ -84,6 +95,33 @@ function ModuleProtectedRoute({ module, action = "view", children }) {
   }
 
   if (!hasPermission(module, action)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+}
+
+function CustomerProtectedRoute({ children }) {
+  const token = getValidAccessToken();
+  const baseApi = getBaseApiUrl();
+  const { userRole, userInfo, isLoading } = useUserRole(baseApi);
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (isLoading && !userInfo) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] text-slate-500 font-sans text-sm">
+        Loading your portal...
+      </div>
+    );
+  }
+
+  const roleName = (userRole?.name || userInfo?.role_name || userInfo?.role?.name || "").toLowerCase();
+  const isCustomer = roleName === "customer" || Boolean(userInfo?.is_customer) || userInfo?.user_type === "customer";
+
+  if (!isCustomer) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -103,7 +141,7 @@ function AppRoutes() {
     return () => window.removeEventListener("authChange", handleAuthChange);
   }, []);
 
-  const noNavPaths = ["/login", "/register", "/forgot-password"];
+  const noNavPaths = ["/login", "/customer/login", "/register", "/forgot-password"];
   const isLoggedIn = isUserLoggedIn();
 
   const hideLayout =
@@ -119,6 +157,10 @@ function AppRoutes() {
       />
       <Route
         path="/login"
+        element={<Login />}
+      />
+      <Route
+        path="/customer/login"
         element={<Login />}
       />
       <Route path="/register" element={<Register />} />
@@ -184,6 +226,40 @@ function AppRoutes() {
         element={<Navigate to="/technician/work-desk?filter=completed" replace />}
       />
 
+      {/* Dedicated Customer Portal Read-Only Routes */}
+      <Route
+        path="/customer-portal/projects"
+        element={
+          <CustomerProtectedRoute>
+            <CustomerProjects />
+          </CustomerProtectedRoute>
+        }
+      />
+      <Route
+        path="/customer-portal/amcs"
+        element={
+          <CustomerProtectedRoute>
+            <CustomerAMCs />
+          </CustomerProtectedRoute>
+        }
+      />
+      <Route
+        path="/customer-portal/services"
+        element={
+          <CustomerProtectedRoute>
+            <CustomerServices />
+          </CustomerProtectedRoute>
+        }
+      />
+      <Route
+        path="/customer-portal/tickets"
+        element={
+          <CustomerProtectedRoute>
+            <CustomerTickets />
+          </CustomerProtectedRoute>
+        }
+      />
+
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/password-reset-confirm/:uid/:token" element={<ResetPasswordConfirm />} />
 
@@ -225,6 +301,14 @@ function AppRoutes() {
         element={
           <ModuleProtectedRoute module="inventory">
             <Inventory />
+          </ModuleProtectedRoute>
+        }
+      />
+      <Route
+        path="/tickets"
+        element={
+          <ModuleProtectedRoute module="tickets">
+            <Tickets />
           </ModuleProtectedRoute>
         }
       />

@@ -6,6 +6,7 @@ from .models import (
 )
 from api.serializers import CustomUserDetailsSerializer
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.db import transaction
 
 User = get_user_model()
@@ -99,6 +100,13 @@ class CustomerSerializer(serializers.ModelSerializer):
     state = serializers.CharField(max_length=100, required=False, allow_blank=True, allow_null=True)
     contact_person = serializers.CharField(max_length=200, required=False, allow_blank=True, allow_null=True)
     billing_address = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    password = serializers.CharField(
+        max_length=255,
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        write_only=True
+    )
     industry_category_display = serializers.SerializerMethodField()
     lead_source_display = serializers.SerializerMethodField()
 
@@ -148,6 +156,25 @@ class CustomerSerializer(serializers.ModelSerializer):
         model = Customer
         fields = "__all__"
         read_only_fields = ('id', 'customer_code', 'created_at', 'updated_at')
+
+    def create(self, validated_data):
+        raw_password = validated_data.pop("password", None)
+        if raw_password is not None and str(raw_password).strip():
+            validated_data["password"] = make_password(str(raw_password))
+        else:
+            validated_data["password"] = None
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        raw_password = validated_data.pop("password", None)
+        if raw_password is not None and str(raw_password).strip():
+            validated_data["password"] = make_password(str(raw_password))
+        return super().update(instance, validated_data)
+
+    def validate_email(self, value):
+        if value:
+            return str(value).strip().lower()
+        return value
 
     def validate_contact_number(self, value):
         if value:

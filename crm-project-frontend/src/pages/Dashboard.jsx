@@ -12,6 +12,7 @@ import SummaryDashboard from "../components/dashboard/SummaryDashboard";
 import ProjectReportDashboard from "../components/dashboard/ProjectReportDashboard";
 import { useUserRole } from "../hooks/useAuth";
 import TechnicianDashboard from "./technician/TechnicianDashboard";
+import CustomerDashboard from "../components/customer_login/CustomerDashboard";
 import { getBaseApiUrl } from "../utils/apiConfig";
 
 export default function Dashboard() {
@@ -53,6 +54,7 @@ export default function Dashboard() {
   const { userRole, userInfo, isLoading: isRoleLoading } = useUserRole(BASE_API);
   const roleName = (userRole?.name || userInfo?.role_name || userInfo?.role?.name || "").toLowerCase();
   const isTechnicianUser = roleName === "technician" || roleName.includes("technician") || Boolean(userInfo?.is_technician);
+  const isCustomerUser = roleName === "customer" || Boolean(userInfo?.is_customer) || userInfo?.user_type === "customer";
 
   const LEADS_ENDPOINT = `${BASE_API}/lead/lead/`;
   const CUSTOMERS_ENDPOINT = `${BASE_API}/lead/customer/`;
@@ -244,9 +246,9 @@ export default function Dashboard() {
   ]);
 
   useEffect(() => {
-    if (isRoleLoading || !userInfo || isTechnicianUser) return;
+    if (isRoleLoading || !userInfo || isTechnicianUser || isCustomerUser) return;
     fetchDashboardData();
-  }, [fetchDashboardData, isRoleLoading, userInfo, isTechnicianUser]);
+  }, [fetchDashboardData, isRoleLoading, userInfo, isTechnicianUser, isCustomerUser]);
 
   // 2. Extract all available years from records dynamically
   const availableYears = useMemo(() => {
@@ -789,6 +791,11 @@ export default function Dashboard() {
   // If logged-in user is a Technician, render the dedicated 1-page Technician Dashboard
   if (isTechnicianUser) {
     return <TechnicianDashboard />;
+  }
+
+  // If logged-in user is a Customer, render the read-only Customer Portal Dashboard
+  if (isCustomerUser) {
+    return <CustomerDashboard />;
   }
 
   return (

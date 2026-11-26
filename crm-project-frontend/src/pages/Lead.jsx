@@ -17,6 +17,7 @@ import ImportLeadModal from "../components/lead/ImportLeadModal";
 import SendMessageModal from "../components/templates/SendMessageModal";
 import { exportToExcel, formatExcelDate } from "../utils/excelExport";
 import { getBaseApiUrl } from "../utils/apiConfig";
+import { promptAndConvertLeadToCustomer } from "../utils/leadConversion";
 
 export default function Lead() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -371,42 +372,18 @@ export default function Lead() {
     }
   };
 
-  const handleConvertToCustomer = async (leadId) => {
-    const result = await Swal.fire({
-      title: "Convert to Customer?",
-      text: "This will create a customer record from this lead data.",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Yes, Convert",
-      cancelButtonText: "Cancel"
-    });
-
-    if (!result.isConfirmed) return;
-
+  const handleConvertToCustomer = async (leadId, defaultEmail = "") => {
     try {
-      const response = await fetch(`${API_URL}${leadId}/convert-to-customer/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        }
+      const data = await promptAndConvertLeadToCustomer({
+        leadId,
+        defaultEmail,
+        apiUrl: API_URL,
+        authToken: token,
+        descriptionText: "This will create a customer record from this lead data.",
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to convert lead");
+      if (data) {
+        fetchData();
       }
-
-      Swal.fire({
-        icon: "success",
-        title: "Success!",
-        text: data.message || "Lead converted to customer successfully",
-        timer: 2000,
-        showConfirmButton: false
-      });
-
-      fetchData();
     } catch (err) {
       Swal.fire({
         icon: "error",
@@ -638,7 +615,7 @@ export default function Lead() {
 
       {!row.is_converted && (
         <button
-          onClick={() => handleConvertToCustomer(row.id)}
+          onClick={() => handleConvertToCustomer(row.id, row.email_address)}
           className="p-1 bg-slate-100 hover:bg-emerald-100 text-slate-600 hover:text-emerald-700 rounded transition-all duration-150 flex items-center justify-center text-sm shadow-sm"
           title="Convert to Customer"
         >

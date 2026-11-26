@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { RxCross2 } from "react-icons/rx";
 import Swal from "sweetalert2";
 import { useUserRole } from "../../hooks/useAuth";
+import { promptAndConvertLeadToCustomer } from "../../utils/leadConversion";
 import { State, City } from "country-state-city";
 import Select from "react-select";
 import {
@@ -1018,43 +1019,20 @@ export default function AddLeadForm({
   const handleConvertToCustomer = async () => {
     if (!lead || !lead.id) return;
 
-    const result = await Swal.fire({
-      title: "Convert to Customer?",
-      text: "This will create a customer record from this lead data and link any associated sites.",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Yes, Convert",
-      cancelButtonText: "Cancel",
-    });
-
-    if (!result.isConfirmed) return;
-
     setConvertingToCustomer(true);
     try {
-      const response = await fetch(`${API_URL}${lead.id}/convert-to-customer/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
+      const data = await promptAndConvertLeadToCustomer({
+        leadId: lead.id,
+        defaultEmail: formData.email_address || lead.email_address || "",
+        apiUrl: API_URL,
+        authToken,
+        descriptionText:
+          "This will create a customer record from this lead data and link any associated sites.",
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to convert lead");
+      if (data) {
+        onSuccess && onSuccess(data);
+        onClose && onClose();
       }
-
-      Swal.fire({
-        icon: "success",
-        title: "Success!",
-        text: data.message || "Lead converted to customer successfully",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-
-      onSuccess && onSuccess(data);
-      onClose && onClose();
     } catch (err) {
       Swal.fire({
         icon: "error",

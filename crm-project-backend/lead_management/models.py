@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password, check_password, identify_hasher
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
@@ -87,6 +88,7 @@ class Customer(models.Model):
     designation = models.CharField(max_length=100, blank=True, null=True, verbose_name="Designation")
     contact_number = models.CharField(max_length=20, blank=True, null=True, verbose_name="Mobile")
     email = models.EmailField(blank=True, null=True, verbose_name="Email")
+    password = models.CharField(max_length=255, blank=True, null=True, verbose_name="Password")
     website = models.URLField(max_length=500, blank=True, null=True, verbose_name="Website")
     industry_category = models.CharField(
         max_length=100, 
@@ -171,9 +173,27 @@ class Customer(models.Model):
             
         return new_code
 
+    def set_password(self, raw_password):
+        """Hash and assign a raw password to the customer."""
+        if raw_password:
+            self.password = make_password(raw_password)
+        else:
+            self.password = None
+
+    def check_password(self, raw_password):
+        """Verify a raw password against the stored hash."""
+        if not self.password or not raw_password:
+            return False
+        return check_password(raw_password, self.password)
+
     def save(self, *args, **kwargs):
         if not self.customer_code:
             self.customer_code = self.generate_customer_code()
+        if self.password:
+            try:
+                identify_hasher(self.password)
+            except ValueError:
+                self.password = make_password(self.password)
         super().save(*args, **kwargs)
 
     def __str__(self):

@@ -1059,6 +1059,9 @@ class LeadViewSet(viewsets.ModelViewSet):
                 {"error": "This lead has already been converted to a customer"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        raw_password = request.data.get("password")
+        raw_email = (request.data.get("email") or lead.email_address or "").strip().lower()
     
         # Check if customer already exists with this mobile number
         existing_customer = None
@@ -1066,6 +1069,18 @@ class LeadViewSet(viewsets.ModelViewSet):
             existing_customer = Customer.objects.filter(
                 contact_number=lead.mobile_number
             ).first()
+
+        if not existing_customer and (not raw_password or not str(raw_password).strip()):
+            return Response(
+                {"error": "Password is required when converting a lead to a customer."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not existing_customer and (not raw_email or "@" not in raw_email):
+            return Response(
+                {"error": "A valid customer email ID is required for customer login."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
     
         # Resolve product_interested IDs to actual Product names
         from product_management.models import Product
@@ -1120,6 +1135,12 @@ class LeadViewSet(viewsets.ModelViewSet):
             if resolved_products and (not existing_customer.product_purchased or len(existing_customer.product_purchased) == 0):
                 existing_customer.product_purchased = resolved_products
                 updated_fields.append("product_purchased")
+            if raw_email and not existing_customer.email:
+                existing_customer.email = raw_email
+                updated_fields.append("email")
+            if raw_password and str(raw_password).strip():
+                existing_customer.set_password(str(raw_password))
+                updated_fields.append("password")
             existing_customer.save(update_fields=updated_fields)
             
             lead.converted_to_customer = existing_customer
@@ -1142,7 +1163,7 @@ class LeadViewSet(viewsets.ModelViewSet):
             "name": lead.company_name or lead.contact_person or "Unknown",
             "contact_person": lead.contact_person or "",
             "contact_number": lead.mobile_number or "",
-            "email": lead.email_address or None,
+            "email": raw_email or None,
             "city": lead.city or "",
             "state": lead.state or "",
             "industry_category": lead.industry_type or "",
@@ -1164,6 +1185,7 @@ class LeadViewSet(viewsets.ModelViewSet):
             "customer_status": "prospect",
             "billing_address": lead.address or "",
             "pin_code": "",
+            "password": str(raw_password),
         }
     
         customer_serializer = CustomerSerializer(data=customer_data)
@@ -1174,7 +1196,11 @@ class LeadViewSet(viewsets.ModelViewSet):
             lead.converted_to_customer = customer
             lead.is_converted = True
             lead.status = LeadStatus.CLOSE_WIN
-            lead.save(update_fields=["converted_to_customer", "is_converted", "status", "updated_at"])
+            lead_update_fields = ["converted_to_customer", "is_converted", "status", "updated_at"]
+            if raw_email and not lead.email_address:
+                lead.email_address = raw_email
+                lead_update_fields.append("email_address")
+            lead.save(update_fields=lead_update_fields)
             from api.models import SiteManagement
             SiteManagement.objects.filter(lead=lead, customer__isnull=True).update(customer=customer)
             

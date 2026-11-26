@@ -113,6 +113,7 @@ export default function AddCustomerForm({
     designation: "",
     contact_number: "",
     email: "",
+    password: "",
     website: "",
     industry_category: "",
     industry_category_other: "",
@@ -330,6 +331,7 @@ export default function AddCustomerForm({
       designation: customer.designation || "",
       contact_number: customer.contact_number || "",
       email: customer.email || "",
+      password: "",
       website: customer.website || "",
       industry_category: isIndustryOther ? "other" : customer.industry_category || "",
       industry_category_other: isIndustryOther ? customer.industry_category : "",
@@ -414,6 +416,7 @@ export default function AddCustomerForm({
         designation: "",
         contact_number: "",
         email: "",
+        password: "",
         website: "",
         industry_category: "",
         industry_category_other: "",
@@ -714,6 +717,9 @@ export default function AddCustomerForm({
         pin_code: formData.pin_code?.toString().trim() || "",
         lead: formData.lead || null,
       };
+      if (formData.password && formData.password.trim() !== "") {
+        payload.password = formData.password;
+      }
 
       const url = customer ? `${API_URL}${customer.id}/` : API_URL;
       const method = customer ? "PATCH" : "POST";
@@ -1009,6 +1015,26 @@ export default function AddCustomerForm({
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="contact@company.com"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-xs font-semibold text-slate-600">
+                      Password
+                      {customer && (
+                        <span className="text-[10px] text-slate-400 font-normal ml-1">
+                          (Leave blank to keep existing)
+                        </span>
+                      )}
+                    </label>
+                    <input
+                      name="password"
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-blue-500 bg-white"
+                      type="password"
+                      autoComplete="new-password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder={customer ? "Enter new password to change" : "Set customer password"}
                     />
                   </div>
 
