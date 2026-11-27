@@ -121,9 +121,9 @@ export function SiteFilterBar({ sites = [], value = "all", onChange, variant = "
   const isDark = variant === "dark";
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex items-center gap-1.5 w-full sm:w-auto max-w-full min-w-0">
       <div
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs ${
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs w-full sm:w-auto max-w-full min-w-0 ${
           isDark
             ? "bg-white/10 border-white/20 text-white"
             : "bg-white border-slate-200 text-slate-700"
@@ -134,7 +134,7 @@ export function SiteFilterBar({ sites = [], value = "all", onChange, variant = "
           value={value}
           onChange={(e) => onChange(e.target.value)}
           aria-label="Filter by Site"
-          className={`text-xs font-semibold bg-transparent focus:outline-none cursor-pointer pr-1 ${
+          className={`text-xs font-semibold bg-transparent focus:outline-none cursor-pointer pr-1 w-full min-w-0 truncate max-w-full ${
             isDark ? "text-white [&>option]:text-slate-900" : "text-slate-800"
           }`}
         >
@@ -152,14 +152,14 @@ export function SiteFilterBar({ sites = [], value = "all", onChange, variant = "
         <button
           type="button"
           onClick={() => onChange("all")}
-          className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer ${
+          className={`inline-flex items-center gap-1 px-2 py-1.5 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer shrink-0 ${
             isDark
               ? "bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-100 border border-cyan-400/30"
               : "bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200"
           }`}
           title="Show All Sites"
         >
-          <span>Clear Site Filter</span>
+          <span>Clear</span>
           <X className="w-3 h-3" />
         </button>
       )}
@@ -264,19 +264,19 @@ export function TechnicianListCard({
 
   if (compact) {
     return (
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-1.5 max-w-full min-w-0">
         {people.map((person, idx) => (
           <span
             key={person.id || idx}
-            className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-700"
+            className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-700 max-w-full min-w-0"
           >
             <User className="w-3 h-3 text-cyan-600 shrink-0" />
-            <span className="font-semibold text-slate-900">{person.full_name}</span>
+            <span className="font-semibold text-slate-900 truncate min-w-0">{person.full_name}</span>
             {person.mobile_no && (
               <a
                 href={`tel:${person.mobile_no}`}
                 onClick={(e) => e.stopPropagation()}
-                className="text-[11px] text-cyan-700 hover:underline font-medium"
+                className="text-[11px] text-cyan-700 hover:underline font-medium shrink-0"
               >
                 ({person.mobile_no})
               </a>

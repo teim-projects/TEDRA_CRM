@@ -61,12 +61,25 @@ body,
 }
 
 /* Thin Scrollbar for Header Tabs & Utility Elements */
-.no-scrollbar::-webkit-scrollbar {
+.no-scrollbar::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar-track,
+.no-scrollbar::-webkit-scrollbar-thumb,
+.no-scrollbar::-webkit-scrollbar-button,
+.scrollbar-none::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar-track,
+.scrollbar-none::-webkit-scrollbar-thumb,
+.scrollbar-none::-webkit-scrollbar-button {
   display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
 }
-.no-scrollbar {
+
+.no-scrollbar,
+.scrollbar-none {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
+  scrollbar-color: transparent transparent !important;
 }
 
 .thin-scrollbar {

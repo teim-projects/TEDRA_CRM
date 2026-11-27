@@ -460,8 +460,8 @@ const ProductList = () => {
 
                                 <div className="border-t border-slate-100/80 my-1"></div>
 
-                                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 pt-1">
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 sm:gap-x-4 sm:gap-y-0.5 text-left w-full sm:max-w-lg">
+                                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2.5 sm:gap-3 pt-1">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 sm:gap-x-4 sm:gap-y-1 text-left w-full sm:max-w-lg min-w-0">
                                         <div className="min-w-0">
                                             <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wider truncate">Unit Price</div>
                                             <div className="text-xs sm:text-sm font-bold text-slate-900 mt-0.5 truncate">
@@ -494,7 +494,7 @@ const ProductList = () => {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center justify-end gap-1 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                                    <div className="flex items-center justify-end gap-1 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 w-full sm:w-auto">
                                         <button 
                                             onClick={() => {
                                                 setSelectedProduct(product);

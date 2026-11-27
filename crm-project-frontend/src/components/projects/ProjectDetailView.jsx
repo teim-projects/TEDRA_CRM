@@ -620,7 +620,7 @@ export default function ProjectDetailView({
               {/* STEPPER TRACK */}
               <div
                 ref={stepperTrackRef}
-                className="overflow-x-auto no-scrollbar scroll-smooth py-1.5"
+                className="overflow-x-auto no-scrollbar scrollbar-none scroll-smooth py-1.5"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
               >
                 <div className="min-w-[560px] sm:min-w-[640px] flex items-center justify-between relative px-2">
@@ -884,37 +884,37 @@ export default function ProjectDetailView({
                   </div>
                 </div>
 
-                <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 w-full sm:w-auto">
+                <div className="grid grid-cols-3 sm:flex items-center gap-1.5 w-full sm:w-auto">
                   {canDirectIssue ? (
                     <>
                       <button
                         type="button"
                         onClick={handleOpenDirectIssue}
-                        className="flex-1 sm:flex-initial px-2.5 py-1.5 sm:py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer shadow-2xs whitespace-nowrap text-center"
+                        className="px-2 sm:px-2.5 py-1.5 sm:py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer shadow-2xs whitespace-nowrap text-center truncate min-w-0"
                         title="Directly issue and allocate stock to project from warehouse"
                       >
                         <ArrowUpRight size={13} className="shrink-0" />
-                        <span>Issue Stock</span>
+                        <span className="truncate">Issue Stock</span>
                       </button>
                       <button
                         type="button"
                         onClick={handleOpenStockRequest}
-                        className="flex-1 sm:flex-initial px-2 py-1.5 sm:py-1 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-colors cursor-pointer shadow-2xs whitespace-nowrap text-center"
+                        className="px-1.5 sm:px-2 py-1.5 sm:py-1 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-lg text-[11px] sm:text-xs font-medium flex items-center justify-center gap-1 transition-colors cursor-pointer shadow-2xs whitespace-nowrap text-center truncate min-w-0"
                         title="Submit a stock requisition request"
                       >
                         <Wrench size={11} className="text-slate-500 shrink-0" />
-                        <span>Request Stock</span>
+                        <span className="truncate">Request Stock</span>
                       </button>
                     </>
                   ) : (
                     <button
                       type="button"
                       onClick={handleOpenStockRequest}
-                      className="flex-1 sm:flex-initial px-2.5 py-1.5 sm:py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer shadow-2xs whitespace-nowrap text-center"
+                      className="col-span-2 sm:col-span-1 px-2.5 py-1.5 sm:py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer shadow-2xs whitespace-nowrap text-center truncate min-w-0"
                       title="Request material/parts from warehouse for this project"
                     >
                       <Wrench size={11} className="shrink-0" />
-                      <span>Request Stock</span>
+                      <span className="truncate">Request Stock</span>
                     </button>
                   )}
 
@@ -922,11 +922,11 @@ export default function ProjectDetailView({
                   <button
                     type="button"
                     onClick={handleOpenReturnStock}
-                    className="flex-1 sm:flex-initial px-2.5 py-1.5 sm:py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer shadow-2xs whitespace-nowrap text-center"
+                    className="px-1.5 sm:px-2.5 py-1.5 sm:py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 rounded-lg text-[11px] sm:text-xs font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer shadow-2xs whitespace-nowrap text-center truncate min-w-0"
                     title="Return unused surplus project materials to warehouse"
                   >
                     <RotateCcw size={11} className="shrink-0" />
-                    <span>Return Stock</span>
+                    <span className="truncate">Return Stock</span>
                   </button>
                 </div>
               </div>
